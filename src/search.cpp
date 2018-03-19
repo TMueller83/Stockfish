@@ -63,12 +63,11 @@ namespace {
   enum NodeType { NonPV, PV };
 
   // Sizes and phases of the skip-blocks, used for distributing search depths across the threads
-  const int SkipSize[]  = { 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4 };
-  const int SkipPhase[] = { 0, 1, 0, 1, 2, 3, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 6, 7 };
+  constexpr int SkipSize[]  = { 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4 };
+  constexpr int SkipPhase[] = { 0, 1, 0, 1, 2, 3, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 6, 7 };
 
   // Razor and futility margins
-  const int RazorMargin1 = 590;
-  const int RazorMargin2 = 604;
+  constexpr int RazorMargin[] = {0, 590, 604};
   Value futility_margin(Depth d, bool improving) {
     return Value((175 - 50 * improving) * d / ONE_PLY);
   }
@@ -458,12 +457,12 @@ void Thread::search() {
                      timeReduction *= 1.25;
 
               // Use part of the gained time from a previous stable move for the current move
-              double unstablePvFactor = 1.0 + mainThread->bestMoveChanges;
-              unstablePvFactor *= std::pow(mainThread->previousTimeReduction, 0.528) / timeReduction;
+              double bestMoveInstability = 1.0 + mainThread->bestMoveChanges;
+              bestMoveInstability *= std::pow(mainThread->previousTimeReduction, 0.528) / timeReduction;
 
               // Stop the search if we have only one legal move, or if available time elapsed
               if (   rootMoves.size() == 1
-                  || Time.elapsed() > Time.optimum() * unstablePvFactor * improvingFactor / 581)
+                  || Time.elapsed() > Time.optimum() * bestMoveInstability * improvingFactor / 581)
               {
                   // If we are allowed to ponder do not stop the search now but
                   // keep pondering until the GUI sends "ponderhit" or "stop".
@@ -494,7 +493,11 @@ namespace {
   template <NodeType NT>
   Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, bool cutNode, bool skipEarlyPruning) {
 
-    const bool PvNode = NT == PV;
+    // Use quiescence search when needed
+    if (depth < ONE_PLY)
+        return qsearch<NT>(pos, ss, alpha, beta);
+
+    constexpr bool PvNode = NT == PV;
     const bool rootNode = PvNode && ss->ply == 0;
 
     assert(-VALUE_INFINITE <= alpha && alpha < beta && beta <= VALUE_INFINITE);
@@ -689,20 +692,13 @@ namespace {
 
     // Step 7. Razoring (skipped when in check)
     if (  !PvNode
-        && depth <= 2 * ONE_PLY)
+        && depth <= 2 * ONE_PLY
+        && eval <= alpha - Value(RazorMargin[depth / ONE_PLY]))
     {
-        if (   depth == ONE_PLY
-            && eval + RazorMargin1 <= alpha)
-            return qsearch<NonPV>(pos, ss, alpha, alpha+1);
-
-        else if (eval + RazorMargin2 <= alpha)
-        {
-            Value ralpha = alpha - RazorMargin2;
-            Value v = qsearch<NonPV>(pos, ss, ralpha, ralpha+1);
-
-            if (v <= ralpha)
-                return v;
-        }
+        Value ralpha = alpha - Value((depth != ONE_PLY) * RazorMargin[depth / ONE_PLY]);
+        Value v = qsearch<NonPV>(pos, ss, ralpha, ralpha+1);
+        if (depth == ONE_PLY || v <= ralpha)
+            return v;
     }
 
     // Step 8. Futility pruning: child node (skipped when in check)
@@ -729,8 +725,9 @@ namespace {
         ss->contHistory = thisThread->contHistory[NO_PIECE][0].get();
 
         pos.do_null_move(st);
-        Value nullValue = depth-R < ONE_PLY ? -qsearch<NonPV>(pos, ss+1, -beta, -beta+1)
-                                            : - search<NonPV>(pos, ss+1, -beta, -beta+1, depth-R, !cutNode, true);
+
+        Value nullValue = -search<NonPV>(pos, ss+1, -beta, -beta+1, depth-R, !cutNode, true);
+
         pos.undo_null_move();
 
         if (nullValue >= beta)
@@ -747,8 +744,7 @@ namespace {
             thisThread->nmp_ply = ss->ply + 3 * (depth-R) / 4;
             thisThread->nmp_odd = ss->ply % 2;
 
-            Value v = depth-R < ONE_PLY ? qsearch<NonPV>(pos, ss, beta-1, beta)
-                                        :  search<NonPV>(pos, ss, beta-1, beta, depth-R, false, true);
+            Value v = search<NonPV>(pos, ss, beta-1, beta, depth-R, false, true);
 
             thisThread->nmp_odd = thisThread->nmp_ply = 0;
 
@@ -1014,8 +1010,7 @@ moves_loop: // When in check, search starts from here
 
       // Step 17. Full depth search when LMR is skipped or fails high
       if (doFullDepthSearch)
-          value = newDepth < ONE_PLY ? -qsearch<NonPV>(pos, ss+1, -(alpha+1), -alpha)
-                                     : - search<NonPV>(pos, ss+1, -(alpha+1), -alpha, newDepth, !cutNode, false);
+          value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, newDepth, !cutNode, false);
 
       // For PV nodes only, do a full PV search on the first move or after a fail
       // high (in the latter case search only if value < beta), otherwise let the
@@ -1025,8 +1020,7 @@ moves_loop: // When in check, search starts from here
           (ss+1)->pv = pv;
           (ss+1)->pv[0] = MOVE_NONE;
 
-          value = newDepth < ONE_PLY ? -qsearch<PV>(pos, ss+1, -beta, -alpha)
-                                     : - search<PV>(pos, ss+1, -beta, -alpha, newDepth, false, false);
+          value = -search<PV>(pos, ss+1, -beta, -alpha, newDepth, false, false);
       }
 
       // Step 18. Undo move
@@ -1158,7 +1152,7 @@ moves_loop: // When in check, search starts from here
   template <NodeType NT>
   Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth) {
 
-    const bool PvNode = NT == PV;
+    constexpr bool PvNode = NT == PV;
     const bool inCheck = bool(pos.checkers());
 
     assert(alpha >= -VALUE_INFINITE && alpha < beta && beta <= VALUE_INFINITE);
@@ -1502,7 +1496,7 @@ void MainThread::check_time() {
       return;
 
   // When using nodes, ensure checking rate is not lower than 0.1% of nodes
-  callsCnt = Limits.nodes ? std::min(4096, int(Limits.nodes / 1024)) : 4096;
+  callsCnt = Limits.nodes ? std::min(1024, int(Limits.nodes / 1024)) : 1024;
 
   static TimePoint lastInfoTime = now();
 
