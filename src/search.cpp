@@ -160,7 +160,7 @@ void Search::init() {
               Reductions[PV][imp][d][mc] = std::max(Reductions[NonPV][imp][d][mc] - 1, 0);
 
               // Increase reduction for non-PV nodes when eval is not improving
-              if (!imp && Reductions[NonPV][imp][d][mc] >= 2)
+              if (!imp && r > 1.0)
                 Reductions[NonPV][imp][d][mc]++;
           }
 
@@ -352,7 +352,7 @@ void Thread::search() {
               ct =  Options["Contempt"] * PawnValueEg / 100; // From centipawns
 
               // Adjust contempt based on root move's previousScore (dynamic contempt)
-              ct += int(std::round(48 * atan(float(prevScore) / 128
+              ct += int(std::round(48 * atan(float(prevScore) / 128)));
 
               Eval::Contempt = (us == WHITE ?  make_score(ct, ct / 2)
                                             : -make_score(ct, ct / 2));
