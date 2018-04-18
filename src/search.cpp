@@ -317,7 +317,8 @@ void Thread::search() {
 
   multiPV = std::min(multiPV, rootMoves.size());
 
-  int ct = Options["Contempt"] * PawnValueEg / 100; // From centipawns
+  int ctb = Options["Contempt"]; // Base contempt
+  int ct = ctb * PawnValueEg / 100; // From centipawns
 
   // In analysis mode, adjust contempt in accordance with user preference
   if (Limits.infinite || Options["UCI_AnalyseMode"])
@@ -378,9 +379,6 @@ void Thread::search() {
               delta2 = (prevScore > 0) ? Value(int(8.0 + 0.1 * abs(prevScore))) : Value(18);
               alpha = std::max(prevScore - delta1,-VALUE_INFINITE);
               beta  = std::min(prevScore + delta2, VALUE_INFINITE);
-              
-              int ctb = Options["Contempt"]; // Base contempt
-              ct = ctb * PawnValueEg / 100; // From centipawns
 
               // Adjust contempt based on root move's previousScore (dynamic contempt)
               int dct = ct + int(std::round(4 * ctb * atan(float(prevScore) / 128)));
