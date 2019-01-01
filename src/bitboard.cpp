@@ -347,7 +347,12 @@ namespace {
   // bitboards are used to look up attacks of sliding pieces. As a reference see
   // www.chessprogramming.org/Magic_Bitboards. In particular, here we use the so
   // called "fancy" approach.
+/*<<<<<<< HEAD
+=======
 
+  void init_magics(Bitboard table[], Magic magics[], Direction directions[]) {
+>>>>>>> eb6d7f537... Assorted trivial cleanups (#1894)
+*/
   void init_magics(MagicInit init[], Magic magics[], Direction directions[], unsigned shift) {
 
     for (Square s = SQ_A1; s <= SQ_H8; ++s)

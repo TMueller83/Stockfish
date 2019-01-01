@@ -25,6 +25,47 @@
 
 namespace {
 
+  template<Color Us, CastlingSide Cs, bool Checks, bool Chess960>
+  ExtMove* generate_castling(const Position& pos, ExtMove* moveList) {
+
+    constexpr Color Them = (Us == WHITE ? BLACK : WHITE);
+    constexpr CastlingRight Cr = Us | Cs;
+    constexpr bool KingSide = (Cs == KING_SIDE);
+
+    if (pos.castling_impeded(Cr) || !pos.can_castle(Cr))
+        return moveList;
+
+    // After castling, the rook and king final positions are the same in Chess960
+    // as they would be in standard chess.
+    Square kfrom = pos.square<KING>(Us);
+    Square rfrom = pos.castling_rook_square(Cr);
+    Square kto = relative_square(Us, KingSide ? SQ_G1 : SQ_C1);
+    Bitboard enemies = pos.pieces(Them);
+
+    assert(!pos.checkers());
+
+    const Direction step = Chess960 ? kto > kfrom ? WEST : EAST
+                                    : KingSide    ? WEST : EAST;
+
+    for (Square s = kto; s != kfrom; s += step)
+        if (pos.attackers_to(s) & enemies)
+            return moveList;
+
+    // Because we generate only legal castling moves we need to verify that
+    // when moving the castling rook we do not discover some hidden checker.
+    // For instance an enemy queen in SQ_A1 when castling rook is in SQ_B1.
+    if (Chess960 && (attacks_bb<ROOK>(kto, pos.pieces() ^ rfrom) & pos.pieces(Them, ROOK, QUEEN)))
+        return moveList;
+
+    Move m = make<CASTLING>(kfrom, rfrom);
+
+    if (Checks && !pos.gives_check(m))
+        return moveList;
+
+    *moveList++ = m;
+    return moveList;
+  }
+
   template<GenType Type, Direction D>
   ExtMove* make_promotions(ExtMove* moveList, Square to, Square ksq) {
 

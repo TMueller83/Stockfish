@@ -607,6 +607,7 @@ void Thread::search() {
               // keep pondering until the GUI sends "ponderhit" or "stop".
               if (mainThread->ponder)
                   mainThread->stopOnPonderhit = true;
+
               else
                   Threads.stop = true;
           }
