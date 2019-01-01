@@ -63,8 +63,10 @@ std::vector<std::string> split(const std::string &s, char delim) {
 
 TranspositionTable TT; // Our global transposition table
 
-/// TTEntry::save saves a TTEntry
-void TTEntry::save(Key k, Value v, bool PvNode, Bound b, Depth d, Move m, Value ev) {
+/// TTEntry::save populates the TTEntry with a new node's data, possibly
+/// overwriting an old position. Update is not atomic and can be racy.
+
+void TTEntry::save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev) {
 
   assert(d / ONE_PLY * ONE_PLY == d);
 
@@ -80,7 +82,7 @@ void TTEntry::save(Key k, Value v, bool PvNode, Bound b, Depth d, Move m, Value 
       key16     = (uint16_t)(k >> 48);
       value16   = (int16_t)v;
       eval16    = (int16_t)ev;
-      genBound8 = (uint8_t)(TT.generation8 | PvNode << 2 | b);
+      genBound8 = (uint8_t)(TT.generation8 | uint8_t(pv) << 2 | b);
       depth8    = (int8_t)(d / ONE_PLY);
   }
 }
