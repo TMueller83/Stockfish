@@ -1004,30 +1004,22 @@ namespace {
     }
     else
     {
+//<<<<<<< HEAD
 		if (!ttHit && expttHit && updated && mcts)
 		{
 			// Never assume anything on values stored in TT
 			ss->staticEval = eval = pureStaticEval = expttValue;
 			if (eval == VALUE_NONE)
 				ss->staticEval = eval = pureStaticEval = evaluate(pos);
-
-										   
-														   
-		 
-			
-																						   
-
 		}
 		else
 		{
 			if ((ss - 1)->currentMove != MOVE_NULL)
 			{
-				int p = (ss - 1)->statScore;
-				int bonus = p > 0 ? (-p - 2500) / 512 :
-					p < 0 ? (-p + 2500) / 512 : 0;
+				 int bonus = -(ss-1)->statScore / 512;
 
-				pureStaticEval = evaluate(pos);
-				ss->staticEval = eval = pureStaticEval + bonus;
+				 pureStaticEval = evaluate(pos);
+				 ss->staticEval = eval = pureStaticEval + bonus;
 			}
 			else{
 			    ss->staticEval = eval = pureStaticEval = -(ss - 1)->staticEval + 2 * Eval::Tempo;
