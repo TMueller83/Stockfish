@@ -1,31 +1,74 @@
-# Stockfish, a UCI chess playing engine derived from Glaurung 2.1
-# Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
-# Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad
-# Copyright (C) 2015-2019 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad
-#
-# Stockfish is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Stockfish is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+### ==========================================================================
+### Copyright Notice and License Information
+### ==========================================================================
+#   McBrain, a UCI chess playing engine derived from SugaR, Stockfish and Glaurung 2.1
+#   Copyright (C) 2004-2008 Tord Romstad (Glaurung Author)
+#   Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad (Stockfish Authors)
+#   Copyright (C) 2015-2016 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Stockfish Authors)
+#   Copyright (C) 2017-2018 Michael Byrne, Marco Zerbinati, Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (McBrain Authors)
 
+#   McBrain is free software: you can redistri/Volumes/Macintosh_1.5TBbute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
 
+#   McBrain is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ### ==========================================================================
 ### Section 1. General Configuration
 ### ==========================================================================
 
 ### Executable name
-ifeq ($(COMP),mingw)
-EXE = stockfish.exe
-else
-EXE = stockfish
+### McCain bench nodes 4716270
+### McCain Matefinder bench nodes xxxxxx
+### stockfish bench nodes 3783543 > based on this commit:Change outposts to single value #1946
+### stockfish matefinder bench nodes xxxxxx
+
+####  Always leave the three lines below as is (any subsequent defines will override)
+VERSION=
+FEATURE1=
+FEATURE2=
+DSUFFIX1=
+DSUFFIX2=
+### Uncomment the line below for McCain, comment out for Stockfish
+	VERSION=maverick
+####
+### should be no reason to change anything below here!
+### Only McCain and stockfish with feature 1 will be publicly distributed a this time, although feel free to play with privately
+### features include : Cerebellum book functionality, play by Elo (UCI limit strength), keyboard shortcuts and a few other items
+	FEATURE1=add_features
+###	FEATURE2=matefinder
+ifeq ($(FEATURE1),add_features)
+	CXXFLAGS += -DAdd_Features
+	FILES = with_c_book
+	SUFFIX1 =
+endif
+ifeq ($(FEATURE2),matefinder)
+	CXXFLAGS += -DMatefinder
+	SUFFIX2 = -m
+endif
+ifeq ($(VERSION),maverick)
+	CXXFLAGS += -DMaverick
+	ifeq ($(COMP),mingw)
+		EXE = McCain-X1$(SUFFIX1)$(SUFFIX2).exe
+	else
+		EXE = McCain-X1$(SUFFIX1)$(SUFFIX2)
+endif
+	else
+### Note: Comment below is for for building cur-dev stockfish with the features noted.
+### McCain always include those features
+### Uncomment out the two lines below for additional features for stockfish, such as play by ELO ,
+### cerebellum book, tactical mode, variety play and additional GUI options.
+	ifeq ($(COMP),mingw)
+		EXE = stockfish-20190207$(SUFFIX1)$(SUFFIX2).exe
+	else
+		EXE = stockfish-20190207$(SUFFIX1)$(SUFFIX2)
+	endif
 endif
 
 ### Installation dir definitions
@@ -33,13 +76,19 @@ PREFIX = /usr/local
 BINDIR = $(PREFIX)/bin
 
 ### Built-in benchmark for pgo-builds
-PGOBENCH = ./$(EXE) bench
+PGOBENCH = ./$(EXE) bench 16 1 10
+PGOBENCH2 = ./$(EXE) bench 16 2 8
 
 ### Object files
-OBJS = benchmark.o bitbase.o bitboard.o endgame.o evaluate.o main.o \
+ifeq ($(FILES),with_c_book)
+	OBJS = benchmark.o bitbase.o bitboard.o endgame.o evaluate.o main.o \
 	material.o misc.o movegen.o movepick.o pawns.o position.o psqt.o \
-	search.o thread.o timeman.o tt.o uci.o ucioption.o syzygy/tbprobe.o
-
+	search.o thread.o timeman.o tt.o uci.o ucioption.o polybook.o syzygy/tbprobe.o
+else
+	OBJS = benchmark.o bitbase.o bitboard.o endgame.o evaluate.o main.o \
+		material.o misc.o movegen.o movepick.o pawns.o position.o psqt.o \
+		search.o thread.o timeman.o tt.o uci.o ucioption.o syzygy/tbprobe.o
+endif
 ### Establish the operating system name
 KERNEL = $(shell uname -s)
 ifeq ($(KERNEL),Linux)
@@ -78,8 +127,14 @@ prefetch = no
 popcnt = no
 sse = no
 pext = no
+native = yes
 
 ### 2.2 Architecture specific
+
+### native
+ifeq ($(native),yes)
+CXXFLAGS += -march=native
+endif
 
 ifeq ($(ARCH),general-32)
 	arch = any
@@ -159,6 +214,7 @@ ifeq ($(COMP),gcc)
 	CXXFLAGS += -pedantic -Wextra -Wshadow
 
 	ifeq ($(ARCH),armv7)
+	CXXFLAGS += -mcpu=cortex-a53 -mfloat-abi=hard -mfpu=neon-fp-armv8 -mneon-for-64bits -mtune=cortex-a53
 		ifeq ($(OS),Android)
 			CXXFLAGS += -m$(bits)
 			LDFLAGS += -m$(bits)
@@ -171,6 +227,9 @@ ifeq ($(COMP),gcc)
 	ifneq ($(KERNEL),Darwin)
 	   LDFLAGS += -Wl,--no-as-needed
 	endif
+
+	gccversion=$(shell gcc --version)
+	gccmasqueraded=$(findstring clang,$(gccversion))
 endif
 
 ifeq ($(COMP),mingw)
@@ -240,8 +299,8 @@ endif
 endif
 
 ifeq ($(KERNEL),Darwin)
-	CXXFLAGS += -arch $(arch) -mmacosx-version-min=10.9
-	LDFLAGS += -arch $(arch) -mmacosx-version-min=10.9
+	CXXFLAGS += -arch $(arch) -mmacosx-version-min=10.14
+	LDFLAGS += -arch $(arch) -mmacosx-version-min=10.14
 endif
 
 ### Travis CI script uses COMPILER to overwrite CXX
@@ -269,7 +328,7 @@ endif
 ifeq ($(debug),no)
 	CXXFLAGS += -DNDEBUG
 else
-	CXXFLAGS += -g
+	CXXFLAGS += -g -Wall -Wextra
 endif
 
 ### 3.2.2 Debugging with undefined behavior sanitizers
@@ -333,15 +392,24 @@ endif
 ### needs access to the optimization flags.
 ifeq ($(optimize),yes)
 ifeq ($(debug), no)
-	ifeq ($(comp),$(filter $(comp),gcc clang))
+	ifeq ($(comp),clang)
 		CXXFLAGS += -flto
 		LDFLAGS += $(CXXFLAGS)
+	endif
+
+	ifeq ($(comp),gcc)
+		CXXFLAGS += -flto 
+	ifeq ($(gccmasqueraded),)
+		LDFLAGS += $(CXXFLAGS) -flto=jobserver
+	else
+		LDFLAGS += $(CXXFLAGS)
+	endif
 	endif
 
 	ifeq ($(comp),mingw)
 	ifeq ($(KERNEL),Linux)
 		CXXFLAGS += -flto
-		LDFLAGS += $(CXXFLAGS)
+		LDFLAGS += $(CXXFLAGS) -flto=jobserver
 	endif
 	endif
 endif
@@ -361,9 +429,13 @@ endif
 
 help:
 	@echo ""
-	@echo "To compile stockfish, type: "
+	@echo "To compile McCain, type: "
+	@echo "'make <target> ARCH=arch [COMP=compiler] [COMPCXX=cxx]'"
+	@echo "<target> would be 'build' or 'profile-build'"
 	@echo ""
-	@echo "make target ARCH=arch [COMP=compiler] [COMPCXX=cxx]"
+	@echo "To compile stockfish, uncomment this line in the makefile: "
+	@echo "'### VERSION=maverick' by remvoing the 3 #(pound signs)"
+	@echo "then type: 'make <target> ARCH=<arch> [COMP=compiler] [COMPCXX=cxx]'"
 	@echo ""
 	@echo "Supported targets:"
 	@echo ""
@@ -411,6 +483,9 @@ help:
 
 build: config-sanity
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) all
+	strip $(EXE)
+	cp $(EXE) /Users/michaelbyrne/cluster.mfb
+	rm -f *.o syzygy/*.o
 
 profile-build: config-sanity objclean profileclean
 	@echo ""
@@ -419,6 +494,7 @@ profile-build: config-sanity objclean profileclean
 	@echo ""
 	@echo "Step 2/4. Running benchmark for pgo-build ..."
 	$(PGOBENCH) > /dev/null
+	$(PGOBENCH2) > /dev/null
 	@echo ""
 	@echo "Step 3/4. Building optimized executable ..."
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) objclean
@@ -426,6 +502,11 @@ profile-build: config-sanity objclean profileclean
 	@echo ""
 	@echo "Step 4/4. Deleting profile data ..."
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) profileclean
+	strip $(EXE)
+	cp $(EXE) /Users/michaelbyrne/cluster.mfb
+	rm -f *.o syzygy/*.o llvm-profdata
+#	touch * syzygy/*
+#	cp $(EXE) /opt/picochess/engines/armv7l
 
 strip:
 	strip $(EXE)
@@ -504,19 +585,19 @@ clang-profile-make:
 clang-profile-use:
 	llvm-profdata merge -output=stockfish.profdata *.profraw
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
-	EXTRACXXFLAGS='-fprofile-instr-use=stockfish.profdata' \
+	EXTRACXXFLAGS='-fprofile-instr-use=stockfish.profdata -Wno-profile-instr-out-of-date' \
 	EXTRALDFLAGS='-fprofile-use ' \
 	all
 
 gcc-profile-make:
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
-	EXTRACXXFLAGS='-fprofile-generate' \
+	EXTRACXXFLAGS='-fprofile-generate -fprofile-correction' \
 	EXTRALDFLAGS='-lgcov' \
 	all
 
 gcc-profile-use:
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
-	EXTRACXXFLAGS='-fprofile-use -fno-peel-loops -fno-tracer' \
+	EXTRACXXFLAGS='-fprofile-use -fprofile-correction -fno-peel-loops -fno-tracer -Os' \
 	EXTRALDFLAGS='-lgcov' \
 	all
 
