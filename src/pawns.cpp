@@ -1,22 +1,23 @@
 /*
-  Stockfish, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
-  Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad
-  Copyright (C) 2015-2019 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad
+ McCain, a UCI chess playing engine derived from Stockfish and Glaurung 2.1
+ Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
+ Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad (Stockfish Authors)
+ Copyright (C) 2015-2016 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Stockfish Authors)
+ Copyright (C) 2017-2019 Michael Byrne, Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (McCain Authors)
 
-  Stockfish is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
+ McCain is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
 
-  Stockfish is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+ McCain is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include <algorithm>
 #include <cassert>
@@ -83,6 +84,12 @@ namespace {
     e->pawnAttacks[Us]   = pawn_attacks_bb<Us>(ourPawns);
     e->pawnsOnSquares[Us][BLACK] = popcount(ourPawns & DarkSquares);
     e->pawnsOnSquares[Us][WHITE] = pos.count<PAWN>(Us) - e->pawnsOnSquares[Us][BLACK];
+#ifdef Maverick   //  Alayan-stk-2
+    e->splitPassedPawns[Us] = 0;
+
+    File fmin = FILE_H;
+    File fmax = FILE_A;
+#endif
 
     // Loop through all pawns of the current color and score each pawn
     while ((s = *pl++) != SQ_NONE)
@@ -115,16 +122,35 @@ namespace {
         // not attacked more times than defended.
         if (   !(stoppers ^ lever ^ leverPush)
             && popcount(support) >= popcount(lever) - 1
-            && popcount(phalanx) >= popcount(leverPush))
+            && popcount(phalanx)   >= popcount(leverPush))
+#ifdef Maverick  //  Alayan-stk-2
+        {
             e->passedPawns[Us] |= s;
-
+            if (f < fmin)
+                fmin = f;
+            if (f > fmax)
+                fmax = f;
+        }
+#else
+            e->passedPawns[Us] |= s;
+#endif
         else if (   stoppers == SquareBB[s + Up]
                  && relative_rank(Us, s) >= RANK_5)
         {
             b = shift<Up>(support) & ~theirPawns;
             while (b)
                 if (!more_than_one(theirPawns & PawnAttacks[Us][pop_lsb(&b)]))
+#ifdef Maverick  //  Alayan-stk-2
+                {
                     e->passedPawns[Us] |= s;
+                    if (f < fmin)
+                        fmin = f;
+                    if (f > fmax)
+                        fmax = f;
+                }
+#else
+                    e->passedPawns[Us] |= s;
+#endif
         }
 
         // Score this pawn
@@ -140,7 +166,11 @@ namespace {
         if (doubled && !support)
             score -= Doubled;
     }
-
+#ifdef Maverick  //  @Alayan-stk-2
+    // check if passed pawns are on both flanks
+    if (popcount(e->passedPawns[Us]) >= 2)
+        e->splitPassedPawns[Us] = fmax-fmin;
+#endif
     return score;
   }
 
@@ -168,7 +198,6 @@ void init() {
   }
 }
 
-
 /// Pawns::probe() looks up the current position's pawns configuration in
 /// the pawns hash table. It returns a pointer to the Entry if the position
 /// is found. Otherwise a new Entry is computed and stored there, so we don't
@@ -186,8 +215,12 @@ Entry* probe(const Position& pos) {
   e->scores[WHITE] = evaluate<WHITE>(pos, e);
   e->scores[BLACK] = evaluate<BLACK>(pos, e);
   e->asymmetry = popcount(  (e->passedPawns[WHITE]   | e->passedPawns[BLACK])
-                          | (e->semiopenFiles[WHITE] ^ e->semiopenFiles[BLACK]));
-
+                          | (e->semiopenFiles[WHITE] ^ e->semiopenFiles[BLACK]))
+#ifdef Maverick  //from sac3 by xoto10
+			  + (pos.count<PAWN>(WHITE) != pos.count<PAWN>(BLACK));
+#else
+	;
+#endif
   return e;
 }
 
@@ -212,6 +245,10 @@ Value Entry::evaluate_shelter(const Position& pos, Square ksq) {
   File center = std::max(FILE_B, std::min(FILE_G, file_of(ksq)));
   for (File f = File(center - 1); f <= File(center + 1); ++f)
   {
+#ifdef Maverick
+        if (more_than_one(theirPawns & FileBB[f]))  safety -= Value( 18);
+        //protonspring ps_pawndanger1 http://tests.stockfishchess.org/tests/view/5b872e7f0ebc592cf27458d4
+#endif
       b = ourPawns & file_bb(f);
       Rank ourRank = b ? relative_rank(Us, backmost_sq(Us, b)) : RANK_1;
 
