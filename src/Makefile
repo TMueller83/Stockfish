@@ -24,10 +24,15 @@
 ### ==========================================================================
 
 ### Executable name
-### McCain bench nodes 4716270
-### McCain Matefinder bench nodes xxxxxx
+### McCain bench nodes 4914655
+### McCain Matefinder bench nodes 5077078
 ### stockfish bench nodes 3783543 > based on this commit:Change outposts to single value #1946
-### stockfish matefinder bench nodes xxxxxx
+###  Note - theses last three non functional commits are not incduded:
+###		Assorted trivial cleanups 1/2019;
+###		Log message of: Less king danger...
+###		Remove Some Bitboard Arrays (official-stockfish#1963)  …
+
+### stockfish matefinder bench nodes 6331651
 
 ####  Always leave the three lines below as is (any subsequent defines will override)
 VERSION=
