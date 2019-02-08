@@ -1,22 +1,23 @@
 /*
-  Stockfish, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
-  Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad
-  Copyright (C) 2015-2019 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad
+ McCain, a UCI chess playing engine derived from Stockfish and Glaurung 2.1
+ Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
+ Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad (Stockfish Authors)
+ Copyright (C) 2015-2016 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Stockfish Authors)
+ Copyright (C) 2017-2019 Michael Byrne, Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (McCain Authors)
 
-  Stockfish is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
+ McCain is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
 
-  Stockfish is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+ McCain is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include <cassert>
 
@@ -76,9 +77,9 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHist
   assert(d <= DEPTH_ZERO);
 
   stage = pos.checkers() ? EVASION_TT : QSEARCH_TT;
-  ttMove =   ttm
-          && (depth > DEPTH_QS_RECAPTURES || to_sq(ttm) == recaptureSquare)
-          && pos.pseudo_legal(ttm) ? ttm : MOVE_NONE;
+  ttMove =    ttm
+           && pos.pseudo_legal(ttm)
+           && (depth > DEPTH_QS_RECAPTURES || to_sq(ttm) == recaptureSquare) ? ttm : MOVE_NONE;
   stage += (ttMove == MOVE_NONE);
 }
 
@@ -91,8 +92,8 @@ MovePicker::MovePicker(const Position& p, Move ttm, Value th, const CapturePiece
 
   stage = PROBCUT_TT;
   ttMove =   ttm
-          && pos.capture(ttm)
           && pos.pseudo_legal(ttm)
+          && pos.capture(ttm)
           && pos.see_ge(ttm, threshold) ? ttm : MOVE_NONE;
   stage += (ttMove == MOVE_NONE);
 }

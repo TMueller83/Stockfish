@@ -1,29 +1,32 @@
 /*
-  Stockfish, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
-  Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad
-  Copyright (C) 2015-2019 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad
+ McCain, a UCI chess playing engine derived from Stockfish and Glaurung 2.1
+ Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
+ Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad (Stockfish Authors)
+ Copyright (C) 2015-2016 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Stockfish Authors)
+ Copyright (C) 2017-2019 Michael Byrne, Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (McCain Authors)
 
-  Stockfish is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
+ McCain is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
 
-  Stockfish is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+ McCain is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include <algorithm>
 #include <cassert>
 #include <cstring>   // For std::memset
 #include <iomanip>
 #include <sstream>
-
+#ifdef Maverick  //  Replace Mobility table with log equations (with rook mg exception). #1784
+#include <cmath>
+#endif
 #include "bitboard.h"
 #include "evaluate.h"
 #include "material.h"
@@ -70,8 +73,11 @@ namespace Trace {
 }
 
 using namespace Trace;
-
+#ifdef Maverick  //  Replace Mobility table with log equations (with rook mg exception). #1784
+namespace Eval {
+#else
 namespace {
+#endif
 
   constexpr Bitboard QueenSide   = FileABB | FileBBB | FileCBB | FileDBB;
   constexpr Bitboard CenterFiles = FileCBB | FileDBB | FileEBB | FileFBB;
@@ -101,7 +107,11 @@ namespace {
 
   // MobilityBonus[PieceType-2][attacked] contains bonuses for middle and end game,
   // indexed by piece type and number of attacked squares in the mobility area.
-  constexpr Score MobilityBonus[][32] = {
+#ifdef Maverick
+Score MobilityBonus[][32] = {
+#else
+constexpr Score MobilityBonus[][32] = {
+#endif
     { S(-62,-81), S(-53,-56), S(-12,-30), S( -4,-14), S(  3,  8), S( 13, 15), // Knights
       S( 22, 23), S( 28, 27), S( 33, 33) },
     { S(-48,-59), S(-20,-23), S( 16, -3), S( 26, 13), S( 38, 24), S( 51, 42), // Bishops
@@ -141,12 +151,37 @@ namespace {
   constexpr Score PassedFile[FILE_NB] = {
     S( -1,  7), S( 0,  9), S(-9, -8), S(-30,-14),
     S(-30,-14), S(-9, -8), S( 0,  9), S( -1,  7)
-  };
-
+};
+#ifdef Maverick
+// Combo #1867 Jonathan D
+// Assorted bonuses and penalties
+constexpr Score BishopPawns        = S(  3,  7);
+constexpr Score CloseEnemies       = S(  8,  0);
+constexpr Score CorneredBishop     = S( 50, 50);
+constexpr Score Hanging            = S( 69, 36);
+constexpr Score KingProtector      = S(  7,  8);
+constexpr Score KnightManeuver     = S(  8,  4);  // miguel-l
+constexpr Score KnightPassedPawns  = S(  0, 12);  //  Alayan-stk-2
+constexpr Score KnightOnQueen      = S( 16, 12);
+constexpr Score LongDiagonalBishop = S( 45,  0);
+constexpr Score MinorBehindPawn    = S( 18,  3);
+constexpr Score PawnlessFlank      = S( 17, 95);	
+constexpr Score RestrictedPiece    = S(  7,  7);
+constexpr Score RookOnPawn         = S( 10, 32);
+constexpr Score SliderOnQueen      = S( 59, 18);
+constexpr Score ThreatByKing       = S( 24, 89);
+constexpr Score ThreatByPawnPush   = S( 48, 39);
+constexpr Score ThreatByRank       = S( 13,  0);
+constexpr Score ThreatBySafePawn   = S(173, 94);
+constexpr Score TrappedRook        = S( 96,  4);
+constexpr Score WeakQueen          = S( 49, 15);
+constexpr Score WeakUnopposedPawn  = S( 12, 23);
+constexpr Score Outpost            = S(  9,  3);
+#else
   // Assorted bonuses and penalties
   constexpr Score BishopPawns        = S(  3,  7);
+  constexpr Score CloseEnemies       = S(  8,  0);
   constexpr Score CorneredBishop     = S( 50, 50);
-  constexpr Score FlankAttacks       = S(  8,  0);
   constexpr Score Hanging            = S( 69, 36);
   constexpr Score KingProtector      = S(  7,  8);
   constexpr Score KnightOnQueen      = S( 16, 12);
@@ -164,6 +199,7 @@ namespace {
   constexpr Score WeakQueen          = S( 49, 15);
   constexpr Score WeakUnopposedPawn  = S( 12, 23);
   constexpr Score Outpost            = S(  9,  3);
+#endif
 
 #undef S
 
@@ -238,37 +274,33 @@ namespace {
     constexpr Direction Down = (Us == WHITE ? SOUTH : NORTH);
     constexpr Bitboard LowRanks = (Us == WHITE ? Rank2BB | Rank3BB: Rank7BB | Rank6BB);
 
-    const Square ksq = pos.square<KING>(Us);
-
     // Find our pawns that are blocked or on the first two ranks
     Bitboard b = pos.pieces(Us, PAWN) & (shift<Down>(pos.pieces()) | LowRanks);
 
-    // Squares occupied by those pawns, by our king or queen or controlled by
-    // enemy pawns are excluded from the mobility area.
+    // Squares occupied by those pawns, by our king or queen, or controlled by enemy pawns
+    // are excluded from the mobility area.
     mobilityArea[Us] = ~(b | pos.pieces(Us, KING, QUEEN) | pe->pawn_attacks(Them));
 
-    // Initialize attackedBy[] for king and pawns
-    attackedBy[Us][KING] = pos.attacks_from<KING>(ksq);
+    // Initialise attackedBy bitboards for kings and pawns
+    attackedBy[Us][KING] = pos.attacks_from<KING>(pos.square<KING>(Us));
     attackedBy[Us][PAWN] = pe->pawn_attacks(Us);
     attackedBy[Us][ALL_PIECES] = attackedBy[Us][KING] | attackedBy[Us][PAWN];
     attackedBy2[Us]            = attackedBy[Us][KING] & attackedBy[Us][PAWN];
 
     // Init our king safety tables
     kingRing[Us] = attackedBy[Us][KING];
-    if (relative_rank(Us, ksq) == RANK_1)
+    if (relative_rank(Us, pos.square<KING>(Us)) == RANK_1)
         kingRing[Us] |= shift<Up>(kingRing[Us]);
 
-    if (file_of(ksq) == FILE_H)
+    if (file_of(pos.square<KING>(Us)) == FILE_H)
         kingRing[Us] |= shift<WEST>(kingRing[Us]);
 
-    else if (file_of(ksq) == FILE_A)
+    else if (file_of(pos.square<KING>(Us)) == FILE_A)
         kingRing[Us] |= shift<EAST>(kingRing[Us]);
 
     kingAttackersCount[Them] = popcount(kingRing[Us] & pe->pawn_attacks(Them));
+    kingRing[Us] &= ~double_pawn_attacks_bb<Us>(pos.pieces(Us, PAWN));
     kingAttacksCount[Them] = kingAttackersWeight[Them] = 0;
-
-    // Remove from kingRing[] the squares defended by two pawns
-    kingRing[Us] &= ~pawn_double_attacks_bb<Us>(pos.pieces(Us, PAWN));
   }
 
 
@@ -278,16 +310,22 @@ namespace {
 
     constexpr Color     Them = (Us == WHITE ? BLACK : WHITE);
     constexpr Direction Down = (Us == WHITE ? SOUTH : NORTH);
+#ifdef Maverick
+	//Exclude doubly protected by pawns squares when calculating attackers on king ring #1843 Michael Chaly
+	constexpr Direction DownRight = (Us == WHITE ? SOUTH_EAST : NORTH_WEST);
+	constexpr Direction DownLeft = (Us == WHITE ? SOUTH_WEST : NORTH_EAST);
+#endif 
     constexpr Bitboard OutpostRanks = (Us == WHITE ? Rank4BB | Rank5BB | Rank6BB
                                                    : Rank5BB | Rank4BB | Rank3BB);
     const Square* pl = pos.squares<Pt>(Us);
 
     Bitboard b, bb;
+    Square s;
     Score score = SCORE_ZERO;
 
     attackedBy[Us][Pt] = 0;
 
-    for (Square s = *pl; s != SQ_NONE; s = *++pl)
+    while ((s = *pl++) != SQ_NONE)
     {
         // Find attacked squares, including x-ray attacks for bishops and rooks
         b = Pt == BISHOP ? attacks_bb<BISHOP>(s, pos.pieces() ^ pos.pieces(QUEEN))
@@ -300,8 +338,12 @@ namespace {
         attackedBy2[Us] |= attackedBy[Us][ALL_PIECES] & b;
         attackedBy[Us][Pt] |= b;
         attackedBy[Us][ALL_PIECES] |= b;
-
-        if (b & kingRing[Them])
+#ifdef Maverick //Exclude doubly protected by pawns squares when calculating attackers on king ring #1843 Michael Chaly
+		if (b & kingRing[Them] & ~(shift<DownRight>(pos.pieces(Them,PAWN)) & shift<DownLeft>(pos.pieces(Them,PAWN))))
+#else
+		if (b & kingRing[Them])
+#endif
+			
         {
             kingAttackersCount[Us]++;
             kingAttackersWeight[Us] += KingAttackWeights[Pt];
@@ -330,6 +372,15 @@ namespace {
 
             // Penalty if the piece is far from the king
             score -= KingProtector * distance(s, pos.square<KING>(Us));
+#ifdef Maverick  //Alayan-stk-2
+            // Penalty for a lone knight having to protect or defend aganist 
+            // multiple split passed pawns
+            if (Pt == KNIGHT && (pos.non_pawn_material(Us) <= KnightValueEg))
+            {
+                score -= KnightPassedPawns * (pe->split_passed_pawns(Them)-2);
+                score -= KnightPassedPawns * (pe->split_passed_pawns(Us)-2);
+            }
+#endif
 
             if (Pt == BISHOP)
             {
@@ -344,6 +395,14 @@ namespace {
                 if (more_than_one(attacks_bb<BISHOP>(s, pos.pieces(PAWN)) & Center))
                     score += LongDiagonalBishop;
             }
+#ifdef Maverick //  by miguel-l
+            else if (Pt == KNIGHT)
+            {
+                Bitboard CenterSquares = CenterFiles & (Rank3BB | Rank4BB | Rank5BB | Rank6BB);
+                if (more_than_one(CenterSquares & mobilityArea[Us] & b))
+                    score += KnightManeuver;
+            }
+#endif
 
             // An important Chess960 pattern: A cornered bishop blocked by a friendly
             // pawn diagonally in front of it is a very serious problem, especially
@@ -375,7 +434,11 @@ namespace {
             {
                 File kf = file_of(pos.square<KING>(Us));
                 if ((kf < FILE_E) == (file_of(s) < kf))
+#ifdef Maverick  //Simplify TrappedRook to a single penalty (no longer based on mobility). #1958
+					score -= (TrappedRook - make_score(mob * 22, 0)) * (1 + !pos.castling_rights(Us));
+#else
                     score -= TrappedRook * (1 + !pos.castling_rights(Us));
+#endif
             }
         }
 
@@ -402,12 +465,23 @@ namespace {
     constexpr Bitboard Camp = (Us == WHITE ? AllSquares ^ Rank6BB ^ Rank7BB ^ Rank8BB
                                            : AllSquares ^ Rank1BB ^ Rank2BB ^ Rank3BB);
 
-    Bitboard weak, b, b1, b2, safe, unsafeChecks = 0;
-    int kingDanger = 0;
     const Square ksq = pos.square<KING>(Us);
+    Bitboard kingFlank, weak, b, b1, b2, safe, unsafeChecks;
 
-    // Init the score with king shelter and enemy pawns storm
+    // King shelter and enemy pawns storm
     Score score = pe->king_safety<Us>(pos);
+
+    // Find the squares that opponent attacks in our king flank, and the squares
+    // which are attacked twice in that flank.
+    kingFlank = KingFlank[file_of(ksq)];
+    b1 = attackedBy[Them][ALL_PIECES] & kingFlank & Camp;
+    b2 = b1 & attackedBy2[Them];
+
+    int tropism = popcount(b1) + popcount(b2);
+
+    // Main king safety evaluation
+    int kingDanger = 0;
+    unsafeChecks = 0;
 
     // Attacked squares defended at most once by our queen or king
     weak =  attackedBy[Them][ALL_PIECES]
@@ -444,7 +518,7 @@ namespace {
 
     // Enemy bishops checks: we count them only if they are from squares from
     // which we can't give a queen check, because queen checks are more valuable.
-    Bitboard BishopCheck =  b2
+    Bitboard BishopCheck =  b2 
                           & attackedBy[Them][BISHOP]
                           & safe
                           & ~QueenCheck;
@@ -466,34 +540,33 @@ namespace {
     // the square is in the attacker's mobility area.
     unsafeChecks &= mobilityArea[Them];
 
-    // Find the squares that opponent attacks in our king flank, and the squares
-    // which are attacked twice in that flank.
-    b1 = attackedBy[Them][ALL_PIECES] & KingFlank[file_of(ksq)] & Camp;
-    b2 = b1 & attackedBy2[Them];
-
-    int kingFlankAttacks = popcount(b1) + popcount(b2);
-
     kingDanger +=        kingAttackersCount[Them] * kingAttackersWeight[Them]
                  +  69 * kingAttacksCount[Them]
                  + 185 * popcount(kingRing[Us] & weak)
                  - 100 * bool(attackedBy[Us][KNIGHT] & attackedBy[Us][KING])
                  + 150 * popcount(pos.blockers_for_king(Us) | unsafeChecks)
+                 +   5 * tropism * tropism / 16
                  - 873 * !pos.count<QUEEN>(Them)
                  -   6 * mg_value(score) / 8
                  +       mg_value(mobility[Them] - mobility[Us])
-                 +   5 * kingFlankAttacks * kingFlankAttacks / 16
                  -   25;
 
     // Transform the kingDanger units into a Score, and subtract it from the evaluation
     if (kingDanger > 0)
-        score -= make_score(kingDanger * kingDanger / 4096, kingDanger / 16);
+		{
+#ifdef Maverick //Simplify mobility danger #1798
+            int mobilityDanger = mg_value(mobility[Them] - mobility[Us]);
+            kingDanger = std::max(0, kingDanger + mobilityDanger);
+#endif
+            score -= make_score(kingDanger * kingDanger / 4096, kingDanger / 16);
+        }
 
     // Penalty when our king is on a pawnless flank
-    if (!(pos.pieces(PAWN) & KingFlank[file_of(ksq)]))
+    if (!(pos.pieces(PAWN) & kingFlank))
         score -= PawnlessFlank;
 
-    // Penalty if king flank is under attack, potentially moving toward the king
-    score -= FlankAttacks * kingFlankAttacks;
+    // King tropism bonus, to anticipate slow motion attacks on our king
+    score -= CloseEnemies * tropism;
 
     if (T)
         Trace::add(KING, Us, score);
@@ -783,14 +856,26 @@ namespace {
 
     // If scale is not already specific, scale down the endgame via general heuristics
     if (sf == SCALE_FACTOR_NORMAL)
-    {
+#ifdef Maverick
+	{
+		sf = ( pos.opposite_bishops()
+			  && pos.non_pawn_material(WHITE) == BishopValueMg
+			  && pos.non_pawn_material(BLACK) == BishopValueMg) ? 8 + 4 * pe->pawn_asymmetry() : std::min( 40 + (pos.opposite_bishops() ? 2 : 7) * pos.count<PAWN>(strongSide)
+							-  pos.count<PAWN>(~strongSide)/2  //Eelco de Groot - groups.google.com/forum/#!msg/fishcooking/uSq3vAxiNOs/AZ6IEVDUCgAJ
+#else
+	{
         if (   pos.opposite_bishops()
             && pos.non_pawn_material(WHITE) == BishopValueMg
             && pos.non_pawn_material(BLACK) == BishopValueMg)
+#ifdef Maverick
+            sf = 6 * pe->pawn_asymmetry();  //ps_scalefactor4 vs master protonspring
+#else
             sf = 8 + 4 * pe->pawn_asymmetry();
+#endif
         else
-            sf = std::min(40 + (pos.opposite_bishops() ? 2 : 7) * pos.count<PAWN>(strongSide), sf);
-
+            sf = std::min( 40 + (pos.opposite_bishops() ? 2 : 7) * pos.count<PAWN>(strongSide)
+#endif
+						  ,sf );
     }
 
     return ScaleFactor(sf);
@@ -853,7 +938,7 @@ namespace {
     v =  mg_value(score) * int(me->game_phase())
        + eg_value(score) * int(PHASE_MIDGAME - me->game_phase()) * sf / SCALE_FACTOR_NORMAL;
 
-    v /= PHASE_MIDGAME;
+    v /= int(PHASE_MIDGAME);
 
     // In case of tracing add all remaining individual evaluation terms
     if (T)
@@ -866,8 +951,31 @@ namespace {
     }
 
     return  (pos.side_to_move() == WHITE ? v : -v) // Side to move point of view
-           + Eval::Tempo;
-  }
+            + Eval::Tempo;
+}
+#ifdef Maverick  //  Replace Mobility table with log equations (with rook mg exception). #1784
+
+/// Eval::init() initializes some tables needed by evaluation. A formula reduces
+/// independent parameters and allows easier tuning.
+void init() {
+
+    static int   o[8] = {-68, -222, -31, -78, -37, -75, -76, -122 }; //eq offsets
+    static int   s[8] = {120,  270, -58, 220, 110, 145, 120,  160 }; //eq slopes
+    static float f[8] = {2.0,  5.0, 6.5, 1.0, 0.8, 1.3,  1.0, 2.0 }; //eq floats
+
+    auto log_value  = [](int i, int m) {
+        return o[i] + s[i] * log10(m + f[i]);
+    };
+
+    for (int m = 0; m < 32; ++m)
+    {
+        MobilityBonus[ QUEEN-2][m] = make_score( log_value(0,m), log_value(1,m));
+        MobilityBonus[  ROOK-2][m] = make_score( m==0 ? s[2] : f[2]* m + o[2], log_value(3,m));
+        MobilityBonus[BISHOP-2][m] = make_score( log_value(4,m), log_value(5,m));
+        //MobilityBonus[KNIGHT-2][m] = make_score( log_value(6,m), log_value(7,m));
+    }
+}
+#endif
 
 } // namespace
 

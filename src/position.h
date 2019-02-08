@@ -1,22 +1,23 @@
 /*
-  Stockfish, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
-  Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad
-  Copyright (C) 2015-2019 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad
+ McCain, a UCI chess playing engine derived from Stockfish and Glaurung 2.1
+ Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
+ Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad (Stockfish Authors)
+ Copyright (C) 2015-2016 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Stockfish Authors)
+ Copyright (C) 2017-2019 Michael Byrne, Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (McCain Authors)
 
-  Stockfish is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
+ McCain is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
 
-  Stockfish is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+ McCain is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #ifndef POSITION_H_INCLUDED
 #define POSITION_H_INCLUDED
@@ -115,26 +116,33 @@ public:
   template<PieceType> Bitboard attacks_from(Square s, Color c) const;
   Bitboard slider_blockers(Bitboard sliders, Square s, Bitboard& pinners) const;
 
-  // Properties of moves
-  bool legal(Move m) const;
-  bool pseudo_legal(const Move m) const;
-  bool capture(Move m) const;
-  bool capture_or_promotion(Move m) const;
-  bool gives_check(Move m) const;
-  bool advanced_pawn_push(Move m) const;
-  Piece moved_piece(Move m) const;
-  Piece captured_piece() const;
+    // Properties of moves
+    bool legal(Move m) const;
+    bool pseudo_legal(const Move m) const;
+    bool capture(Move m) const;
+    bool capture_or_promotion(Move m) const;
+    bool gives_check(Move m) const;
+    bool advanced_pawn_push(Move m) const;
+#if defined (Matefinder) || (Maverick)
+    bool promotion_pawn_push(Move m) const;
+#endif
+    Piece moved_piece(Move m) const;
+    Piece captured_piece() const;
 
   // Piece specific
   bool pawn_passed(Color c, Square s) const;
   bool opposite_bishops() const;
 
-  // Doing and undoing moves
-  void do_move(Move m, StateInfo& newSt);
-  void do_move(Move m, StateInfo& newSt, bool givesCheck);
-  void undo_move(Move m);
-  void do_null_move(StateInfo& newSt);
-  void undo_null_move();
+    // Doing and undoing moves
+    void do_move(Move m, StateInfo& newSt);
+    void do_move(Move m, StateInfo& newSt, bool givesCheck);
+#if defined (Matefinder) || (Maverick) //Gunther Demetz zugzwangSolver
+    void removePawn(Square s, StateInfo& newSt);
+    void undo_removePawn(Square s, Color c);
+#endif
+    void undo_move(Move m);
+    void do_null_move(StateInfo& newSt);
+    void undo_null_move();
 
   // Static Exchange Evaluation
   bool see_ge(Move m, Value threshold = VALUE_ZERO) const;
@@ -317,7 +325,12 @@ inline bool Position::advanced_pawn_push(Move m) const {
   return   type_of(moved_piece(m)) == PAWN
         && relative_rank(sideToMove, from_sq(m)) > RANK_4;
 }
-
+#if defined (Matefinder) || (Maverick) //MichaelB7
+inline bool Position::promotion_pawn_push(Move m) const {
+    return   type_of(moved_piece(m)) == PAWN
+             && relative_rank(sideToMove, from_sq(m)) > RANK_5;
+}
+#endif
 inline Key Position::key() const {
   return st->key;
 }

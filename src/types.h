@@ -1,22 +1,23 @@
 /*
-  Stockfish, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
-  Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad
-  Copyright (C) 2015-2019 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad
+ McCain, a UCI chess playing engine derived from Stockfish and Glaurung 2.1
+ Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
+ Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad (Stockfish Authors)
+ Copyright (C) 2015-2016 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Stockfish Authors)
+ Copyright (C) 2017-2019 Michael Byrne, Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (McCain Authors)
 
-  Stockfish is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
+ McCain is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
 
-  Stockfish is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+ McCain is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #ifndef TYPES_H_INCLUDED
 #define TYPES_H_INCLUDED
@@ -141,11 +142,9 @@ enum CastlingRight {
   WHITE_OOO = WHITE_OO << 1,
   BLACK_OO  = WHITE_OO << 2,
   BLACK_OOO = WHITE_OO << 3,
-
   WHITE_CASTLING = WHITE_OO | WHITE_OOO,
   BLACK_CASTLING = BLACK_OO | BLACK_OOO,
-  ANY_CASTLING   = WHITE_CASTLING | BLACK_CASTLING,
-
+  ANY_CASTLING = WHITE_CASTLING | BLACK_CASTLING,
   CASTLING_RIGHT_NB = 16
 };
 
@@ -179,14 +178,40 @@ enum Value : int {
 
   VALUE_MATE_IN_MAX_PLY  =  VALUE_MATE - 2 * MAX_PLY,
   VALUE_MATED_IN_MAX_PLY = -VALUE_MATE + 2 * MAX_PLY,
+	
+	
+#ifdef Maverick  // Ed Schröder
+#define PVM 104/100
+#define PVE 104/100
+#define NVM 100/100
+#define NVE 100/100
+#define BVM 100/100
+#define BVE 100/100
+#define RVM 100/100
+#define RVE 100/100
+#define QVM 100/100
+#define QVE 100/100
 
-  PawnValueMg   = 136,   PawnValueEg   = 208,
-  KnightValueMg = 782,   KnightValueEg = 865,
-  BishopValueMg = 830,   BishopValueEg = 918,
-  RookValueMg   = 1289,  RookValueEg   = 1378,
-  QueenValueMg  = 2529,  QueenValueEg  = 2687,
-
-  MidgameLimit  = 15258, EndgameLimit  = 3915
+    PawnValueMg   = 136*PVM,   PawnValueEg   = 208*PVE,
+    KnightValueMg = 782*NVM,   KnightValueEg = 865*NVE,
+    BishopValueMg = 830*BVM,   BishopValueEg = 918*BVE,
+    RookValueMg   = 1289*RVM,  RookValueEg   = 1378*RVE,
+    QueenValueMg  = 2529*QVM,  QueenValueEg  = 2687*QVE,
+	
+    MidgameLimit  = 15258, EndgameLimit  = 3915
+#else
+    PawnValueMg   = 136,   PawnValueEg   = 208,
+    KnightValueMg = 782,   KnightValueEg = 865,
+    BishopValueMg = 830,   BishopValueEg = 918,
+    RookValueMg   = 1289,  RookValueEg   = 1378,
+    QueenValueMg  = 2529,  QueenValueEg  = 2687,
+	
+    MidgameLimit  = 15258, EndgameLimit  = 3915
+#endif
+#ifdef Matefinder
+	,
+    VALUE_TB_WIN    = 101 * PawnValueEg
+#endif
 };
 
 enum PieceType {
