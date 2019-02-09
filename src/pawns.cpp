@@ -245,10 +245,6 @@ Value Entry::evaluate_shelter(const Position& pos, Square ksq) {
   File center = std::max(FILE_B, std::min(FILE_G, file_of(ksq)));
   for (File f = File(center - 1); f <= File(center + 1); ++f)
   {
-#ifdef Maverick
-        if (more_than_one(theirPawns & FileBB[f]))  safety -= Value( 18);
-        //protonspring ps_pawndanger1 http://tests.stockfishchess.org/tests/view/5b872e7f0ebc592cf27458d4
-#endif
       b = ourPawns & file_bb(f);
       Rank ourRank = b ? relative_rank(Us, backmost_sq(Us, b)) : RANK_1;
 
