@@ -61,31 +61,31 @@ namespace {
 #define Stockfish
 #endif
 #if(defined Maverick && defined Add_Features && defined Matefinder)
-const string Version = "X1-m";
+const string Version = "X2-dev--m";
 #else
 #if(defined Maverick && defined Add_Features)
-const string Version = "X1";
+const string Version = "X2-dev";
 #else
 #if(defined Maverick && defined Matefinder)
-const string Version = "X1-m";
+const string Version = "X2-dev-m";
 #else
 #ifdef Maverick
-const string Version = "X1";
+const string Version = "X2-dev";
 #endif
 #endif
 #endif
 #endif
 #if(defined Stockfish && defined Add_Features && defined Matefinder)
-	const string Version = "002072019";
+	const string Version = "";
 #else
 #if(defined Stockfish && defined Add_Features)
-	const string Version = "02072019";
+	const string Version = "";
 #else
 #if(defined Stockfish && defined Matefinder)
-	const string Version = "02072019-m";
+	const string Version = "-m";
 #else
 #ifdef Stockfish
-	const string Version = "02072019";
+	const string Version = "";
 #endif
 #endif
 #endif
