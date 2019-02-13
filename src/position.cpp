@@ -1025,7 +1025,11 @@ void Position::do_null_move(StateInfo& newSt) {
   }
 
   st->key ^= Zobrist::side;
+#ifdef Maverick // from snicolet
+  prefetch(TT.first_entry(key()));
+#else
   prefetch(TT.first_entry(st->key));
+#endif
 
   ++st->rule50;
   st->pliesFromNull = 0;
@@ -1056,8 +1060,11 @@ Key Position::key_after(Move m) const {
   Square to = to_sq(m);
   Piece pc = piece_on(from);
   Piece captured = piece_on(to);
+#ifdef Maverick //  from snicolet
+   Key k = key() ^ Zobrist::side;
+#else
   Key k = st->key ^ Zobrist::side;
-
+#endif
   if (captured)
       k ^= Zobrist::psq[captured][to];
 

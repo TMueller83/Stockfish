@@ -61,7 +61,7 @@ namespace {
 #define Stockfish
 #endif
 #if(defined Maverick && defined Add_Features && defined Matefinder)
-const string Version = "X2-dev--m";
+const string Version = "X2-dev-m";
 #else
 #if(defined Maverick && defined Add_Features)
 const string Version = "X2-dev";

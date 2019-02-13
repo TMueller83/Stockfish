@@ -620,8 +620,15 @@ constexpr Score Outpost            = S(  9,  3);
         {
             Square s = pop_lsb(&b);
             score += ThreatByRook[type_of(pos.piece_on(s))];
-            if (type_of(pos.piece_on(s)) != PAWN)
+#ifdef Maverick //  31m059 threat_strongqueen
+			if (type_of(pos.piece_on(s)) == QUEEN)
+				score += ThreatByRook[QUEEN]/2;
+            else if (type_of(pos.piece_on(s)) != PAWN)
                 score += ThreatByRank * (int)relative_rank(Them, s);
+#else
+			if (type_of(pos.piece_on(s)) != PAWN)
+				score += ThreatByRank * (int)relative_rank(Them, s);
+#endif
         }
 
         if (weak & attackedBy[Us][KING])
@@ -835,6 +842,9 @@ constexpr Score Outpost            = S(  9,  3);
                     +  9 * outflanking
                     + 18 * pawnsOnBothFlanks
                     + 49 * !pos.non_pawn_material()
+#ifdef Maverick  //  from snicolet
+                    -   pos.rule50_count()
+#endif
                     -121 ;
 
     // Now apply the bonus: note that we find the attacking side by extracting

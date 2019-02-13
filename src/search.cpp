@@ -630,7 +630,10 @@ void Thread::search() {
 		lastBestMoveDepth = rootDepth;
 #endif
 	}
-
+#ifdef Maverick
+	   playout(lastBestMove, ss);
+#endif
+	  
       // Have we found a "mate in x"?
       if (   Limits.mate
           && bestValue >= VALUE_MATE_IN_MAX_PLY
@@ -690,7 +693,20 @@ void Thread::search() {
       std::swap(rootMoves[0], *std::find(rootMoves.begin(), rootMoves.end(),
                 skill.best ? skill.best : skill.pick_best(multiPV)));
 }
-
+#ifdef Maverick  // Stefano Cardanobile - Playout
+void Thread::playout(Move playMove, Stack* ss) {
+	StateInfo st;
+	bool ttHit;
+	rootPos.do_move(playMove, st);
+	TTEntry* tte    = TT.probe(rootPos.key(), ttHit);
+	Move ttMove     = ttHit ? tte->move() : MOVE_NONE;
+	if(ttHit && ttMove != MOVE_NONE && MoveList<LEGAL>(rootPos).size() && ss->ply < MAX_PLY){
+		(ss+1)->ply = ss->ply + 1;
+		playout(ttMove, ss+1);
+	}
+	rootPos.undo_move(playMove);
+}
+#endif
 
 namespace {
 
@@ -1394,7 +1410,11 @@ moves_loop: // When in check, search starts from here
               else if (    type_of(move) == NORMAL
                        && !pos.see_ge(make_move(to_sq(move), from_sq(move))))
                   r -= 2 * ONE_PLY;
-
+#ifdef Maverick  //  https://github.com/miguel-l/Stockfish/tree/d2a6f..d10ad7
+			  else if (type_of(movedPiece) == PAWN
+					   && relative_rank(us, rank_of(from_sq(move))) > RANK_5)  // changed Rank by Michael B7
+				  r -= ONE_PLY;
+#endif
               ss->statScore =  thisThread->mainHistory[us][from_to(move)]
                              + (*contHist[0])[movedPiece][to_sq(move)]
                              + (*contHist[1])[movedPiece][to_sq(move)]
@@ -1752,6 +1772,9 @@ moves_loop: // When in check, search starts from here
 
       // Don't search moves with negative SEE values
       if (  (!inCheck || evasionPrunable)
+#ifdef Maverick // Günther Demetz - Avoid pruning disocver checks with negative SEE value
+		  && !(givesCheck && (pos.blockers_for_king(~pos.side_to_move()) & from_sq(move)))
+#endif
           && !pos.see_ge(move))
           continue;
 
