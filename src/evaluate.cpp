@@ -170,7 +170,7 @@ constexpr Score RestrictedPiece    = S(  7,  7);
 constexpr Score RookOnPawn         = S( 10, 32);
 constexpr Score SliderOnQueen      = S( 59, 18);
 constexpr Score ThreatByKing       = S( 24, 89);
-constexpr Score ThreatByPawnPush   = S( 48, 39);
+constexpr Score ThreatByPawnPush   = S( 45, 37); // Michael Chaly https://github.com/Vizvezdenec/Stockfish/commit/76dbbc7d1a45160c7d78852fd33a289459e6932a
 constexpr Score ThreatByRank       = S( 13,  0);
 constexpr Score ThreatBySafePawn   = S(173, 94);
 constexpr Score TrappedRook        = S( 96,  4);
@@ -650,7 +650,11 @@ constexpr Score Outpost            = S(  9,  3);
     b &= ~attackedBy[Them][PAWN] & safe;
 
     // Bonus for safe pawn threats on the next move
+#ifdef Maverick  // Michael Chaly  https://github.com/Vizvezdenec/Stockfish/commit/76dbbc7d1a45160c7d78852fd33a289459e6932a
+    b = pawn_attacks_bb<Them>(pos.pieces(Them)) & b;
+#else
     b = pawn_attacks_bb<Us>(b) & pos.pieces(Them);
+#endif
     score += ThreatByPawnPush * popcount(b);
 
     // Our safe or protected pawns
