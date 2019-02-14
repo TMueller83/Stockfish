@@ -54,6 +54,9 @@ public:
   virtual ~Thread();
   virtual void search();
   void clear();
+#ifdef Maverick  // Stefano Cardanobile - Playout
+  virtual void playout(Move, Search::Stack*);
+#endif
   void idle_loop();
   void start_searching();
   void wait_for_search_finished();

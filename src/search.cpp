@@ -630,7 +630,10 @@ void Thread::search() {
 		lastBestMoveDepth = rootDepth;
 #endif
 	}
-
+#ifdef Maverick
+	   playout(lastBestMove, ss);
+#endif
+	  
       // Have we found a "mate in x"?
       if (   Limits.mate
           && bestValue >= VALUE_MATE_IN_MAX_PLY
@@ -690,7 +693,20 @@ void Thread::search() {
       std::swap(rootMoves[0], *std::find(rootMoves.begin(), rootMoves.end(),
                 skill.best ? skill.best : skill.pick_best(multiPV)));
 }
-
+#ifdef Maverick  // Stefano Cardanobile - Playout
+void Thread::playout(Move playMove, Stack* ss) {
+	StateInfo st;
+	bool ttHit;
+	rootPos.do_move(playMove, st);
+	TTEntry* tte    = TT.probe(rootPos.key(), ttHit);
+	Move ttMove     = ttHit ? tte->move() : MOVE_NONE;
+	if(ttHit && ttMove != MOVE_NONE && MoveList<LEGAL>(rootPos).size() && ss->ply < MAX_PLY){
+		(ss+1)->ply = ss->ply + 1;
+		playout(ttMove, ss+1);
+	}
+	rootPos.undo_move(playMove);
+}
+#endif
 
 namespace {
 
