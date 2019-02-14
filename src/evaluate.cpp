@@ -835,6 +835,9 @@ constexpr Score Outpost            = S(  9,  3);
                     +  9 * outflanking
                     + 18 * pawnsOnBothFlanks
                     + 49 * !pos.non_pawn_material()
+#ifdef Maverick  //  from snicolet
+                    -   pos.rule50_count()
+#endif
                     -121 ;
 
     // Now apply the bonus: note that we find the attacking side by extracting

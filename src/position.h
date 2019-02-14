@@ -162,6 +162,9 @@ public:
   bool has_game_cycle(int ply) const;
   bool has_repeated() const;
   int rule50_count() const;
+#ifdef Maverick //  from snicolet
+  int aging() const;
+#endif
   Score psq_score() const;
   Value non_pawn_material(Color c) const;
   Value non_pawn_material() const;
@@ -331,10 +334,16 @@ inline bool Position::promotion_pawn_push(Move m) const {
              && relative_rank(sideToMove, from_sq(m)) > RANK_5;
 }
 #endif
+
+#ifdef Maverick //  from snicolet
+inline Key Position::key() const {
+  return st->key ^ aging();
+}
+#else
 inline Key Position::key() const {
   return st->key;
 }
-
+#endif
 inline Key Position::pawn_key() const {
   return st->pawnKey;
 }
@@ -362,6 +371,11 @@ inline int Position::game_ply() const {
 inline int Position::rule50_count() const {
   return st->rule50;
 }
+#ifdef Maverick //  from snicolet
+inline int Position::aging() const {
+	return st->rule50 / 8;
+}
+#endif
 
 inline bool Position::opposite_bishops() const {
   return   pieceCount[W_BISHOP] == 1
