@@ -38,15 +38,25 @@ namespace {
   constexpr Score Isolated = S( 5, 15);
 
   // Connected pawn bonus by opposed, phalanx, #support and rank
+#ifdef Maverick // locust2 connected_pawns modfication
+  Score Connected[3][2][3][RANK_NB];
+#else
   Score Connected[2][2][3][RANK_NB];
-
+#endif
   // Strength of pawn shelter for our king by [distance from edge][rank].
   // RANK_1 = 0 is used for files where we have no pawn, or pawn is behind our king.
   constexpr Value ShelterStrength[int(FILE_NB) / 2][RANK_NB] = {
+#ifdef Maverick // locust2 connected_pawns modfication
+    { V( -3), V( 81), V( 93), V( 58), V( 39), V( 18), V(  25) },
+    { V(-40), V( 61), V( 35), V(-49), V(-29), V(-11), V( -63) },
+    { V( -7), V( 75), V( 23), V( -2), V( 32), V(  3), V( -45) },
+    { V(-36), V(-13), V(-29), V(-52), V(-48), V(-67), V(-166) }
+#else
     { V( -6), V( 81), V( 93), V( 58), V( 39), V( 18), V(  25) },
     { V(-43), V( 61), V( 35), V(-49), V(-29), V(-11), V( -63) },
     { V(-10), V( 75), V( 23), V( -2), V( 32), V(  3), V( -45) },
     { V(-39), V(-13), V(-29), V(-52), V(-48), V(-67), V(-166) }
+#endif
   };
 
   // Danger of enemy pawns moving toward our king by [distance from edge][rank].
@@ -71,7 +81,11 @@ namespace {
     Bitboard b, neighbours, stoppers, doubled, support, phalanx;
     Bitboard lever, leverPush;
     Square s;
+#ifdef Maverick // locust2 connected_pawns modfication
+    bool opposed, backward, blocked;
+#else
     bool opposed, backward;
+#endif
     Score score = SCORE_ZERO;
     const Square* pl = pos.squares<PAWN>(Us);
 
@@ -103,6 +117,9 @@ namespace {
 
         // Flag the pawn
         opposed    = theirPawns & forward_file_bb(Us, s);
+
+        blocked    = theirPawns & (s + Up);
+
         stoppers   = theirPawns & passed_pawn_mask(Us, s);
         lever      = theirPawns & PawnAttacks[Us][s];
         leverPush  = theirPawns & PawnAttacks[Us][s + Up];
@@ -155,8 +172,11 @@ namespace {
 
         // Score this pawn
         if (support | phalanx)
+#ifdef Maverick // locust2 connected_pawns modfication
+            score += Connected[opposed + blocked][bool(phalanx)][popcount(support)][relative_rank(Us, s)];
+#else
             score += Connected[opposed][bool(phalanx)][popcount(support)][relative_rank(Us, s)];
-
+#endif
         else if (!neighbours)
             score -= Isolated, e->weakUnopposed[Us] += !opposed;
 
@@ -186,15 +206,25 @@ void init() {
 
   static constexpr int Seed[RANK_NB] = { 0, 13, 24, 18, 65, 100, 175, 330 };
 
+#ifdef Maverick // locust2 connected_pawns modfication
+  for (int opposedBlocked = 0; opposedBlocked <= 2; ++opposedBlocked)
+#else
   for (int opposed = 0; opposed <= 1; ++opposed)
+#endif
       for (int phalanx = 0; phalanx <= 1; ++phalanx)
           for (int support = 0; support <= 2; ++support)
               for (Rank r = RANK_2; r < RANK_8; ++r)
   {
       int v = 17 * support;
+#ifdef Maverick // locust2 connected_pawns modfication
+      v += (Seed[r] + (phalanx ? (Seed[r + 1] - Seed[r]) / 2 : 0)) >> opposedBlocked;
+
+      Connected[opposedBlocked][phalanx][support][r] = make_score(v, v * (r - 2) / 4);
+#else
       v += (Seed[r] + (phalanx ? (Seed[r + 1] - Seed[r]) / 2 : 0)) >> opposed;
 
       Connected[opposed][phalanx][support][r] = make_score(v, v * (r - 2) / 4);
+#endif
   }
 }
 
