@@ -620,8 +620,15 @@ constexpr Score Outpost            = S(  9,  3);
         {
             Square s = pop_lsb(&b);
             score += ThreatByRook[type_of(pos.piece_on(s))];
-            if (type_of(pos.piece_on(s)) != PAWN)
+#ifdef Maverick //  31m059 threat_strongqueen
+			if (type_of(pos.piece_on(s)) == QUEEN)
+				score += ThreatByRook[QUEEN]/2;
+            else if (type_of(pos.piece_on(s)) != PAWN)
                 score += ThreatByRank * (int)relative_rank(Them, s);
+#else
+			if (type_of(pos.piece_on(s)) != PAWN)
+				score += ThreatByRank * (int)relative_rank(Them, s);
+#endif
         }
 
         if (weak & attackedBy[Us][KING])
