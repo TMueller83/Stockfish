@@ -1756,6 +1756,9 @@ moves_loop: // When in check, search starts from here
 
       // Don't search moves with negative SEE values
       if (  (!inCheck || evasionPrunable)
+#ifdef Maverick // Günther Demetz - Avoid pruning disocver checks with negative SEE value
+		  && !(givesCheck && (pos.blockers_for_king(~pos.side_to_move()) & from_sq(move)))
+#endif
           && !pos.see_ge(move))
           continue;
 
