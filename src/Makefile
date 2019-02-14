@@ -24,14 +24,9 @@
 ### ==========================================================================
 
 ### Executable name
-### McCain bench nodes 5084872
-### McCain Matefinder bench nodes 4797531
+### McCain bench nodes 4511056
+### McCain Matefinder bench nodes 4075125
 ### stockfish bench nodes 3783543 > based on this commit:Change outposts to single value #1946
-###  Note - theses last three non functional commits are not incduded:
-###		Assorted trivial cleanups 1/2019;
-###		Log message of: Less king danger...
-###		Remove Some Bitboard Arrays (official-stockfish#1963)  …
-
 ### stockfish matefinder bench nodes 6331651
 
 ####  Always leave the three lines below as is (any subsequent defines will override)
@@ -60,9 +55,9 @@ endif
 ifeq ($(VERSION),maverick)
 	CXXFLAGS += -DMaverick
 	ifeq ($(COMP),mingw)
-		EXE = McCain-X2-dev$(SUFFIX1)$(SUFFIX2).exe
+		EXE = McCain-X2$(SUFFIX1)$(SUFFIX2).exe
 	else
-		EXE = McCain-X2-dev$(SUFFIX1)$(SUFFIX2)
+		EXE = McCain-X2$(SUFFIX1)$(SUFFIX2)
 endif
 	else
 ### Note: Comment below is for for building cur-dev stockfish with the features noted.
@@ -70,9 +65,9 @@ endif
 ### Uncomment out the two lines below for additional features for stockfish, such as play by ELO ,
 ### cerebellum book, tactical mode, variety play and additional GUI options.
 	ifeq ($(COMP),mingw)
-		EXE = stockfish-20190208$(SUFFIX1)$(SUFFIX2).exe
+		EXE = stockfish-20190214$(SUFFIX1)$(SUFFIX2).exe
 	else
-		EXE = stockfish-20190208$(SUFFIX1)$(SUFFIX2)
+		EXE = stockfish-20190214$(SUFFIX1)$(SUFFIX2)
 	endif
 endif
 
