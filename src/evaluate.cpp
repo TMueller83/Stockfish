@@ -98,7 +98,12 @@ namespace {
   constexpr int KingAttackWeights[PIECE_TYPE_NB] = { 0, 0, 77, 55, 44, 10 };
 
   // Penalties for enemy's safe checks
+#ifdef Maverick  // Michael Chaly /Enemy queen safe checks tweak
+  constexpr int QueenSafeCheck  = 480;
+  constexpr int QueenSafeCheck2 = 150;
+#else
   constexpr int QueenSafeCheck  = 780;
+#endif
   constexpr int RookSafeCheck   = 1080;
   constexpr int BishopSafeCheck = 635;
   constexpr int KnightSafeCheck = 790;
@@ -174,8 +179,9 @@ constexpr Score ThreatByPawnPush   = S( 45, 37); // Michael Chaly https://github
 constexpr Score ThreatByRank       = S( 13,  0);
 constexpr Score ThreatBySafePawn   = S(173, 94);
 constexpr Score TrappedRook        = S( 96,  4);
-constexpr Score WeakQueen          = S( 49, 15);
+//constexpr Score WeakQueen          = S( 49, 15);
 constexpr Score WeakUnopposedPawn  = S( 12, 23);
+constexpr Score WeakQueen          = S( 10,  2);// Gunther Dementz weak queen mod
 constexpr Score Outpost            = S(  9,  3);
 #else
   // Assorted bonuses and penalties
@@ -448,9 +454,20 @@ constexpr Score Outpost            = S(  9,  3);
         if (Pt == QUEEN)
         {
             // Penalty if any relative pin or discovered attack against the queen
+#ifdef Maverick
+			Bitboard queenPinners, blocker = pos.slider_blockers(pos.pieces(Them, ROOK, BISHOP), s, queenPinners);
+				if (blocker)
+				{
+					score -= WeakQueen;
+					score -= WeakQueen * 5;
+					if (!(blocker & pos.pieces(PAWN)) || file_of(lsb(blocker)) != file_of(s))
+						score -= WeakQueen * 2; // even more penalty when blocker is'nt pawn on the same file
+				}
+#else
             Bitboard queenPinners;
             if (pos.slider_blockers(pos.pieces(Them, ROOK, BISHOP), s, queenPinners))
                 score -= WeakQueen;
+#endif
         }
     }
     if (T)
@@ -506,8 +523,11 @@ constexpr Score Outpost            = S(  9,  3);
                          & ~RookCheck;
 
     if (QueenCheck)
+#ifdef Maverick   // Michael Chaly /Enemy queen safe checks tweak
+        kingDanger += QueenSafeCheck + QueenSafeCheck2 * popcount((b1 | b2) & attackedBy[Them][QUEEN] & safe & ~attackedBy[Us][QUEEN]);
+#else
         kingDanger += QueenSafeCheck;
-
+#endif
     // Enemy bishops checks: we count them only if they are from squares from
     // which we can't give a queen check, because queen checks are more valuable.
     Bitboard BishopCheck =  b2
@@ -531,7 +551,15 @@ constexpr Score Outpost            = S(  9,  3);
     // Unsafe or occupied checking squares will also be considered, as long as
     // the square is in the attacker's mobility area.
     unsafeChecks &= mobilityArea[Them];
-
+	  
+#ifdef maverick  // Stéphane Nicolet demolition threats
+    // Add some demolition threats
+    unsafeChecks |=   pos.pieces(Us)
+	  &  kingRing[Us]
+	  &  attackedBy2[Them]
+	  & (attackedBy[Them][KNIGHT] | attackedBy[Them][BISHOP])
+	  & ~attackedBy2[Us];
+#endif
     // Find the squares that opponent attacks in our king flank, and the squares
     // which are attacked twice in that flank.
     b1 = attackedBy[Them][ALL_PIECES] & KingFlank[file_of(ksq)] & Camp;

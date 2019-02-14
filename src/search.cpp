@@ -188,8 +188,16 @@ void Search::init() {
                 if (!imp && Reductions[NonPV][imp][d][mc] > 1.0)
 #else
                 if (!imp && r > 1.0)
+
+				Reductions[NonPV][imp][d][mc]++;
 #endif
-                    Reductions[NonPV][imp][d][mc]++;
+#ifdef Maverick  // from VoyagerOne
+				{
+						Reductions[PV][imp][d][mc]++;
+						Reductions[NonPV][imp][d][mc]++;
+				}
+#endif
+
             }
 
   for (int d = 0; d < 16; ++d)
@@ -708,8 +716,12 @@ namespace {
         && !rootNode
         && pos.has_game_cycle(ss->ply))
     {
+#ifdef Maverick //  xoto10  perpetuals
+		alpha = depth < 4 ? value_draw(depth, pos.this_thread()) : value_draw(depth, pos.this_thread()) - 1 ;
+#else
         alpha = value_draw(depth, pos.this_thread());
-        if (alpha >= beta)
+#endif
+		if (alpha >= beta)
             return alpha;
     }
 
@@ -769,9 +781,14 @@ namespace {
         if (   Threads.stop.load(std::memory_order_relaxed)
             || pos.is_draw(ss->ply)
             || ss->ply >= MAX_PLY)
+#ifdef Maverick  //xoto10 perpetuals
             return (ss->ply >= MAX_PLY && !inCheck) ? evaluate(pos)
-                                                    : value_draw(depth, pos.this_thread());
-
+							: depth < 4 ? value_draw(depth, pos.this_thread())
+							: value_draw(depth, pos.this_thread()) - 1;
+#else
+            return (ss->ply >= MAX_PLY && !inCheck) ? evaluate(pos)
+							: value_draw(depth, pos.this_thread());
+#endif
         // Step 3. Mate distance pruning. Even if we mate at the next move our score
         // would be at best mate_in(ss->ply+1), but if alpha is already bigger because
         // a shorter mate was found upward in the tree then there is no need to search
@@ -1161,7 +1178,17 @@ namespace {
                 pos.undo_move(move);
 
                 if (value >= raisedBeta)
-                    return value;
+#ifdef Maverick  //  Moez Jellouli -> Save_probcut
+				{
+					if (!excludedMove)
+						tte->save(posKey, value_to_tt(value, ss->ply), ttPv,
+								  BOUND_LOWER, depth - 4 * ONE_PLY, move, pureStaticEval);
+					
+					return value;
+				}
+#else
+					return value;
+#endif
             }
     }
 
@@ -1284,6 +1311,22 @@ moves_loop: // When in check, search starts from here
       // Castling extension
       else if (type_of(move) == CASTLING)
           extension = ONE_PLY;
+#ifdef Maverick //Moez Jellouli endgame extension
+	  else if (pos.non_pawn_material() == 0
+			   &&  abs(ss->staticEval) <= Value(160)
+			   &&  abs(ss->staticEval) >= Value(10)
+			   &&  pos.rule50_count() <= 10
+			   &&  depth >= 4 * ONE_PLY
+			   &&  (PvNode || (!PvNode && improving)))	// Endgame extension
+		  extension = ONE_PLY;
+#endif
+#ifdef Maverick  // Vondele Extend anti-shuffle moves
+	  else if (   pos.rule50_count() > 20
+				&& pos.rule50_count() < 30
+				&& (type_of(movedPiece) == PAWN || captureOrPromotion))
+		  extension = ONE_PLY;
+#endif
+		
 
       // Calculate new depth for this move
       newDepth = depth - ONE_PLY + extension;
