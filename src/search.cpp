@@ -746,6 +746,9 @@ namespace {
     Move ttMove, move, excludedMove, bestMove;
     Depth extension, newDepth;
     Value bestValue, value, ttValue, eval, maxValue, pureStaticEval;
+#ifdef Matefinder
+    bool pvExact;
+#endif
 #ifdef Maverick  // Blocked Position MJZ1977
     bool ttHit, ttPv, inCheck, givesCheck, improving, potentiallyBlocked;
 #else
@@ -795,9 +798,13 @@ namespace {
         // because we will never beat the current alpha. Same logic but with reversed
         // signs applies also in the opposite condition of being mated instead of giving
         // mate. In this case return a fail-high score.
+#ifdef Matefinder
+        if (alpha >= mate_in(ss->ply+1))
+#else
         alpha = std::max(mated_in(ss->ply), alpha);
         beta = std::min(mate_in(ss->ply+1), beta);
         if (alpha >= beta)
+#endif
             return alpha;
     }
 
@@ -956,9 +963,9 @@ namespace {
 
     // Step 7. Razoring (~2 Elo)
     if (   !rootNode // The required rootNode PV handling is not available in qsearch
-#if defined (Matefinder) || (Maverick)
+/*#if defined (Matefinder) || (Maverick)
  	&& !PvNode
-#endif
+#endif*/
 #ifdef Add_Features
  	&& !bruteForce
 #endif
@@ -1007,8 +1014,9 @@ namespace {
         &&  pos.non_pawn_material(us)
         && (ss->ply >= thisThread->nmpMinPly || us != thisThread->nmpColor)
 #ifdef Matefinder
-            &&  abs(eval) < 2 * VALUE_KNOWN_WIN
-            &&  MoveList<LEGAL>(pos).size() > 5
+        &&  abs(eval) < 2 * VALUE_KNOWN_WIN
+        && !(depth > 4 * ONE_PLY && (MoveList<LEGAL, KING>(pos).size() < 1 || MoveList<LEGAL>(pos).size() < 6))
+        //&&  MoveList<LEGAL>(pos).size() > 5
 #endif
 )
     {
@@ -1217,6 +1225,9 @@ moves_loop: // When in check, search starts from here
 
     skipQuiets = false;
     ttCapture = ttMove && pos.capture_or_promotion(ttMove);
+#ifdef Matefinder
+    pvExact = PvNode && ttHit && tte->bound() == BOUND_EXACT;
+#endif
 
     // Step 12. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -1422,6 +1433,12 @@ moves_loop: // When in check, search starts from here
 
           if (!captureOrPromotion)
           {
+#ifdef Matefinder
+              // Decrease reduction for exact PV nodes (~0 Elo)
+              if (pvExact)
+                  r -= ONE_PLY;
+#endif
+
               // Increase reduction if ttMove is a capture (~0 Elo)
               if (ttCapture)
                   r += ONE_PLY;
