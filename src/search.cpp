@@ -963,9 +963,6 @@ namespace {
 
     // Step 7. Razoring (~2 Elo)
     if (   !rootNode // The required rootNode PV handling is not available in qsearch
-/*#if defined (Matefinder) || (Maverick)
- 	&& !PvNode
-#endif*/
 #ifdef Add_Features
  	&& !bruteForce
 #endif
@@ -1016,7 +1013,6 @@ namespace {
 #ifdef Matefinder
         &&  abs(eval) < 2 * VALUE_KNOWN_WIN
         && !(depth > 4 * ONE_PLY && (MoveList<LEGAL, KING>(pos).size() < 1 || MoveList<LEGAL>(pos).size() < 6))
-        //&&  MoveList<LEGAL>(pos).size() > 5
 #endif
 )
     {
