@@ -24,10 +24,10 @@
 ### ==========================================================================
 
 ### Executable name
-### McCain bench nodes 4511056
-### McCain Matefinder bench nodes 4075125
-### stockfish bench nodes 3783543 > based on this commit:Change outposts to single value #1946
-### stockfish matefinder bench nodes 6331651
+### McCain bench nodes 3858297
+### McCain Matefinder bench nodes 4168970
+### stockfish bench nodes 3310239 > based on 2/21/2019 commits
+### stockfish matefinder bench nodes 5517434
 
 ####  Always leave the three lines below as is (any subsequent defines will override)
 VERSION=
@@ -65,9 +65,9 @@ endif
 ### Uncomment out the two lines below for additional features for stockfish, such as play by ELO ,
 ### cerebellum book, tactical mode, variety play and additional GUI options.
 	ifeq ($(COMP),mingw)
-		EXE = stockfish-20190214$(SUFFIX1)$(SUFFIX2).exe
+		EXE = stockfish-20190221$(SUFFIX1)$(SUFFIX2).exe
 	else
-		EXE = stockfish-20190214$(SUFFIX1)$(SUFFIX2)
+		EXE = stockfish-20190221$(SUFFIX1)$(SUFFIX2)
 	endif
 endif
 
