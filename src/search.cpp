@@ -84,10 +84,10 @@ namespace {
 
   // Futility and reductions lookup tables, initialized at startup
   int FutilityMoveCounts[2][16]; // [improving][depth]
-  int Reductions[2][2][64][64];  // [pv][improving][depth][moveNumber]
+  int Reductions[2][64][64];  // [improving][depth][moveNumber]
 
   template <bool PvNode> Depth reduction(bool i, Depth d, int mn) {
-    return Reductions[PvNode][i][std::min(d / ONE_PLY, 63)][std::min(mn, 63)] * ONE_PLY;
+    return (Reductions[i][std::min(d / ONE_PLY, 63)][std::min(mn, 63)] - PvNode) * ONE_PLY;
   }
 
   // History and stats update bonus, based on depth
@@ -171,34 +171,25 @@ int tactical, variety;
 
 void Search::init() {
 
-    for (int imp = 0; imp <= 1; ++imp)
-        for (int d = 1; d < 64; ++d)
-            for (int mc = 1; mc < 64; ++mc)
+	for (int imp = 0; imp <= 1; ++imp)
+		for (int d = 1; d < 64; ++d)
+			for (int mc = 1; mc < 64; ++mc)
             {
 #ifdef Maverick //Michael B7 simplification
-                Reductions[NonPV][imp][d][mc] = (std::round(log(d) * log(mc) / 1.89 ));
+              Reductions[imp][d][mc] = std::round(log(d) * log(mc) / 1.89 );
 #else
-                double r = log(d) * log(mc) / 1.95;
-                Reductions[NonPV][imp][d][mc] = int(std::round(r));
+              double r = log(d) * log(mc) / 1.95;
+              Reductions[imp][d][mc] = std::round(r);
 #endif
-                Reductions[PV][imp][d][mc] = std::max(Reductions[NonPV][imp][d][mc] - 1, 0);
-
-                // Increase reduction for non-PV nodes when eval is not improving
 #ifdef Maverick //Michael B7 simplification
-                if (!imp && Reductions[NonPV][imp][d][mc] > 1.0)
+              // Increase reduction for non-PV nodes when eval is not improving
+              if (!imp && std::round(log(d) * log(mc) / 1.89 > 1.0))
 #else
-                if (!imp && r > 1.0)
-
-				Reductions[NonPV][imp][d][mc]++;
+              // Increase reduction for non-PV nodes when eval is not improving
+              if (!imp && r > 1.0)
 #endif
-#ifdef Maverick  // from VoyagerOne
-				{
-						Reductions[PV][imp][d][mc]++;
-						Reductions[NonPV][imp][d][mc]++;
-				}
-#endif
-
-            }
+                Reductions[imp][d][mc]++;
+          }
 
   for (int d = 0; d < 16; ++d)
   {
@@ -754,7 +745,11 @@ namespace {
 #else
     bool ttHit, ttPv, inCheck, givesCheck, improving;
 #endif
-    bool captureOrPromotion, doFullDepthSearch, moveCountPruning, skipQuiets, ttCapture;
+//#ifdef Maverick
+//    bool captureOrPromotion, doFullDepthSearch, moveCountPruning, skipQuiets, ttCapture;
+//#else
+    bool captureOrPromotion, doFullDepthSearch, moveCountPruning, ttCapture;
+//#endif
     Piece movedPiece;
 #if defined (Matefinder) || (Maverick) //MichaelB7
 	Piece capturedPiece;
@@ -1160,7 +1155,7 @@ namespace {
         int probCutCount = 0;
 
         while (  (move = mp.next_move()) != MOVE_NONE
-               && probCutCount < 3)
+               && probCutCount < 2 + 2 * cutNode)
             if (move != excludedMove && pos.legal(move))
             {
                 probCutCount++;
@@ -1219,7 +1214,7 @@ moves_loop: // When in check, search starts from here
                                       ss->killers);
     value = bestValue; // Workaround a bogus 'uninitialized' warning under gcc
 
-    skipQuiets = false;
+    moveCountPruning = false;
     ttCapture = ttMove && pos.capture_or_promotion(ttMove);
 #ifdef Matefinder
     pvExact = PvNode && ttHit && tte->bound() == BOUND_EXACT;
@@ -1227,7 +1222,7 @@ moves_loop: // When in check, search starts from here
 
     // Step 12. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
-    while ((move = mp.next_move(skipQuiets)) != MOVE_NONE)
+    while ((move = mp.next_move(moveCountPruning)) != MOVE_NONE)
     {
       assert(is_ok(move));
 
@@ -1263,8 +1258,9 @@ moves_loop: // When in check, search starts from here
 #endif
         givesCheck = gives_check(pos, move);
 
-      moveCountPruning =   depth < 16 * ONE_PLY
-                        && moveCount >= FutilityMoveCounts[improving][depth / ONE_PLY];
+      // Skip quiet moves if movecount exceeds our FutilityMoveCount threshold
+      moveCountPruning = depth < 16 * ONE_PLY
+                      && moveCount >= FutilityMoveCounts[improving][depth / ONE_PLY];
 
       // Step 13. Extensions (~70 Elo)
 
@@ -1357,10 +1353,7 @@ moves_loop: // When in check, search starts from here
           {
               // Move count based pruning (~30 Elo)
               if (moveCountPruning)
-              {
-                  skipQuiets = true;
                   continue;
-              }
 
               // Reduced depth of the next LMR search
               int lmrDepth = std::max(newDepth - reduction<PvNode>(improving, depth, moveCount), DEPTH_ZERO) / ONE_PLY;

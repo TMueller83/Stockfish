@@ -38,9 +38,7 @@ enum EndgameCode {
 
   EVALUATION_FUNCTIONS,
   KNNK,  // KNN vs K
-#ifdef Maverick  //Add KNNvKP Endgame Heuristic. #1939 Jared Kish
   KNNKP, // KNN vs KP
-#endif
   KXK,   // Generic "mate lone king" eval
   KBNK,  // KBN vs K
   KPK,   // KP vs K
@@ -129,9 +127,7 @@ public:
     add<KRKN>("KRKN");
     add<KQKP>("KQKP");
     add<KQKR>("KQKR");
-#ifdef Maverick  //Add KNNvKP Endgame Heuristic. #1939 Jared Kish
     add<KNNKP>("KNNKP");
-#endif
     add<KNPK>("KNPK");
     add<KNPKB>("KNPKB");
     add<KRPKR>("KRPKR");
