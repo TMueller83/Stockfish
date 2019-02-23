@@ -448,7 +448,7 @@ void Thread::search() {
 
               // In case of failing low/high increase aspiration window and
               // re-search, otherwise exit the loop.
-              if (bestValue <= alpha)
+              if (bestValue <= alpha || Value(rootMoves[0].zScore / rootMoves[0].visits) <= alpha - Value(10))
               {
                   beta = (alpha + beta) / 2;
                   alpha = std::max(bestValue - delta, -VALUE_INFINITE);
@@ -460,7 +460,7 @@ void Thread::search() {
                       mainThread->stopOnPonderhit = false;
                   }
               }
-              else if (bestValue >= beta || Value(rootMoves[0].zScore / rootMoves[0].visits) >= beta + Value(10))
+              else if (bestValue >= beta)
               {
                   beta = std::min(bestValue + delta, VALUE_INFINITE);
                   if (mainThread)
