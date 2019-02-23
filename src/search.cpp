@@ -460,7 +460,7 @@ void Thread::search() {
                       mainThread->stopOnPonderhit = false;
                   }
               }
-              else if (bestValue >= beta)
+              else if (bestValue >= beta || Value(rootMoves[0].zScore / rootMoves[0].visits) >= beta + Value(10))
               {
                   beta = std::min(bestValue + delta, VALUE_INFINITE);
                   if (mainThread)
