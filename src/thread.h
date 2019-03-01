@@ -62,7 +62,7 @@ public:
   Material::Table materialTable;
   Endgames endgames;
   size_t pvIdx, pvLast;
-#if defined (Matefinder) || (Maverick) //  Gunther Demetz zugzwangSolver
+#ifdef Maverick //  Gunther Demetz zugzwangSolver
     int selDepth, nmpMinPly, zugzwangMates;
 #else
     int selDepth, nmpMinPly;

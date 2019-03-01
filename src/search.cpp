@@ -437,7 +437,7 @@ void Thread::search() {
   size_t multiPV = Options["MultiPV"];
   Skill skill(Options["Skill Level"]);
 
-#if defined (Matefinder) || (Maverick) //zugzwangMates
+#ifdef Maverick //zugzwangMates
     zugzwangMates=0;
 #endif
 
@@ -597,7 +597,7 @@ void Thread::search() {
               else if (bestValue >= beta)
               {
                   beta = std::min(bestValue + delta, VALUE_INFINITE);
-#if defined (Matefinder) || (Maverick) //  Gunther Demetz zugzwangSolver
+#ifdef Maverick //  Gunther Demetz zugzwangSolver
                     if (zugzwangMates > 5)
                         zugzwangMates-=100;
 #endif
@@ -743,9 +743,7 @@ namespace {
     Move ttMove, move, excludedMove, bestMove;
     Depth extension, newDepth;
     Value bestValue, value, ttValue, eval, maxValue, pureStaticEval;
-#ifdef Matefinder
-    bool pvExact;
-#endif
+
 #ifdef Maverick  // Blocked Position MJZ1977
     bool ttHit, ttPv, inCheck, givesCheck, improving, potentiallyBlocked;
 #else
@@ -755,7 +753,7 @@ namespace {
     bool captureOrPromotion, doFullDepthSearch, moveCountPruning, ttCapture;
 
     Piece movedPiece;
-#if defined (Matefinder) || (Maverick) //MichaelB7
+#ifdef Maverick //MichaelB7
     Piece capturedPiece;
 #endif
     int moveCount, captureCount, quietCount;
@@ -796,13 +794,11 @@ namespace {
         // because we will never beat the current alpha. Same logic but with reversed
         // signs applies also in the opposite condition of being mated instead of giving
         // mate. In this case return a fail-high score.
-#ifdef Matefinder
-        if (alpha >= mate_in(ss->ply+1))
-#else
+
         alpha = std::max(mated_in(ss->ply), alpha);
         beta = std::min(mate_in(ss->ply+1), beta);
         if (alpha >= beta)
-#endif
+
             return alpha;
     }
 
@@ -966,9 +962,7 @@ namespace {
 #endif
         &&  depth < 2 * ONE_PLY
         &&  eval <= alpha - RazorMargin
-#ifdef Matefinder
-        && abs(eval) < 2 * VALUE_KNOWN_WIN
-#endif
+
 )
         return qsearch<NT>(pos, ss, alpha, beta);
 
@@ -1003,15 +997,11 @@ namespace {
         &&  pureStaticEval >= beta - 36 * depth / ONE_PLY + 225
 #endif
         && !excludedMove
-#if defined (Matefinder) || (Maverick)
+#ifdef Maverick
         && thisThread->selDepth + 3 > thisThread->rootDepth / ONE_PLY  //idea from Corchess by Ivan Ivec (modfied here)
 #endif
         &&  pos.non_pawn_material(us)
         && (ss->ply >= thisThread->nmpMinPly || us != thisThread->nmpColor)
-#ifdef Matefinder
-        &&  abs(eval) < 2 * VALUE_KNOWN_WIN
-        && !(depth > 4 * ONE_PLY && (MoveList<LEGAL, KING>(pos).size() < 1 || MoveList<LEGAL>(pos).size() < 6))
-#endif
 )
     {
 #ifdef Maverick  // Blocked Position MJZ1977
@@ -1048,7 +1038,7 @@ namespace {
                 return nullValue;
 #endif
             assert(!thisThread->nmpMinPly); // Recursive verification is not allowed
-#if defined (Matefinder) || (Maverick) //Gunther Demetz zugzwangSolver
+#ifdef Maverick //Gunther Demetz zugzwangSolver
 			if  ( depth % 2 == 1 ){
             thisThread->nmpColor = us;
             Pawns::Entry* pe;
@@ -1147,11 +1137,7 @@ namespace {
 		&& !bruteForce
 #endif
         &&  depth >= 5 * ONE_PLY
-#ifdef Matefinder
-            &&  ss->ply % 2 == 0
-            &&  abs(eval) < 2 * VALUE_KNOWN_WIN
-#endif
-            &&  abs(beta) < VALUE_MATE_IN_MAX_PLY)
+        &&  abs(beta) < VALUE_MATE_IN_MAX_PLY)
     {
         Value raisedBeta = std::min(beta + 216 - 48 * improving, VALUE_INFINITE);
         MovePicker mp(pos, ttMove, raisedBeta - ss->staticEval, &thisThread->captureHistory);
@@ -1219,9 +1205,6 @@ moves_loop: // When in check, search starts from here
 
     moveCountPruning = false;
     ttCapture = ttMove && pos.capture_or_promotion(ttMove);
-#ifdef Matefinder
-    pvExact = PvNode && ttHit && tte->bound() == BOUND_EXACT;
-#endif
 
     // Step 12. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -1256,7 +1239,7 @@ moves_loop: // When in check, search starts from here
       extension = DEPTH_ZERO;
       captureOrPromotion = pos.capture_or_promotion(move);
       movedPiece = pos.moved_piece(move);
-#if defined (Matefinder) || (Maverick) //MichaelB7
+#ifdef Maverick //MichaelB7
       capturedPiece = pos.captured_piece();
 #endif
       givesCheck = gives_check(pos, move);
@@ -1305,7 +1288,7 @@ moves_loop: // When in check, search starts from here
                && (pos.blockers_for_king(~us) & from_sq(move) || pos.see_ge(move)))
           extension = ONE_PLY;
 		
-#if defined (Matefinder) || (Maverick) //MichaelB7
+#ifdef Maverick //MichaelB7
       else if (    type_of(capturedPiece) == type_of(movedPiece)
 	   		|| pos.promotion_pawn_push(move))
           extension = ONE_PLY;
@@ -1333,7 +1316,7 @@ moves_loop: // When in check, search starts from here
       newDepth = depth - ONE_PLY + extension;
 
       // Step 14. Pruning at shallow depth (~170 Elo)
-#if defined (Matefinder) || (Maverick)
+#ifdef Maverick
       if (  !PvNode
 #else
       if (  !rootNode
@@ -1405,10 +1388,6 @@ moves_loop: // When in check, search starts from here
         if (    depth >= 3 * ONE_PLY
 #endif
                 &&  moveCount > 1
-#ifdef Matefinder
-                &&  thisThread->selDepth > depth
-                && !(depth >= 16 * ONE_PLY && ss->ply < 3 * ONE_PLY)
-#endif
                 && (!captureOrPromotion || moveCountPruning))
       {
           Depth r = reduction<PvNode>(improving, depth, moveCount);
@@ -1423,11 +1402,6 @@ moves_loop: // When in check, search starts from here
 
           if (!captureOrPromotion)
           {
-#ifdef Matefinder
-              // Decrease reduction for exact PV nodes (~0 Elo)
-              if (pvExact)
-                  r -= ONE_PLY;
-#endif
               // Increase reduction if ttMove is a capture (~0 Elo)
               if (ttCapture)
                   r += ONE_PLY;
@@ -1463,11 +1437,8 @@ moves_loop: // When in check, search starts from here
               // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
               r -= ss->statScore / 20000 * ONE_PLY;
             }
-#ifdef Matefinder
-            if (newDepth - r + 8 * ONE_PLY < thisThread->rootDepth)
-                r = std::min(r, 3 * ONE_PLY);
-#endif
-            Depth d = std::max(newDepth - std::max(r, DEPTH_ZERO), ONE_PLY);
+		  
+          Depth d = std::max(newDepth - std::max(r, DEPTH_ZERO), ONE_PLY);
 
           value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, d, true);
 
@@ -1526,7 +1497,7 @@ moves_loop: // When in check, search starts from here
               if (moveCount > 1 && thisThread == Threads.main())
                   ++static_cast<MainThread*>(thisThread)->bestMoveChanges;
 
-#if defined (Matefinder) || (Maverick) //zugzwangMates
+#ifdef Maverick //zugzwangMates
                 if (moveCount == 1 && thisThread->zugzwangMates > 100 && static_cast<MainThread*>(thisThread)->bestMoveChanges < 2)
                     thisThread->zugzwangMates = 1000000; // give up
 #endif
@@ -1556,7 +1527,7 @@ moves_loop: // When in check, search starts from here
                   assert(value >= beta); // Fail high
                   ss->statScore = 0;
 
-#if defined (Matefinder) || (Maverick)// Gunther Demetz
+#ifdef Maverick// Gunther Demetz
                     if ( !PvNode
                             && depth % 2 == 1
                             && !inCheck
@@ -1695,10 +1666,7 @@ moves_loop: // When in check, search starts from here
     if (   pos.is_draw(ss->ply)
         || ss->ply >= MAX_PLY)
         return (ss->ply >= MAX_PLY && !inCheck) ? evaluate(pos) : VALUE_DRAW;
-#ifdef Matefinder
-    if (alpha >= mate_in(ss->ply+1))
-        return alpha;
-#endif
+
     assert(0 <= ss->ply && ss->ply < MAX_PLY);
 
     // Decide whether or not to include checks: this fixes also the type of
