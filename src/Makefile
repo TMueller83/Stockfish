@@ -57,7 +57,7 @@ ifeq ($(VERSION),maverick)
 	ifeq ($(COMP),mingw)
 		EXE = McCain-X2$(SUFFIX1)$(SUFFIX2).exe
 	else
-		EXE = McCain-X2$(SUFFIX1)$(SUFFIX2)
+		EXE = McCain-X2-248$(SUFFIX1)$(SUFFIX2)
 endif
 	else
 ### Note: Comment below is for for building cur-dev stockfish with the features noted.
