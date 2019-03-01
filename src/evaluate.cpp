@@ -454,7 +454,7 @@ constexpr Score Outpost            = S(  9,  3);
         if (Pt == QUEEN)
         {
             // Penalty if any relative pin or discovered attack against the queen
-#ifdef Maverick
+#ifdef Maverick  // Günther Demetz weakQueen2 e62bdb0
 			Bitboard queenPinners, blocker = pos.slider_blockers(pos.pieces(Them, ROOK, BISHOP), s, queenPinners);
 				if (blocker)
 				{
@@ -648,14 +648,15 @@ constexpr Score Outpost            = S(  9,  3);
         {
             Square s = pop_lsb(&b);
             score += ThreatByRook[type_of(pos.piece_on(s))];
+#ifndef Maverick
+            if (type_of(pos.piece_on(s)) != PAWN)
+            	score += ThreatByRank * (int)relative_rank(Them, s);
+#endif		
 #ifdef Maverick //  31m059 threat_strongqueen
-			if (type_of(pos.piece_on(s)) == QUEEN)
-				score += ThreatByRook[QUEEN]/2;
+            if (type_of(pos.piece_on(s)) == QUEEN)
+            	score += ThreatByRook[QUEEN]/2;
             else if (type_of(pos.piece_on(s)) != PAWN)
                 score += ThreatByRank * (int)relative_rank(Them, s);
-#else
-			if (type_of(pos.piece_on(s)) != PAWN)
-				score += ThreatByRank * (int)relative_rank(Them, s);
 #endif
         }
 
@@ -682,14 +683,13 @@ constexpr Score Outpost            = S(  9,  3);
     b |= shift<Up>(b & TRank3BB) & ~pos.pieces();
 
     // Keep only the squares which are relatively safe
-    b &= ~attackedBy[Them][PAWN] & safe;
-
-    // Bonus for safe pawn threats on the next move
-#ifdef Maverick  // Michael Chaly  https://github.com/Vizvezdenec/Stockfish/commit/76dbbc7d1a45160c7d78852fd33a289459e6932a
-    b = pawn_attacks_bb<Them>(pos.pieces(Them)) & b;
+#ifdef Maverick  //Michael Chally 1/19 342ffe3
+    b &= ~pawn_attacks_bb<Them>(pos.pieces(Them,PAWN) & ~pos.blockers_for_king(Them)) & safe;
 #else
-    b = pawn_attacks_bb<Us>(b) & pos.pieces(Them);
+    b &= ~attackedBy[Them][PAWN] & safe;
 #endif
+    // Bonus for safe pawn threats on the next move
+    b = pawn_attacks_bb<Us>(b) & pos.pieces(Them);
     score += ThreatByPawnPush * popcount(b);
 
     // Our safe or protected pawns

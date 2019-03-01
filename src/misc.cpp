@@ -70,13 +70,13 @@ const string Version = "X2";
 const string Version = "X2-m";
 #else
 #ifdef Maverick
-const string Version = "X2-";
+const string Version = "X2";
 #endif
 #endif
 #endif
 #endif
 #if(defined Stockfish && defined Add_Features && defined Matefinder)
-	const string Version = "02212019";
+	const string Version = "02212019-m";
 #else
 #if(defined Stockfish && defined Add_Features)
 	const string Version = "02212019";

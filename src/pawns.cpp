@@ -38,7 +38,7 @@ namespace {
   constexpr Score Isolated = S( 5, 15);
 
   // Connected pawn bonus by opposed, phalanx, #support and rank
-#ifdef Maverick // locust2 connected_pawns modfication
+#ifdef Maverick // locust2 connected_pawns modfication #84935cb
   Score Connected[3][2][3][RANK_NB];
 #else
   Score Connected[2][2][3][RANK_NB];
@@ -46,7 +46,7 @@ namespace {
   // Strength of pawn shelter for our king by [distance from edge][rank].
   // RANK_1 = 0 is used for files where we have no pawn, or pawn is behind our king.
   constexpr Value ShelterStrength[int(FILE_NB) / 2][RANK_NB] = {
-#ifdef Maverick // locust2 connected_pawns modfication
+#ifdef Maverick // locust2 connected_pawns modfication #84935cb
     { V( -3), V( 81), V( 93), V( 58), V( 39), V( 18), V(  25) },
     { V(-40), V( 61), V( 35), V(-49), V(-29), V(-11), V( -63) },
     { V( -7), V( 75), V( 23), V( -2), V( 32), V(  3), V( -45) },
@@ -81,7 +81,7 @@ namespace {
     Bitboard b, neighbours, stoppers, doubled, support, phalanx;
     Bitboard lever, leverPush;
     Square s;
-#ifdef Maverick // locust2 connected_pawns modfication
+#ifdef Maverick // locust2 connected_pawns modfication #84935cb
     bool opposed, backward, blocked;
 #else
     bool opposed, backward;
@@ -117,7 +117,7 @@ namespace {
 
         // Flag the pawn
         opposed    = theirPawns & forward_file_bb(Us, s);
-#ifdef Maverick  // locust2 connected_pawns modfication
+#ifdef Maverick  // locust2 connected_pawns modfication #84935cb
         blocked    = theirPawns & (s + Up);
 #endif
         stoppers   = theirPawns & passed_pawn_mask(Us, s);
@@ -172,7 +172,7 @@ namespace {
 
         // Score this pawn
         if (support | phalanx)
-#ifdef Maverick // locust2 connected_pawns modfication
+#ifdef Maverick // locust2 connected_pawns modfication #84935cb
             score += Connected[opposed + blocked][bool(phalanx)][popcount(support)][relative_rank(Us, s)];
 #else
             score += Connected[opposed][bool(phalanx)][popcount(support)][relative_rank(Us, s)];
@@ -206,7 +206,7 @@ void init() {
 
   static constexpr int Seed[RANK_NB] = { 0, 13, 24, 18, 65, 100, 175, 330 };
 
-#ifdef Maverick // locust2 connected_pawns modfication
+#ifdef Maverick // locust2 connected_pawns modfication #84935cb
   for (int opposedBlocked = 0; opposedBlocked <= 2; ++opposedBlocked)
 #else
   for (int opposed = 0; opposed <= 1; ++opposed)
@@ -215,8 +215,12 @@ void init() {
           for (int support = 0; support <= 2; ++support)
               for (Rank r = RANK_2; r < RANK_8; ++r)
   {
+#ifdef Maverick
+      int v = (16 + r) * support;  //snicolet bb06275
+#else
       int v = 17 * support;
-#ifdef Maverick // locust2 connected_pawns modfication
+#endif
+#ifdef Maverick // locust2 connected_pawns modfication #84935cb
       v += (Seed[r] + (phalanx ? (Seed[r + 1] - Seed[r]) / 2 : 0)) >> opposedBlocked;
 
       Connected[opposedBlocked][phalanx][support][r] = make_score(v, v * (r - 2) / 4);
