@@ -1316,11 +1316,7 @@ moves_loop: // When in check, search starts from here
       newDepth = depth - ONE_PLY + extension;
 
       // Step 14. Pruning at shallow depth (~170 Elo)
-#ifdef Maverick
-      if (  !PvNode
-#else
       if (  !rootNode
-#endif
 #ifdef Add_Features
 	      && !bruteForce
 #endif			
