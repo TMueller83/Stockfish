@@ -339,8 +339,8 @@ string UCI::value(Value v) {
 
     if (abs(v) < VALUE_MATE - MAX_PLY)
 #ifdef Maverick
-	ss << "cp " << (v * 841 / QueenValueEg >  990 ? (v * 841 / QueenValueEg) + 25
-			: v * 841 / QueenValueEg < -990 ? (v * 841 / QueenValueEg) - 25
+	ss << "cp " << (v * 841 / QueenValueEg >  990 ? (v * 849 / QueenValueEg) + 27
+			: v * 841 / QueenValueEg < -990 ? (v * 849 / QueenValueEg) - 27
 			: v * 841 / QueenValueEg);
 #else
         ss << "cp " << v * 100 / PawnValueEg;
