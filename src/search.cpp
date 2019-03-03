@@ -731,7 +731,7 @@ namespace {
         return qsearch<NT>(pos, ss, alpha, beta);
 
     assert(-VALUE_INFINITE <= alpha && alpha < beta && beta <= VALUE_INFINITE);
-    assert(PvNode || (alpha == beta - 1));
+  //  assert(PvNode || (alpha == beta - 1));
     assert(DEPTH_ZERO < depth && depth < DEPTH_MAX);
     assert(!(PvNode && cutNode));
     assert(depth / ONE_PLY * ONE_PLY == depth);
@@ -1520,7 +1520,7 @@ moves_loop: // When in check, search starts from here
                   alpha = value;
               else
               {
-                  assert(value >= beta); // Fail high
+   //               assert(value >= beta); // Fail high
                   ss->statScore = 0;
 
 #ifdef Maverick// Gunther Demetz
