@@ -120,7 +120,7 @@ void init(OptionsMap& o) {
     o["BruteForce"] 	       << Option(false);
     o["Dynamic_Contempt"]      << Option(true);
     o["FastPlay"]              << Option(false);
-    o["Minimal_Output"]        << Option(true);
+    o["Minimal_Output"]        << Option(false);
     o["No_Null_Moves"]         << Option(false);
     o["UCI_LimitStrength"]     << Option(false);
     o["UCI_ELO"]               << Option(1500, 1200, 2800);
