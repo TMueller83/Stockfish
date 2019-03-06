@@ -78,6 +78,8 @@ public:
   CapturePieceToHistory captureHistory;
   ContinuationHistory continuationHistory;
   Score contempt;
+
+  ExtMove* movesStack;
 };
 
 
