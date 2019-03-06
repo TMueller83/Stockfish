@@ -80,17 +80,17 @@ namespace {
     return Value((175 - 50 * improving) * d / ONE_PLY);
   }
 
-  // Futility and reductions lookup tables, initialized at startup
-  int FutilityMoveCounts[2][16]; // [improving][depth]
-  int Reductions[2][64][64];  // [improving][depth][moveNumber]
+  // Reductions lookup table, initialized at startup
+  int Reductions[64]; // [depth or moveNumber]
 
-#ifdef Maverick // 	joergoster Bugfix of the new reduction arrays. #2017
   template <bool PvNode> Depth reduction(bool i, Depth d, int mn) {
-    return std::max(Reductions[i][std::min(d / ONE_PLY, 63)][std::min(mn, 63)] - PvNode, 0) * ONE_PLY;
-#else
-  template <bool PvNode> Depth reduction(bool i, Depth d, int mn) {
-    return (Reductions[i][std::min(d / ONE_PLY, 63)][std::min(mn, 63)] - PvNode) * ONE_PLY;
-#endif
+    int r = Reductions[std::min(d / ONE_PLY, 63)] * Reductions[std::min(mn, 63)] / 1024;
+    return ((r + 512) / 1024 + (!i && r > 1024) - PvNode) * ONE_PLY;
+  }
+
+  constexpr int futility_move_count(bool improving, int depth) {
+    return (5 + depth * depth) * (1 + improving) / 2;
+
   }
 
   // History and stats update bonus, based on depth
@@ -174,36 +174,9 @@ int tactical, variety;
 
 void Search::init() {
 
-  for (int imp = 0; imp <= 1; ++imp)
-      for (int d = 1; d < 64; ++d)
-          for (int mc = 1; mc < 64; ++mc)
-          {
-#ifdef Maverick //Michael B7 modification
-              double r = log(d) * log(mc) / 2.48 ;    // MichaelB7 	1.95	STC 15/.5 1.95  53.8 +9 +26.3 Elo
-													 //				2.20 	LTC 150/5 -9.4 Elo 48.6 at 150/5)
-				/*1.95
-				 Total time (ms) : 2122
-				 Nodes searched  : 4039604
-				 Nodes/second    : 1903677*/
-              Reductions[imp][d][mc] = std::round(r);
-#else
-              double r = log(d) * log(mc) / 1.95;
-              Reductions[imp][d][mc] = std::round(r);
-#endif
-#ifdef Maverick //Michael B7 modifcation
-              // Increase reduction when eval is not improving
-              if (!imp &&  r > 0.75 )  // MichaelB7
-#else
-              if (!imp && r > 1.0)
-#endif
-                Reductions[imp][d][mc]++;
-          }
+  for (int i = 1; i < 64; ++i)
+      Reductions[i] = int(1024 * std::log(i) / std::sqrt(1.95));
 
-  for (int d = 0; d < 16; ++d)
-  {
-      FutilityMoveCounts[0][d] = int(2.4 + 0.74 * pow(d, 1.78));
-      FutilityMoveCounts[1][d] = int(5.0 + 1.00 * pow(d, 2.00));
-  }
 }
 
 
@@ -408,7 +381,7 @@ void Thread::search() {
   // The former is needed to allow update_continuation_histories(ss-1, ...),
   // which accesses its argument at ss-4, also near the root.
   // The latter is needed for statScores and killer initialization.
-  Stack stack[MAX_PLY+8], *ss = stack+5;
+  Stack stack[MAX_PLY+10], *ss = stack+7;
   Move  pv[MAX_PLY+1];
   Value bestValue, alpha, beta, delta;
   Move  lastBestMove = MOVE_NONE;
@@ -417,11 +390,14 @@ void Thread::search() {
   double timeReduction = 1.0;
   Color us = rootPos.side_to_move();
   bool failedLow;
+
 #ifdef Add_Features
   TB::SevenManProbe = Options["7 Man Probing"];
 #endif
-  std::memset(ss-5, 0, 8 * sizeof(Stack));
-  for (int i = 5; i > 0; i--)
+	
+  std::memset(ss-7, 0, 10 * sizeof(Stack));
+  for (int i = 7; i > 0; i--)
+
      (ss-i)->continuationHistory = &this->continuationHistory[NO_PIECE][0]; // Use as sentinel
   ss->pv = pv;
 #ifdef Add_Features
@@ -1159,7 +1135,7 @@ namespace {
                 // Perform a preliminary qsearch to verify that the move holds
                 value = -qsearch<NonPV>(pos, ss+1, -raisedBeta, -raisedBeta+1);
 
-                // If the qsearch held perform the regular search
+                // If the qsearch held, perform the regular search
                 if (value >= raisedBeta)
                     value = -search<NonPV>(pos, ss+1, -raisedBeta, -raisedBeta+1, depth - 4 * ONE_PLY, !cutNode);
 
@@ -1193,7 +1169,9 @@ namespace {
 
 moves_loop: // When in check, search starts from here
 
-    const PieceToHistory* contHist[] = { (ss-1)->continuationHistory, (ss-2)->continuationHistory, nullptr, (ss-4)->continuationHistory };
+    const PieceToHistory* contHist[] = { (ss-1)->continuationHistory, (ss-2)->continuationHistory,
+                                          nullptr, (ss-4)->continuationHistory,
+                                          nullptr, (ss-6)->continuationHistory };
     Move countermove = thisThread->counterMoves[pos.piece_on(prevSq)][prevSq];
 
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory,
@@ -1324,8 +1302,7 @@ moves_loop: // When in check, search starts from here
           && bestValue > VALUE_MATED_IN_MAX_PLY)
       {
           // Skip quiet moves if movecount exceeds our FutilityMoveCount threshold
-          moveCountPruning = depth < 16 * ONE_PLY
-                          && moveCount >= FutilityMoveCounts[improving][depth / ONE_PLY];
+          moveCountPruning = moveCount >= futility_move_count(improving,depth / ONE_PLY);
 
           if (   !captureOrPromotion
               && !givesCheck
@@ -1725,7 +1702,9 @@ moves_loop: // When in check, search starts from here
         futilityBase = bestValue + 128;
     }
 
-    const PieceToHistory* contHist[] = { (ss-1)->continuationHistory, (ss-2)->continuationHistory, nullptr, (ss-4)->continuationHistory };
+    const PieceToHistory* contHist[] = { (ss-1)->continuationHistory, (ss-2)->continuationHistory,
+                                          nullptr, (ss-4)->continuationHistory,
+                                          nullptr, (ss-6)->continuationHistory };
 
     // Initialize a MovePicker object for the current position, and prepare
     // to search the moves. Because the depth is <= 0 here, only captures,
@@ -1882,7 +1861,7 @@ moves_loop: // When in check, search starts from here
 
   void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus) {
 
-    for (int i : {1, 2, 4})
+    for (int i : {1, 2, 4, 6})
         if (is_ok((ss-i)->currentMove))
             (*(ss-i)->continuationHistory)[pc][to] << bonus;
   }

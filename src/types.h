@@ -179,8 +179,7 @@ enum Value : int {
 
   VALUE_MATE_IN_MAX_PLY  =  VALUE_MATE - 2 * MAX_PLY,
   VALUE_MATED_IN_MAX_PLY = -VALUE_MATE + 2 * MAX_PLY,
-	
-	
+
 #ifdef Maverick  // Ed Schröder
 #define PVM 104/100
 #define PVE 104/100
@@ -201,11 +200,11 @@ enum Value : int {
 	
     MidgameLimit  = 15258, EndgameLimit  = 3915
 #else
-    PawnValueMg   = 136,   PawnValueEg   = 208,
-    KnightValueMg = 782,   KnightValueEg = 865,
-    BishopValueMg = 830,   BishopValueEg = 918,
-    RookValueMg   = 1289,  RookValueEg   = 1378,
-    QueenValueMg  = 2529,  QueenValueEg  = 2687,
+	PawnValueMg   = 128,   PawnValueEg   = 213,
+	KnightValueMg = 782,   KnightValueEg = 865,
+	BishopValueMg = 830,   BishopValueEg = 918,
+	RookValueMg   = 1289,  RookValueEg   = 1378,
+	QueenValueMg  = 2529,  QueenValueEg  = 2687,
 	
     MidgameLimit  = 15258, EndgameLimit  = 3915
 #endif
@@ -213,6 +212,7 @@ enum Value : int {
 	,
     VALUE_TB_WIN    = 101 * PawnValueEg
 #endif
+
 };
 
 enum PieceType {
