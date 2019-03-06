@@ -64,7 +64,7 @@ namespace {
 const string Version = "X2-m";
 #else
 #if(defined Maverick && defined Add_Features)
-const string Version = "X2";
+const string Version = "X2a";
 #else
 #if(defined Maverick && defined Matefinder)
 const string Version = "X2-m";

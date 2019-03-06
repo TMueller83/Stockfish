@@ -181,8 +181,8 @@ enum Value : int {
   VALUE_MATED_IN_MAX_PLY = -VALUE_MATE + 2 * MAX_PLY,
 
 #ifdef Maverick  // Ed Schröder
-#define PVM 104/100
-#define PVE 104/100
+#define PVM 100/100
+#define PVE 100/100
 #define NVM 100/100
 #define NVE 100/100
 #define BVM 100/100
@@ -192,7 +192,7 @@ enum Value : int {
 #define QVM 102/100
 #define QVE 101/100
 
-    PawnValueMg   = 136*PVM,   PawnValueEg   = 208*PVE,
+    PawnValueMg   = 128*PVM,   PawnValueEg   = 213*PVE,
     KnightValueMg = 782*NVM,   KnightValueEg = 865*NVE,
     BishopValueMg = 830*BVM,   BishopValueEg = 918*BVE,
     RookValueMg   = 1289*RVM,  RookValueEg   = 1378*RVE,
