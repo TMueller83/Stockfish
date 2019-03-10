@@ -1267,9 +1267,7 @@ moves_loop: // When in check, search starts from here
           &&  pos.legal(move))
       {
 
-#ifdef Maverick  //70 - 4 * d by NKONSTANTAKIS & Stéphane Nicolet
-          int d = depth / ONE_PLY;
-          int margin = 2 * d + std::max(0, (70 - 4 * d)) * ttPv;
+#ifdef Maverick
           Value singularBeta = std::max(ttValue - 2 * depth / ONE_PLY, -VALUE_MATE + 1);
 #else
           Value singularBeta = ttValue - 2 * depth / ONE_PLY;
