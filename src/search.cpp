@@ -191,7 +191,7 @@ void Search::init() {
 				Reductions[imp][d][mc] = std::round(r);
 				
 				// Increase reduction for non-PV nodes when eval is not improving
-				if (!imp && r > 1.0)
+				if (!imp && r > 0.75)
 					Reductions[imp][d][mc]++;
 				
 			 }
