@@ -22,7 +22,6 @@
 #include <cassert>
 
 #include "movepick.h"
-#include "thread.h"
 
 namespace {
 
@@ -57,11 +56,6 @@ namespace {
 /// search captures, promotions, and some checks) and how important good move
 /// ordering is at the current node.
 
-MovePicker::~MovePicker() {
-
-  pos.this_thread()->movesStack -= MAX_MOVES;
-}
-
 /// MovePicker constructor for the main search
 MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHistory* mh,
                        const CapturePieceToHistory* cph, const PieceToHistory** ch, Move cm, Move* killers)
@@ -69,8 +63,6 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHist
              refutations{{killers[0], 0}, {killers[1], 0}, {cm, 0}}, depth(d) {
 
   assert(d > DEPTH_ZERO);
-  moves = pos.this_thread()->movesStack;
-  pos.this_thread()->movesStack += MAX_MOVES;
 
   stage = pos.checkers() ? EVASION_TT : MAIN_TT;
   ttMove = ttm && pos.pseudo_legal(ttm) ? ttm : MOVE_NONE;
@@ -83,8 +75,6 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHist
            : pos(p), mainHistory(mh), captureHistory(cph), continuationHistory(ch), recaptureSquare(rs), depth(d) {
 
   assert(d <= DEPTH_ZERO);
-  moves = pos.this_thread()->movesStack;
-  pos.this_thread()->movesStack += MAX_MOVES;
 
   stage = pos.checkers() ? EVASION_TT : QSEARCH_TT;
   ttMove =   ttm
@@ -99,8 +89,6 @@ MovePicker::MovePicker(const Position& p, Move ttm, Value th, const CapturePiece
            : pos(p), captureHistory(cph), threshold(th) {
 
   assert(!pos.checkers());
-  moves = pos.this_thread()->movesStack;
-  pos.this_thread()->movesStack += MAX_MOVES;
 
   stage = PROBCUT_TT;
   ttMove =   ttm
