@@ -24,40 +24,30 @@
 ### ==========================================================================
 
 ### Executable name
-### McCain bench nodes 3858297
-### McCain Matefinder bench nodes 4168970
-### stockfish bench nodes 3310239 > based on 2/21/2019 commits
-### stockfish matefinder bench nodes 5517434
+### McCain bench nodes  5645850
+### stockfish bench nodes 3318033 > based on 3/10/2019 commits
 
 ####  Always leave the three lines below as is (any subsequent defines will override)
 VERSION=
 FEATURE1=
-FEATURE2=
-DSUFFIX1=
-DSUFFIX2=
 ### Uncomment the line below for McCain, comment out for Stockfish
 	VERSION=maverick
-####
+
 ### should be no reason to change anything below here!
 ### Only McCain and stockfish with feature 1 will be publicly distributed a this time, although feel free to play with privately
 ### features include : Cerebellum book functionality, play by Elo (UCI limit strength), keyboard shortcuts and a few other items
 	FEATURE1=add_features
-###	FEATURE2=matefinder
 ifeq ($(FEATURE1),add_features)
 	CXXFLAGS += -DAdd_Features
 	FILES = with_c_book
 	SUFFIX1 =
 endif
-ifeq ($(FEATURE2),matefinder)
-	CXXFLAGS += -DMatefinder
-	SUFFIX2 = -m
-endif
 ifeq ($(VERSION),maverick)
 	CXXFLAGS += -DMaverick
 	ifeq ($(COMP),mingw)
-		EXE = McCain-X2a$(SUFFIX1)$(SUFFIX2).exe
+		EXE = McCain-X2a.exe
 	else
-		EXE = McCain-X2a$(SUFFIX1)$(SUFFIX2)
+		EXE = McCain-X2a
 endif
 	else
 ### Note: Comment below is for for building cur-dev stockfish with the features noted.
@@ -65,9 +55,9 @@ endif
 ### Uncomment out the two lines below for additional features for stockfish, such as play by ELO ,
 ### cerebellum book, tactical mode, variety play and additional GUI options.
 	ifeq ($(COMP),mingw)
-		EXE = stockfish-20190221$(SUFFIX1)$(SUFFIX2).exe
+		EXE = stockfish-20190310.exe
 	else
-		EXE = stockfish-20190221$(SUFFIX1)$(SUFFIX2)
+		EXE = stockfish-20190310
 	endif
 endif
 
