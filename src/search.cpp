@@ -1254,19 +1254,28 @@ moves_loop: // When in check, search starts from here
       // then that move is singular and should be extended. To verify this we do
       // a reduced search on all the other moves but the ttMove and if the
       // result is lower than ttValue minus a margin then we will extend the ttMove.
+#ifdef Maverick
+      if (     depth > 4
+          &&  move == ttMove
+#else
       if (    depth >= 8 * ONE_PLY
           &&  move == ttMove
+#endif
           && !rootNode
           && !excludedMove // Avoid recursive singular search
-      /*  &&  ttValue != VALUE_NONE Already implicit in the next condition */
+#ifdef Maverick
+          &&  ttValue != VALUE_NONE //Already implicit in "&&  abs(ttValue) < VALUE_KNOWN_WIN"
+#else
           &&  abs(ttValue) < VALUE_KNOWN_WIN
+#endif
           && (tte->bound() & BOUND_LOWER)
           &&  tte->depth() >= depth - 3 * ONE_PLY
           &&  pos.legal(move))
       {
-
-#ifdef Maverick
-          Value singularBeta = std::max(ttValue - 2 * depth / ONE_PLY, -VALUE_MATE + 1);
+#ifdef Maverick  //70 - 4 * d by NKONSTANTAKIS & Stéphane Nicolet
+          int d = depth / ONE_PLY;
+          int margin = 2 * d + std::max(0, (70 - 4 * d)) * ttPv;
+          Value singularBeta = std::max(ttValue - margin, -VALUE_MATE + 1);
 #else
           Value singularBeta = ttValue - 2 * depth / ONE_PLY;
 #endif
