@@ -1255,7 +1255,7 @@ moves_loop: // When in check, search starts from here
       // a reduced search on all the other moves but the ttMove and if the
       // result is lower than ttValue minus a margin then we will extend the ttMove.
 #ifdef Maverick
-      if (     depth > 4
+      if (    depth  > 4 * ONE_PLY
           &&  move == ttMove
 #else
       if (    depth >= 8 * ONE_PLY
