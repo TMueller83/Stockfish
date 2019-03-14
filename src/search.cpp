@@ -409,7 +409,9 @@ void Thread::search() {
   // which accesses its argument at ss-4, also near the root.
   // The latter is needed for statScores and killer initialization.
   Stack stack[MAX_PLY+10], *ss = stack+7;
+#ifndef Mavrick  // #2043 by J Oster
   Move  pv[MAX_PLY+1];
+#endif 
   Value bestValue, alpha, beta, delta;
   Move  lastBestMove = MOVE_NONE;
   Depth lastBestMoveDepth = DEPTH_ZERO;
@@ -425,7 +427,9 @@ void Thread::search() {
   for (int i = 7; i > 0; i--)
 
      (ss-i)->continuationHistory = &this->continuationHistory[NO_PIECE][0]; // Use as sentinel
-  ss->pv = pv;
+#ifndef Mavrick  // #2043 by J Oster  
+ss->pv = pv;
+#endif
 #ifdef Add_Features
   if (cleanSearch)
 	  Search::clear();
@@ -1663,13 +1667,14 @@ moves_loop: // When in check, search starts from here
     Value bestValue, value, ttValue, futilityValue, futilityBase, oldAlpha;
     bool ttHit, pvHit, inCheck, givesCheck, evasionPrunable;
     int moveCount;
-
+#ifndef Mavrick  // #2043 by J Oster
     if (PvNode)
     {
         oldAlpha = alpha; // To flag BOUND_EXACT when eval above alpha and no available moves
         (ss+1)->pv = pv;
         ss->pv[0] = MOVE_NONE;
     }
+#endif
 
     Thread* thisThread = pos.this_thread();
     (ss+1)->ply = ss->ply + 1;
@@ -1682,8 +1687,19 @@ moves_loop: // When in check, search starts from here
     if (   pos.is_draw(ss->ply)
         || ss->ply >= MAX_PLY)
         return (ss->ply >= MAX_PLY && !inCheck) ? evaluate(pos) : VALUE_DRAW;
-
+#ifdef Mavrick  // #2043 by J Oster
+    assert(1 <= ss->ply && ss->ply < MAX_PLY);
+#else
     assert(0 <= ss->ply && ss->ply < MAX_PLY);
+#endif
+#ifdef Mavrick  // #2043 by J Oster
+    if (PvNode)
+    {
+        oldAlpha = alpha; // To flag BOUND_EXACT when eval above alpha and no available moves
+        (ss+1)->pv = pv;
+        (ss+1)->pv[0] = MOVE_NONE;
+    }
+#endif
 
     // Decide whether or not to include checks: this fixes also the type of
     // TT entry depth that we are going to use. Note that in qsearch we use
