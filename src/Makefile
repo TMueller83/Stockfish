@@ -45,9 +45,9 @@ endif
 ifeq ($(VERSION),maverick)
 	CXXFLAGS += -DMaverick
 	ifeq ($(COMP),mingw)
-		EXE = McCain-X2a.exe
+		EXE = McCain-X2.exe
 	else
-		EXE = McCain-X2a
+		EXE = McCain-X2
 endif
 	else
 ### Note: Comment below is for for building cur-dev stockfish with the features noted.
@@ -55,9 +55,9 @@ endif
 ### Uncomment out the two lines below for additional features for stockfish, such as play by ELO ,
 ### cerebellum book, tactical mode, variety play and additional GUI options.
 	ifeq ($(COMP),mingw)
-		EXE = stockfish-20190310.exe
+		EXE = stockfish-20190318.exe
 	else
-		EXE = stockfish-20190310
+		EXE = stockfish-20190318
 	endif
 endif
 

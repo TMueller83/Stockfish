@@ -62,15 +62,15 @@ namespace {
 #endif
 
 #if(defined Maverick && defined Add_Features)
-const string Version = "X2a";
+const string Version = "X2";
 #else
 #ifdef Maverick
-const string Version = "X2a";
+const string Version = "X2";
 #endif
 #endif
 
 #if(defined Stockfish && defined Add_Features)
-	const string Version = "03102019";
+	const string Version = "03172019";
 #else
 #ifdef Stockfish
 	const string Version = "";

@@ -142,9 +142,10 @@ void init(OptionsMap& o) {
 #else
 	o["Bench_KNPS"]             << Option (1500, 500, 5000);//used for UCI Strength
 #endif
-#ifdef Maverick
-	o["Tactical"]               << Option(0, 0,  8);
-	o["Variety"]                << Option(0, 0, 20);
+#ifdef Add_Features
+	o["Attack"]                 << Option(6, -15, 15);
+	o["Tactical"]               << Option(0, 0,   8);
+	o["Variety"]                << Option(0, 0,  20);
 #endif
 
 #ifdef Add_Features

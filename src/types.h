@@ -208,10 +208,6 @@ enum Value : int {
 	
     MidgameLimit  = 15258, EndgameLimit  = 3915
 #endif
-#ifdef Matefinder
-	,
-    VALUE_TB_WIN    = 101 * PawnValueEg
-#endif
 
 };
 

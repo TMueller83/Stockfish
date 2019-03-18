@@ -123,7 +123,7 @@ public:
     bool capture_or_promotion(Move m) const;
     bool gives_check(Move m) const;
     bool advanced_pawn_push(Move m) const;
-#if defined (Matefinder) || (Maverick)
+#ifdef Maverick
     bool promotion_pawn_push(Move m) const;
 #endif
     Piece moved_piece(Move m) const;
@@ -136,7 +136,7 @@ public:
     // Doing and undoing moves
     void do_move(Move m, StateInfo& newSt);
     void do_move(Move m, StateInfo& newSt, bool givesCheck);
-#if defined (Matefinder) || (Maverick) //Gunther Demetz zugzwangSolver
+#ifdef Maverick //Gunther Demetz zugzwangSolver
     void removePawn(Square s, StateInfo& newSt);
     void undo_removePawn(Square s, Color c);
 #endif
@@ -328,7 +328,7 @@ inline bool Position::advanced_pawn_push(Move m) const {
   return   type_of(moved_piece(m)) == PAWN
         && relative_rank(sideToMove, from_sq(m)) > RANK_4;
 }
-#if defined (Matefinder) || (Maverick) //MichaelB7
+#ifdef Maverick //MichaelB7
 inline bool Position::promotion_pawn_push(Move m) const {
     return   type_of(moved_piece(m)) == PAWN
              && relative_rank(sideToMove, from_sq(m)) > RANK_5;

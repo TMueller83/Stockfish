@@ -127,7 +127,7 @@ namespace {
   };
 #ifdef Add_Features
 bool  bruteForce, cleanSearch, minOutput, limitStrength, noNULL;
-int tactical, variety;
+int   attack = 0, aggressiveness, tactical, variety;
 #endif
 
   template <NodeType NT>
@@ -237,6 +237,7 @@ void MainThread::search() {
     bruteForce		= Options["BruteForce"];
     limitStrength	= Options["UCI_LimitStrength"];
     noNULL			= Options["No_Null_Moves"];
+    aggressiveness	= Options["Attack"];
     tactical		= Options["Tactical"];
     minOutput		= Options["Minimal_Output"];
     variety			= Options["Variety"];
@@ -451,7 +452,7 @@ ss->pv = pv;
 
 #ifdef Add_Features
     if (tactical) multiPV = pow(2, tactical);
-
+	if (aggressiveness) attack = (aggressiveness );
 #endif
   // When playing with strength handicap enable MultiPV search that we will
   // use behind the scenes to retrieve a set of possible moves.
@@ -539,8 +540,12 @@ ss->pv = pv;
 		else
 #endif
 				{
-                dct = ct + 88 * previousScore / (abs(previousScore) + 200);
-
+#ifdef Add_Features
+                dct = ct + 88 * previousScore / (abs(previousScore) + 200)
+					+ (attack * (ct + 88 * previousScore / (abs(previousScore) + 200)))/100;
+#else
+				dct = ct + 88 * previousScore / (abs(previousScore) + 200);
+#endif
                 contempt = (us == WHITE ?  make_score(dct, dct / 2)
                             : -make_score(dct, dct / 2));
 				}
@@ -1333,7 +1338,7 @@ moves_loop: // When in check, search starts from here
 
       // Step 14. Pruning at shallow depth (~170 Elo)
 #ifdef Maverick
-      if (  !PvNode
+      if (  !rootNode //!PvNode
 #else
       if (  !rootNode
 #endif

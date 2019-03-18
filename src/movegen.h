@@ -26,7 +26,7 @@
 
 #include "types.h"
 
-#if defined (Matefinder) || (Maverick) //Gunther Demetz zugzwangSolver
+#ifdef Maverick //Gunther Demetz zugzwangSolver
 #include "position.h"
 #endif
 
@@ -62,7 +62,7 @@ ExtMove* generate(const Position& pos, ExtMove* moveList);
 
 /// The MoveList struct is a simple wrapper around generate(). It sometimes comes
 /// in handy to use this class instead of the low level generate() function.
-#if defined (Matefinder) || (Maverick)
+#ifdef Maverick
 template<GenType T, PieceType P = ALL_PIECES>
 struct MoveList {
 

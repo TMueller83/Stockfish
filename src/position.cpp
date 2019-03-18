@@ -723,7 +723,7 @@ bool Position::gives_check(Move m) const {
       return false;
   }
 }
-#if defined (Matefinder) || (Maverick) //Gunther Demetz zugzwangSolver
+#ifdef Maverick //Gunther Demetz zugzwangSolver
 void Position::removePawn(Square s, StateInfo& newSt) {
     assert(&newSt != st);
     assert(type_of(piece_on(s)) == PAWN);
