@@ -24,14 +24,14 @@
 ### ==========================================================================
 
 ### Executable name
-### McCain bench nodes  5645850
-### stockfish bench nodes 3318033 > based on 3/10/2019 commits
+### McCain bench nodes  6381562 based on 3/17/2019 commits
+### stockfish bench nodes 3318033 > based on 3/12/2019 commits
 
 ####  Always leave the three lines below as is (any subsequent defines will override)
 VERSION=
 FEATURE1=
 ### Uncomment the line below for McCain, comment out for Stockfish
-	VERSION=maverick
+###	VERSION=maverick
 
 ### should be no reason to change anything below here!
 ### Only McCain and stockfish with feature 1 will be publicly distributed a this time, although feel free to play with privately
@@ -45,9 +45,9 @@ endif
 ifeq ($(VERSION),maverick)
 	CXXFLAGS += -DMaverick
 	ifeq ($(COMP),mingw)
-		EXE = McCain-X2.exe
+		EXE = McCain-X2a.exe
 	else
-		EXE = McCain-X2
+		EXE = McCain-X2a
 endif
 	else
 ### Note: Comment below is for for building cur-dev stockfish with the features noted.
@@ -57,12 +57,13 @@ endif
 	ifeq ($(COMP),mingw)
 		EXE = stockfish-20190318.exe
 	else
-		EXE = stockfish-20190318
+		EXE = stockfish-20190319
 	endif
 endif
 
 ### Installation dir definitions
-PREFIX = /usr/local
+PREFIX = /opt/local
+#PREFIX = /usr/local
 BINDIR = $(PREFIX)/bin
 
 ### Built-in benchmark for pgo-builds
@@ -573,7 +574,7 @@ clang-profile-make:
 	all
 
 clang-profile-use:
-	llvm-profdata merge -output=stockfish.profdata *.profraw
+	llvm-profdata-mp-7.0 merge -output=stockfish.profdata *.profraw
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
 	EXTRACXXFLAGS='-fprofile-instr-use=stockfish.profdata -Wno-profile-instr-out-of-date' \
 	EXTRALDFLAGS='-fprofile-use ' \

@@ -134,8 +134,10 @@ void init(OptionsMap& o) {
 #endif
 #ifdef Maverick
 	o["MultiPV"]                << Option(1, 1, 256);
+	o["DC_Slider"]              << Option(53, -180, 180);
 #else
 	o["MultiPV"]                << Option(1, 1, 500);
+	o["DC_Slider"]              << Option(0, -180, 180);
 #endif
 #ifdef Pi
 	o["Bench_KNPS"]             << Option (200, 100, 1000);//used for UCI Strength
@@ -143,7 +145,7 @@ void init(OptionsMap& o) {
 	o["Bench_KNPS"]             << Option (1500, 500, 5000);//used for UCI Strength
 #endif
 #ifdef Add_Features
-	o["Attack"]                 << Option(6, -15, 15);
+
 	o["Tactical"]               << Option(0, 0,   8);
 	o["Variety"]                << Option(0, 0,  20);
 #endif

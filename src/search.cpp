@@ -237,7 +237,7 @@ void MainThread::search() {
     bruteForce		= Options["BruteForce"];
     limitStrength	= Options["UCI_LimitStrength"];
     noNULL			= Options["No_Null_Moves"];
-    aggressiveness	= Options["Attack"];
+    aggressiveness	= Options["DC_Slider"];
     tactical		= Options["Tactical"];
     minOutput		= Options["Minimal_Output"];
     variety			= Options["Variety"];
@@ -541,8 +541,8 @@ ss->pv = pv;
 #endif
 				{
 #ifdef Add_Features
-                dct = ct + 88 * previousScore / (abs(previousScore) + 200)
-					+ (attack * (ct + 88 * previousScore / (abs(previousScore) + 200)))/100;
+					dct = ct + 88 * previousScore / (abs(previousScore) + 200)
+					+ (attack * (ct + 88 * previousScore / (abs(previousScore) + 200)))/1000;
 #else
 				dct = ct + 88 * previousScore / (abs(previousScore) + 200);
 #endif
@@ -1272,7 +1272,7 @@ moves_loop: // When in check, search starts from here
 #endif
           && !rootNode
           && !excludedMove // Avoid recursive singular search
-#ifdef Maverick
+#ifdef Maverick  //a
           &&  ttValue != VALUE_NONE //Already implicit in "&&  abs(ttValue) < VALUE_KNOWN_WIN"
 #else
           &&  abs(ttValue) < VALUE_KNOWN_WIN
@@ -1337,11 +1337,7 @@ moves_loop: // When in check, search starts from here
       newDepth = depth - ONE_PLY + extension;
 
       // Step 14. Pruning at shallow depth (~170 Elo)
-#ifdef Maverick
-      if (  !rootNode //!PvNode
-#else
       if (  !rootNode
-#endif
 #ifdef Add_Features
 	      && !bruteForce
 #endif			
