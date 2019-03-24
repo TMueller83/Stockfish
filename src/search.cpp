@@ -1260,11 +1260,8 @@ moves_loop: // When in check, search starts from here
 #endif
           && !rootNode
           && !excludedMove // Avoid recursive singular search
-#ifdef Maverick  //a
-          &&  ttValue != VALUE_NONE //Already implicit in "&&  abs(ttValue) < VALUE_KNOWN_WIN"
-#else
+          //&&  ttValue != VALUE_NONE //Already implicit below
           &&  abs(ttValue) < VALUE_KNOWN_WIN
-#endif
           && (tte->bound() & BOUND_LOWER)
           &&  tte->depth() >= depth - 3 * ONE_PLY
           &&  pos.legal(move))
@@ -1362,13 +1359,23 @@ moves_loop: // When in check, search starts from here
                   && !inCheck
                   && ss->staticEval + 256 + 200 * lmrDepth <= alpha)
                   continue;
-
+#ifdef Maverick  //McCain X2a
               // Prune moves with negative SEE (~10 Elo)
-              if (!pos.see_ge(move, Value(-29 * lmrDepth * lmrDepth)))
+              if (!inCheck && !pos.see_ge(move, Value(-29 * lmrDepth * lmrDepth)))
                   continue;
+#else
+			  // Prune moves with negative SEE (~10 Elo)
+			  if (!pos.see_ge(move, Value(-29 * lmrDepth * lmrDepth)))
+			  continue;
+#endif
           }
-          else if (!pos.see_ge(move, -PawnValueEg * (depth / ONE_PLY))) // (~20 Elo)
+#ifdef Maverick //McCain X2a
+          else if (!inCheck && !pos.see_ge(move, -PawnValueEg * (depth / ONE_PLY))) // (~20 Elo)
                   continue;
+#else
+		  else if (!pos.see_ge(move, -PawnValueEg * (depth / ONE_PLY))) // (~20 Elo)
+		  continue;
+#endif
       }
 
       // Speculative prefetch as early as possible
