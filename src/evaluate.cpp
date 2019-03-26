@@ -856,15 +856,17 @@ constexpr Score Outpost            = S(  9,  3);
                             && (pos.pieces(PAWN) & KingSide);
 
     // Compute the initiative bonus for the attacking side
-    int complexity =   9 * pe->pawn_asymmetry()
+    int complexity =   9 * pe->passed_count()
                     + 11 * pos.count<PAWN>()
                     +  9 * outflanking
                     + 18 * pawnsOnBothFlanks
                     + 49 * !pos.non_pawn_material()
 #ifdef Maverick  //  from snicolet
                     -   pos.rule50_count()
+                    -122 ;
+#else
+                    -103 ;
 #endif
-                    -121 ;
 
     // Now apply the bonus: note that we find the attacking side by extracting
     // the sign of the endgame value, and that we carefully cap the bonus so
@@ -888,26 +890,16 @@ constexpr Score Outpost            = S(  9,  3);
 
     // If scale is not already specific, scale down the endgame via general heuristics
     if (sf == SCALE_FACTOR_NORMAL)
-#ifdef Maverick
-	{
-		sf = ( pos.opposite_bishops()
-			  && pos.non_pawn_material(WHITE) == BishopValueMg
-			  && pos.non_pawn_material(BLACK) == BishopValueMg) ? 8 + 4 * pe->pawn_asymmetry() : std::min( 40 + (pos.opposite_bishops() ? 2 : 7) * pos.count<PAWN>(strongSide)
-							-  pos.count<PAWN>(~strongSide)/2  //Eelco de Groot - groups.google.com/forum/#!msg/fishcooking/uSq3vAxiNOs/AZ6IEVDUCgAJ
-#else
+
 	{
         if (   pos.opposite_bishops()
             && pos.non_pawn_material(WHITE) == BishopValueMg
             && pos.non_pawn_material(BLACK) == BishopValueMg)
-#ifdef Maverick
-            sf = 6 * pe->pawn_asymmetry();  //ps_scalefactor4 vs master protonspring
-#else
-            sf = 8 + 4 * pe->pawn_asymmetry();
-#endif
+
+            sf = 16 + 4 * pe->passed_count();
+
         else
-            sf = std::min( 40 + (pos.opposite_bishops() ? 2 : 7) * pos.count<PAWN>(strongSide)
-#endif
-						  ,sf );
+            sf = std::min( 40 + (pos.opposite_bishops() ? 2 : 7) * pos.count<PAWN>(strongSide),sf );
     }
 
     return ScaleFactor(sf);

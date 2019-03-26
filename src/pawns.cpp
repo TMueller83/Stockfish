@@ -98,12 +98,6 @@ namespace {
     e->pawnAttacks[Us]   = pawn_attacks_bb<Us>(ourPawns);
     e->pawnsOnSquares[Us][BLACK] = popcount(ourPawns & DarkSquares);
     e->pawnsOnSquares[Us][WHITE] = pos.count<PAWN>(Us) - e->pawnsOnSquares[Us][BLACK];
-#ifdef Maverick   //  Alayan-stk-2
-    e->splitPassedPawns[Us] = 0;
-
-    File fmin = FILE_H;
-    File fmax = FILE_A;
-#endif
 
     // Loop through all pawns of the current color and score each pawn
     while ((s = *pl++) != SQ_NONE)
@@ -140,36 +134,17 @@ namespace {
         // which could become passed after one or two pawn pushes when are
         // not attacked more times than defended.
         if (   !(stoppers ^ lever ^ leverPush)
-            && popcount(support) >= popcount(lever) - 1
-            && popcount(phalanx)   >= popcount(leverPush))
-#ifdef Maverick  //  Alayan-stk-2
-        {
+			&& (support || !more_than_one(lever))
+			&& popcount(phalanx) >= popcount(leverPush))
             e->passedPawns[Us] |= s;
-            if (f < fmin)
-                fmin = f;
-            if (f > fmax)
-                fmax = f;
-        }
-#else
-            e->passedPawns[Us] |= s;
-#endif
+
         else if (   stoppers == SquareBB[s + Up]
                  && relative_rank(Us, s) >= RANK_5)
         {
             b = shift<Up>(support) & ~theirPawns;
             while (b)
                 if (!more_than_one(theirPawns & PawnAttacks[Us][pop_lsb(&b)]))
-#ifdef Maverick  //  Alayan-stk-2
-                {
                     e->passedPawns[Us] |= s;
-                    if (f < fmin)
-                        fmin = f;
-                    if (f > fmax)
-                        fmax = f;
-                }
-#else
-                    e->passedPawns[Us] |= s;
-#endif
         }
 
         // Score this pawn
@@ -188,11 +163,6 @@ namespace {
         if (doubled && !support)
             score -= Doubled;
     }
-#ifdef Maverick  //  @Alayan-stk-2
-    // check if passed pawns are on both flanks
-    if (popcount(e->passedPawns[Us]) >= 2)
-        e->splitPassedPawns[Us] = fmax-fmin;
-#endif
     return score;
   }
 
@@ -250,13 +220,17 @@ Entry* probe(const Position& pos) {
   e->key = key;
   e->scores[WHITE] = evaluate<WHITE>(pos, e);
   e->scores[BLACK] = evaluate<BLACK>(pos, e);
-  e->asymmetry = popcount(  (e->passedPawns[WHITE]   | e->passedPawns[BLACK])
-                          | (e->semiopenFiles[WHITE] ^ e->semiopenFiles[BLACK]))
+//<<<<<<< HEAD
+  e->passedCount= popcount(e->passedPawns[WHITE] | e->passedPawns[BLACK])
 #ifdef Maverick  //from sac3 by xoto10
 			  + (pos.count<PAWN>(WHITE) != pos.count<PAWN>(BLACK));
 #else
 	;
 #endif
+//=======
+ // e->passedCount= popcount(e->passedPawns[WHITE] | e->passedPawns[BLACK]);
+
+//>>>>>>> 7133598a98301cf84857d39194026b876da48b96
   return e;
 }
 
