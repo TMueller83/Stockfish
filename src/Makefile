@@ -31,7 +31,10 @@
 VERSION=
 FEATURE1=
 ### Uncomment the line below for McCain, comment out for Stockfish
-###	VERSION=maverick
+	VERSION=maverick
+### Uncomment for use with Raspberry Pi -  a slower NPS UCI option setting used in Play
+### by Elo and personalities
+###	RASPBERRY=Pi
 
 ### should be no reason to change anything below here!
 ### Only McCain and stockfish with feature 1 will be publicly distributed a this time, although feel free to play with privately
@@ -42,12 +45,16 @@ ifeq ($(FEATURE1),add_features)
 	FILES = with_c_book
 	SUFFIX1 =
 endif
+ifeq ($(RASPBERRY),Pi)
+CXXFLAGS += -DPi
+endif
 ifeq ($(VERSION),maverick)
 	CXXFLAGS += -DMaverick
 	ifeq ($(COMP),mingw)
-		EXE = McCain-X2a.exe
+		EXE = McCain-X2.exe
 	else
-		EXE = McCain-X2a
+		EXE = McCain-X2
+
 endif
 	else
 ### Note: Comment below is for for building cur-dev stockfish with the features noted.
@@ -55,9 +62,9 @@ endif
 ### Uncomment out the two lines below for additional features for stockfish, such as play by ELO ,
 ### cerebellum book, tactical mode, variety play and additional GUI options.
 	ifeq ($(COMP),mingw)
-		EXE = stockfish-20190318.exe
+		EXE = stockfish-20190326.exe
 	else
-		EXE = stockfish-20190319
+		EXE = stockfish-20190326
 	endif
 endif
 

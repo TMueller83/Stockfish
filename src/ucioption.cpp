@@ -134,15 +134,15 @@ void init(OptionsMap& o) {
 #endif
 #ifdef Maverick
 	o["MultiPV"]                << Option(1, 1, 256);
-	o["DC_Slider"]              << Option(53, -180, 180);
+	o["DC_Slider"]              << Option(75, -180, 180);
 #else
 	o["MultiPV"]                << Option(1, 1, 500);
 	o["DC_Slider"]              << Option(0, -180, 180);
 #endif
 #ifdef Pi
-	o["Bench_KNPS"]             << Option (200, 100, 1000);//used for UCI Strength
+	o["Bench_KNPS"]             << Option (200, 100, 1000);//used for UCI Play By Elo
 #else
-	o["Bench_KNPS"]             << Option (1500, 500, 5000);//used for UCI Strength
+	o["Bench_KNPS"]             << Option (1500, 500, 5000);//used for UCI Play By Elo
 #endif
 #ifdef Add_Features
 

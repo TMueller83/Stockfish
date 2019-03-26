@@ -178,12 +178,12 @@ int   attack = 0, aggressiveness, tactical, variety;
 /// Search::init() is called at startup to initialize various lookup tables
 
 void Search::init() {
-#ifdef Maverick
+#ifdef Maverick   // not in favor of this recent change
 	for (int imp = 0; imp <= 1; ++imp)
 		for (int d = 1; d < 64; ++d)
 			for (int mc = 1; mc < 64; ++mc)
 			{
-				double r = log(d) * log(mc) / 2.48;
+				double r = log(d) * log(mc) / 2.55;
 				Reductions[imp][d][mc] = std::round(r);
 				
 				// Increase reduction for non-PV nodes when eval is not improving
@@ -1359,7 +1359,7 @@ moves_loop: // When in check, search starts from here
                   && !inCheck
                   && ss->staticEval + 256 + 200 * lmrDepth <= alpha)
                   continue;
-#ifdef Maverick  //McCain X2a
+#ifdef Maverick
               // Prune moves with negative SEE (~10 Elo)
               if (!inCheck && !pos.see_ge(move, Value(-29 * lmrDepth * lmrDepth)))
                   continue;
@@ -1369,7 +1369,7 @@ moves_loop: // When in check, search starts from here
 			  continue;
 #endif
           }
-#ifdef Maverick //McCain X2a
+#ifdef Maverick
           else if (!inCheck && !pos.see_ge(move, -PawnValueEg * (depth / ONE_PLY))) // (~20 Elo)
                   continue;
 #else

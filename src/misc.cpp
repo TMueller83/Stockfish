@@ -62,15 +62,15 @@ namespace {
 #endif
 
 #if(defined Maverick && defined Add_Features)
-const string Version = "X2a";
+const string Version = "X2";
 #else
 #ifdef Maverick
-const string Version = "X2a";
+const string Version = "X2";
 #endif
 #endif
 
 #if(defined Stockfish && defined Add_Features)
-	const string Version = "03192019";
+	const string Version = "03262019";
 #else
 #ifdef Stockfish
 	const string Version = "";
@@ -160,9 +160,12 @@ const string engine_info(bool to_uci) {
     ss	<< (to_uci  ? "\nid author ": " by ")
             << "M. Byrne and scores of others...";
 #else
-    ss << (Is64Bit ? " 64" : "")
-       << (HasPext ? " BMI2" : (HasPopCnt ? " POPCNT" : ""))
-       << (to_uci  ? "\nid author ": " by ")
+//     ss << (Is64Bit ? " 64" : "")   //what's the point ? 32 bit OS
+									  //now represent less than 2% of PCs in service,
+									  //except for those still used with chess programs ;>)
+//     << (HasPext ? " BMI2" : (HasPopCnt ? " POPCNT" : ""))    //may create issues with GUI,
+																//extraneous unneeeded characters
+	   ss << (to_uci  ? "\nid author ": " by ")
        << "T. Romstad, M. Costalba, J. Kiiski, G. Linscott";
 #endif
 
