@@ -50,6 +50,7 @@ typedef bool(*fun3_t)(HANDLE, CONST GROUP_AFFINITY*, PGROUP_AFFINITY);
 
 #include "misc.h"
 #include "thread.h"
+#include "uci.h"
 
 using namespace std;
 
@@ -70,7 +71,7 @@ const string Version = "X2";
 #endif
 
 #if(defined Stockfish && defined Add_Features)
-	const string Version = "03262019";
+	const string Version = "";
 #else
 #ifdef Stockfish
 	const string Version = "";
@@ -136,7 +137,7 @@ public:
 } // namespace
 
 /// engine_info() returns the full name of the current McCain version. This
-/// will be either "McCain <Tag> DD-MM-YY" (where DD-MM-YY is the date when
+/// will be either "McCain <Tag> Mmm-dd-yy" (where Mmm-dd-yy is the date when
 /// the program was compiled) or "McCain <Version>", depending on whether
 /// Version is empty.
 
@@ -146,7 +147,7 @@ const string engine_info(bool to_uci) {
     string month, day, year;
     stringstream ss, date(__DATE__); // From compiler, format is "Sep 21 2008"
 #ifdef Maverick
-    ss << "McCain " << Version << setfill('0');
+    ss << "McCain-" << Version << setfill('0');
 #else
     ss << "Stockfish " << Version << setfill('0');
 #endif
@@ -154,7 +155,7 @@ const string engine_info(bool to_uci) {
     if (Version.empty())
     {
         date >> month >> day >> year;
-        ss << setw(2) << day << setw(2) << (1 + months.find(month) / 4) << year.substr(2);
+		ss << setw(2) << (1 + months.find(month) / 4) <<setw(2) << day << year.substr(2);
     }
 #ifdef Maverick
     ss	<< (to_uci  ? "\nid author ": " by ")
@@ -224,11 +225,11 @@ void prefetch(void*) {}
 
 void prefetch(void* addr) {
 
-#  if defined(__INTEL_COMPILER)
+//#  if defined(__INTEL_COMPILER)
    // This hack prevents prefetches from being optimized away by
    // Intel compiler. Both MSVC and gcc seem not be affected by this.
    __asm__ ("");
-#  endif
+//#  endif
 
 #  if defined(__INTEL_COMPILER) || defined(_MSC_VER)
   _mm_prefetch((char*)addr, _MM_HINT_T0);

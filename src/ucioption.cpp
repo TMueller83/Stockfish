@@ -79,8 +79,8 @@ void init(OptionsMap& o) {
 	o["Clear Hash"]            << Option(on_clear_hash);
 
 #ifdef Maverick
-    o["W_Contempt"] 	      << Option( 24, -150, 150);
-    o["B_Contempt"] 	      << Option(-17, -150, 150);
+    o["W_Contempt"] 	      << Option(  22, -150, 150);
+    o["B_Contempt"] 	      << Option(   2, -150, 150);
 #else
     o["Contempt"]             << Option(24, -100, 100);
 #endif
@@ -90,51 +90,50 @@ void init(OptionsMap& o) {
     o["Analysis Contempt"]    << Option("Both var Off var White var Black var Both", "Both");
 #endif
 #ifdef Add_Features
-    o["Use Book 1"] 	       << Option(false);
-    o["Book File 1"] 	       << Option("var None var Cerebellum var Champions "
+    o["Use Book 1"] 	        << Option(false);
+    o["Book File 1"] 	        << Option("var None var Cerebellum var Champions "
 										"var Alekhine var Anand var Botvinnik "
 										"var Capablanca var Carlsen var Fischer "
 										"var Karpov var Kasparov var Kortschnoi "
 										"var Kramink var Lasker var Petrosian "
 										"var Tal ","Carlsen", on_book_file1);
-    o["Best Move 1"] 	       << Option(false, on_best_book_move1);
-    o["Book Depth 1"] 	       << Option(255, 1, 255, on_book_depth1);
-    o["Use Book 2"] 	       << Option(false);
-    o["Book File 2"] 	       << Option("Champions", on_book_file2);
-    o["Best Move 2"] 	       << Option(false, on_best_book_move2);
-    o["Book Depth 2"] 	       << Option(127, 1, 127, on_book_depth2);
-    o["Use Book 3"] 	       << Option(false);
-    o["Book File 3"]           << Option("Cerebellum", on_book_file3);
-    o["Best Move 3"]           << Option(true, on_best_book_move3);
-    o["Book Depth 3"]          << Option(255, 1, 255, on_book_depth3);
+    o["Best Move 1"] 	        << Option(false, on_best_book_move1);
+    o["Book Depth 1"] 	        << Option(255, 1, 255, on_book_depth1);
+    o["Use Book 2"] 	        << Option(false);
+    o["Book File 2"] 	        << Option("Champions", on_book_file2);
+    o["Best Move 2"] 	        << Option(false, on_best_book_move2);
+    o["Book Depth 2"] 	        << Option(127, 1, 127, on_book_depth2);
+    o["Use Book 3"] 	        << Option(false);
+    o["Book File 3"]            << Option("Cerebellum", on_book_file3);
+    o["Best Move 3"]            << Option(true, on_best_book_move3);
+    o["Book Depth 3"]           << Option(255, 1, 255, on_book_depth3);
 
 #endif
-    o["Skill Level"]           << Option(20, 0, 20);
-    o["Move Overhead"]         << Option(30, 0, 5000);
-    o["Minimum Thinking Time"] << Option(20, 0, 5000);
-    o["Threads"]               << Option(1, 1, 512, on_threads);
-    o["Hash"]                  << Option(16, 1, MaxHashMB, on_hash_size);
-    o["Ponder"]                << Option(false);
+    o["Skill Level"]            << Option(20, 0, 20);
+    o["Move Overhead"]          << Option(30, 0, 5000);
+    o["Minimum Thinking Time"]  << Option(20, 0, 5000);
+    o["Threads"]                << Option(1, 1, 512, on_threads);
+    o["Hash"]                   << Option(16, 1, MaxHashMB, on_hash_size);
+    o["Ponder"]                 << Option(false);
 #ifdef Add_Features
-	o["Clean Search"]          << Option(false);
-    o["7 Man Probing"]         << Option(false);
-    o["BruteForce"] 	       << Option(false);
-    o["Dynamic_Contempt"]      << Option(true);
-    o["FastPlay"]              << Option(false);
-    o["Minimal_Output"]        << Option(false);
-    o["No_Null_Moves"]         << Option(false);
-    o["UCI_LimitStrength"]     << Option(false);
-    o["UCI_ELO"]               << Option(1500, 1200, 2800);
-    o["Levels"]                << Option("var None var World Champion var Super GM "
-		                "var Deep Thought var Grandmaster var Cray Blitz "
-		                "var Int'l Master var Master var Expert var Class A "
-		                "var Class B var Class C var Class D var Challenger 7 "
-		                "var Boris var Novice ", "None");
-
+	o["Clean Search"]           << Option(false);
+    o["7 Man Probing"]          << Option(false);
+    o["BruteForce"] 	        << Option(false);
+    o["Dynamic_Contempt"]       << Option(true);
+    o["FastPlay"]               << Option(false);
+    o["Minimal_Output"]         << Option(false);
+    o["No_Null_Moves"]          << Option(false);
+    o["UCI_LimitStrength"]      << Option(false);
+	o["Levels"]                 << Option("var World_Champion var Super_GM "
+								"var GM  var Deep_Thought var SIM var Cray_Blitz "
+								"var IM var Master var Expert var Class_A "
+								"var Class_B var Class_C var Class_D var Boris "
+								"var Novice var None ", "World_Champ");
+	o["UCI_ELO"]                << Option(1300, 1300, 2850);
 #endif
 #ifdef Maverick
 	o["MultiPV"]                << Option(1, 1, 256);
-	o["DC_Slider"]              << Option(75, -180, 180);
+	o["DC_Slider"]              << Option(65, -180, 180);
 #else
 	o["MultiPV"]                << Option(1, 1, 500);
 	o["DC_Slider"]              << Option(0, -180, 180);
@@ -145,9 +144,9 @@ void init(OptionsMap& o) {
 	o["Bench_KNPS"]             << Option (1500, 500, 5000);//used for UCI Play By Elo
 #endif
 #ifdef Add_Features
-
-	o["Tactical"]               << Option(0, 0,   8);
-	o["Variety"]                << Option(0, 0,  20);
+	o["Jekell_&_Hyde"]          << Option(0, 0, 15);
+	o["Tactical"]               << Option(0, 0,  8);
+	o["Variety"]                << Option(0, 0, 15);
 #endif
 
 #ifdef Add_Features

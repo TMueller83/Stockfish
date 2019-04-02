@@ -863,7 +863,7 @@ constexpr Score Outpost            = S(  9,  3);
                     + 49 * !pos.non_pawn_material()
 #ifdef Maverick  //  from snicolet
                     -   pos.rule50_count()
-                    -122 ;
+                    -121 ;
 #else
                     -103 ;
 #endif

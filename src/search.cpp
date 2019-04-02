@@ -123,7 +123,7 @@ namespace {
   };
 #ifdef Add_Features
 bool  bruteForce, cleanSearch, minOutput, limitStrength, noNULL;
-int   attack = 0, aggressiveness, tactical, variety;
+int   aggressiveness, attack, jekell, tactical, uci_elo, variety;
 #endif
 
   template <NodeType NT>
@@ -178,16 +178,16 @@ int   attack = 0, aggressiveness, tactical, variety;
 /// Search::init() is called at startup to initialize various lookup tables
 
 void Search::init() {
-#ifdef Maverick   // not in favor of this recent change
+#ifdef Maverick   // MichaelB7
 	for (int imp = 0; imp <= 1; ++imp)
 		for (int d = 1; d < 64; ++d)
 			for (int mc = 1; mc < 64; ++mc)
 			{
-				double r = log(d) * log(mc) / 2.55;
-				Reductions[imp][d][mc] = std::round(r);
+				int red = int((log(d) * log(mc) + .5) * 1100) >> 1;
+				Reductions[imp][d][mc] = red/1000;
 				
 				// Increase reduction for non-PV nodes when eval is not improving
-				if (!imp && r > 0.75)
+				if (!imp && red > 750)
 					Reductions[imp][d][mc]++;
 				
 			 }
@@ -228,17 +228,16 @@ void MainThread::search() {
       return;
   }
 #ifdef Add_Features
-	
-    limitStrength	= Options["UCI_LimitStrength"];
-    bruteForce		= Options["BruteForce"];
-    limitStrength	= Options["UCI_LimitStrength"];
-    noNULL			= Options["No_Null_Moves"];
     aggressiveness	= Options["DC_Slider"];
-    tactical		= Options["Tactical"];
-    minOutput		= Options["Minimal_Output"];
-    variety			= Options["Variety"];
+    bruteForce		= Options["BruteForce"];
 	cleanSearch		= Options["Clean Search"];
-    int uci_elo;
+    jekell			= Options["Jekell_&_Hyde"];
+    limitStrength	= Options["UCI_LimitStrength"];
+    minOutput		= Options["Minimal_Output"];
+    noNULL			= Options["No_Null_Moves"];
+    tactical		= Options["Tactical"];
+    uci_elo			= Options["UCI_ELO"];
+	variety 		= Options["Variety"];
 #endif
 
   Color us = rootPos.side_to_move();
@@ -273,43 +272,45 @@ void MainThread::search() {
       {
             if (limitStrength)
             {
-				if (Options["Rank_Levels"] == "World Champion")
-					uci_elo = 2800;
-				else if (Options["Rank_Levels"] == "Super GM")
-					uci_elo = 2725;
-				else if (Options["Rank_Levels"] == "Deep Thought")
-					uci_elo = 2650;
-				else if (Options["Rank_Levels"] == "Cray Blitz")
-					uci_elo = 2575;
-				else if (Options["Rank_Levels"] == "Grandmaster")
-					uci_elo = 2500;
-				else if (Options["Rank_Levels"] == "Int'l Master")
-					uci_elo = 2400;
-				else if (Options["Rank_Levels"] == "Master")
-					uci_elo = 2300;
-				else if (Options["Rank_Levels"] == "Expert")
-					uci_elo = 2100;
-				else if (Options["Rank_Levels"] == "Class A")
-					uci_elo = 1900;
-				else if (Options["Rank_Levels"] == "Class B")
-					uci_elo = 1700;
-				else if (Options["Rank_Levels"] == "Boris")
-					uci_elo = 1600;
-				else if (Options["Rank_Levels"] == "Class C")
-					uci_elo = 1500;
-				else if (Options["Rank_Levels"] == "Challenger 7")
-					uci_elo = 1400;
-				else if (Options["Rank_Levels"] == "Class D")
-					uci_elo = 1300;
-				else if (Options["Rank_Levels"] == "Novice")
-					uci_elo = 1200;
-				else uci_elo = (Options["UCI_ELO"]);
+				
+				if (Options["Levels"] == "World_Champion")
+						uci_elo = 2750;
+				else if (Options["Levels"] == "Super_GM")
+						uci_elo = 2625;
+				else if (Options["Levels"] == "GM")
+						uci_elo = 2500;
+				else if (Options["Levels"] == "Deep_Thought")
+						uci_elo = 2400;
+				else if (Options["Levels"] == "SIM")
+						uci_elo = 2300;
+				else if (Options["Levels"] == "Cray_Blitz")
+						uci_elo = 2200;
+				else if (Options["Levels"] == "IM")
+						uci_elo = 2100;
+				else if (Options["Levels"] == "Master")
+						uci_elo = 2000;
+				else if (Options["Levels"] == "Expert")
+						uci_elo = 1900;
+				else if (Options["Levels"] == "Class_A")
+						uci_elo = 1800;
+				else if (Options["Levels"] == "Class_B")
+						uci_elo = 1700;
+				else if (Options["Levels"] == "Class_C")
+						uci_elo = 1600;
+				else if (Options["Levels"] == "Class_D")
+						uci_elo = 1500;
+				else if (Options["Levels"] == "Boris")
+						uci_elo = 1400;
+				else if (Options["Levels"] == "Novice")
+						uci_elo = 1300;
+				else if (Options["Levels"] == "None")
+						uci_elo = (Options["UCI_ELO"]) - 100;
 				int benchKnps = 1000 * (Options["Bench_KNPS"]);
                 std::mt19937 gen(now());
-                std::uniform_int_distribution<int> dis(-16, 16);
+                std::uniform_int_distribution<int> dis(-8, 8);
                 int rand = dis(gen);
                 uci_elo += rand;
-                int NodesToSearch   = pow(1.006, (uci_elo - 1199)) * 8  ;
+                int NodesToSearch   = pow(1.006, (uci_elo - 1200)) * 8;
                 Limits.nodes = NodesToSearch;
 
                 Limits.nodes *= Time.optimum()/1000 ;
@@ -448,7 +449,7 @@ ss->pv = pv;
 
 #ifdef Add_Features
     if (tactical) multiPV = pow(2, tactical);
-	if (aggressiveness) attack = (aggressiveness );
+	if (aggressiveness) attack = aggressiveness;
 #endif
   // When playing with strength handicap enable MultiPV search that we will
   // use behind the scenes to retrieve a set of possible moves.
@@ -543,7 +544,7 @@ ss->pv = pv;
           // high/low, re-search with a bigger window until we don't fail
           // high/low anymore.
           int failedHighCnt = 0;
-          while (true)
+          while (true )
           {
 
 #ifdef Maverick
@@ -663,6 +664,7 @@ ss->pv = pv;
 
           // If the bestMove is stable over several iterations, reduce time accordingly
           timeReduction = lastBestMoveDepth + 10 * ONE_PLY < completedDepth ? 1.95 : 1.0;
+
           double reduction = std::pow(mainThread->previousTimeReduction, 0.528) / timeReduction;
 
           // Use part of the gained time from a previous stable move for the current move
@@ -1636,6 +1638,16 @@ moves_loop: // When in check, search starts from here
                   depth, bestMove, pureStaticEval);
 
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
+			
+#ifdef Add_Features
+			if (jekell && variety && bestValue > 100 && popcount(pos.pieces()) > 10)
+			{
+				std::mt19937 gen2(now());
+				std::uniform_int_distribution<int> dis(0, 2 * variety * jekell);
+				bestValue -= dis(gen2);
+			}
+#endif
+			
 
     return bestValue;
   }
@@ -1746,6 +1758,15 @@ moves_loop: // When in check, search starts from here
             if (!ttHit)
                 tte->save(posKey, value_to_tt(bestValue, ss->ply), pvHit, BOUND_LOWER,
                           DEPTH_NONE, MOVE_NONE, ss->staticEval);
+			
+#ifdef Add_Features
+            if (jekell && variety && bestValue > 100 && popcount(pos.pieces()) > 10)
+			{
+				std::mt19937 gen3(now());
+				std::uniform_int_distribution<int> dis(0, 2 * variety * jekell);
+				bestValue -= dis(gen3);
+			}
+#endif
 
             return bestValue;
         }
@@ -1836,6 +1857,8 @@ moves_loop: // When in check, search starts from here
       assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 
       // Check for a new best move
+
+		
       if (value > bestValue)
       {
           bestValue = value;
@@ -1855,10 +1878,6 @@ moves_loop: // When in check, search starts from here
        }
     }
 
-#ifdef Add_Features
-    if (variety && (bestValue + (variety * PawnValueEg / 100) >= 0 ))
-        bestValue += rand() % (variety + 1);
-#endif
     // All legal moves have been searched. A special case: If we're in check
     // and no legal moves were found, it is checkmate.
     if (inCheck && bestValue == -VALUE_INFINITE)
@@ -1870,6 +1889,15 @@ moves_loop: // When in check, search starts from here
               ttDepth, bestMove, ss->staticEval);
 
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
+	  
+#ifdef Add_Features
+	if (jekell && variety && bestValue > 100 && popcount(pos.pieces()) > 10)
+	  {
+		  std::mt19937 gen4(now());
+				std::uniform_int_distribution<int> dis(0, 2 * variety * jekell);
+		  bestValue -= dis(gen4);
+	  }
+#endif
 
     return bestValue;
   }

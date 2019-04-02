@@ -24,10 +24,11 @@
 ### ==========================================================================
 
 ### Executable name
-### McCain bench nodes  6381562 based on 3/17/2019 commits
-### stockfish bench nodes 3318033 > based on 3/12/2019 commits
+### McCain bench nodes  4897911 based on  commits up to 3/26/2019
+### stockfish bench nodes 3575627 > based on commits up to 3/26/2019
 
 ####  Always leave the three lines below as is (any subsequent defines will override)
+DATE=$(shell date +"%m%d%y")
 VERSION=
 FEATURE1=
 ### Uncomment the line below for McCain, comment out for Stockfish
@@ -62,9 +63,9 @@ endif
 ### Uncomment out the two lines below for additional features for stockfish, such as play by ELO ,
 ### cerebellum book, tactical mode, variety play and additional GUI options.
 	ifeq ($(COMP),mingw)
-		EXE = stockfish-20190326.exe
+		EXE = stockfish-$(DATE).exe
 	else
-		EXE = stockfish-20190326
+		EXE = stockfish-$(DATE)
 	endif
 endif
 
