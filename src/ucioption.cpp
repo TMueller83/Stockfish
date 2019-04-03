@@ -97,7 +97,7 @@ void init(OptionsMap& o) {
 										"var Kramink var Lasker var Petrosian "
 										"var Tal ","Carlsen", on_book_file1);
     o["Best Move 1"] 	        << Option(false, on_best_book_move1);
-    o["Book Depth 1"] 	        << Option(255, 1, 255, on_book_depth1);
+    o["Book Depth 1"] 	        << Option(127, 1, 127, on_book_depth1);
     o["Use Book 2"] 	        << Option(false);
     o["Book File 2"] 	        << Option("Champions", on_book_file2);
     o["Best Move 2"] 	        << Option(false, on_best_book_move2);
@@ -105,7 +105,7 @@ void init(OptionsMap& o) {
     o["Use Book 3"] 	        << Option(false);
     o["Book File 3"]            << Option("Cerebellum", on_book_file3);
     o["Best Move 3"]            << Option(true, on_best_book_move3);
-    o["Book Depth 3"]           << Option(255, 1, 255, on_book_depth3);
+    o["Book Depth 3"]           << Option(127, 1, 127, on_book_depth3);
 
 #endif
     o["Skill Level"]            << Option(20, 0, 20);
