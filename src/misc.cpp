@@ -161,11 +161,8 @@ const string engine_info(bool to_uci) {
     ss	<< (to_uci  ? "\nid author ": " by ")
             << "M. Byrne and scores of others...";
 #else
-//     ss << (Is64Bit ? " 64" : "")   //what's the point ? 32 bit OS
-									  //now represent less than 2% of PCs in service,
-									  //except for those still used with chess programs ;>)
-//     << (HasPext ? " BMI2" : (HasPopCnt ? " POPCNT" : ""))    //may create issues with GUI,
-																//extraneous unneeeded characters
+//     ss << (Is64Bit ? " 64" : "") //most 95% of systems are 64 bit
+//     << (HasPext ? " BMI2" : (HasPopCnt ? " POPCNT" : "")) // may direupt some GUIs
 	   ss << (to_uci  ? "\nid author ": " by ")
        << "T. Romstad, M. Costalba, J. Kiiski, G. Linscott";
 #endif

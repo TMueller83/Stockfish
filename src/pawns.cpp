@@ -19,7 +19,6 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <algorithm>
 #include <cassert>
 
 #include "bitboard.h"
@@ -37,26 +36,16 @@ namespace {
   constexpr Score Doubled  = S(11, 56);
   constexpr Score Isolated = S( 5, 15);
 
-  // Connected pawn bonus by opposed, phalanx, #support and rank
-#ifdef Maverick // locust2 connected_pawns modfication #84935cb
-  Score Connected[3][2][3][RANK_NB];
-#else
-  Score Connected[2][2][3][RANK_NB];
-#endif
+  // Connected pawn bonus
+  constexpr int Connected[RANK_NB] = { 0, 13, 24, 18, 65, 100, 175, 330 };
+
   // Strength of pawn shelter for our king by [distance from edge][rank].
   // RANK_1 = 0 is used for files where we have no pawn, or pawn is behind our king.
   constexpr Value ShelterStrength[int(FILE_NB) / 2][RANK_NB] = {
-#ifdef Maverick // locust2 connected_pawns modfication #84935cb
-    { V( -3), V( 81), V( 93), V( 58), V( 39), V( 18), V(  25) },
-    { V(-40), V( 61), V( 35), V(-49), V(-29), V(-11), V( -63) },
-    { V( -7), V( 75), V( 23), V( -2), V( 32), V(  3), V( -45) },
-    { V(-36), V(-13), V(-29), V(-52), V(-48), V(-67), V(-166) }
-#else
     { V( -6), V( 81), V( 93), V( 58), V( 39), V( 18), V(  25) },
     { V(-43), V( 61), V( 35), V(-49), V(-29), V(-11), V( -63) },
     { V(-10), V( 75), V( 23), V( -2), V( 32), V(  3), V( -45) },
     { V(-39), V(-13), V(-29), V(-52), V(-48), V(-67), V(-166) }
-#endif
   };
 
   // Danger of enemy pawns moving toward our king by [distance from edge][rank].
@@ -81,11 +70,7 @@ namespace {
     Bitboard b, neighbours, stoppers, doubled, support, phalanx;
     Bitboard lever, leverPush;
     Square s;
-#ifdef Maverick // locust2 connected_pawns modfication #84935cb
-    bool opposed, backward, blocked;
-#else
     bool opposed, backward;
-#endif
     Score score = SCORE_ZERO;
     const Square* pl = pos.squares<PAWN>(Us);
 
@@ -111,10 +96,6 @@ namespace {
 
         // Flag the pawn
         opposed    = theirPawns & forward_file_bb(Us, s);
-
-#ifdef Maverick  // locust2 connected_pawns modfication #84935cb
-        blocked    = theirPawns & (s + Up);
-#endif
         stoppers   = theirPawns & passed_pawn_span(Us, s);
 
         lever      = theirPawns & PawnAttacks[Us][s];
@@ -138,7 +119,7 @@ namespace {
 			&& popcount(phalanx) >= popcount(leverPush))
             e->passedPawns[Us] |= s;
 
-        else if (   stoppers == SquareBB[s + Up]
+        else if (   stoppers == square_bb(s + Up)
                  && relative_rank(Us, s) >= RANK_5)
         {
             b = shift<Up>(support) & ~theirPawns;
@@ -149,11 +130,12 @@ namespace {
 
         // Score this pawn
         if (support | phalanx)
-#ifdef Maverick // locust2 connected_pawns modfication #84935cb
-            score += Connected[opposed + blocked][bool(phalanx)][popcount(support)][relative_rank(Us, s)];
-#else
-            score += Connected[opposed][bool(phalanx)][popcount(support)][relative_rank(Us, s)];
-#endif
+        {
+            int r = relative_rank(Us, s);
+            int v = phalanx ? Connected[r] + Connected[r + 1] : 2 * Connected[r];
+            v = 17 * popcount(support) + (v >> (opposed + 1));
+            score += make_score(v, v * (r - 2) / 4);
+        }
         else if (!neighbours)
             score -= Isolated, e->weakUnopposed[Us] += !opposed;
 
@@ -169,40 +151,6 @@ namespace {
 } // namespace
 
 namespace Pawns {
-
-/// Pawns::init() initializes some tables needed by evaluation. Instead of using
-/// hard-coded tables, when makes sense, we prefer to calculate them with a formula
-/// to reduce independent parameters and to allow easier tuning and better insight.
-
-void init() {
-
-  static constexpr int Seed[RANK_NB] = { 0, 13, 24, 18, 65, 100, 175, 330 };
-
-#ifdef Maverick // locust2 connected_pawns modfication #84935cb
-  for (int opposedBlocked = 0; opposedBlocked <= 2; ++opposedBlocked)
-#else
-  for (int opposed = 0; opposed <= 1; ++opposed)
-#endif
-      for (int phalanx = 0; phalanx <= 1; ++phalanx)
-          for (int support = 0; support <= 2; ++support)
-              for (Rank r = RANK_2; r < RANK_8; ++r)
-  {
-#ifdef Maverick
-      int v = (16 + r) * support;  //snicolet bb06275
-#else
-      int v = 17 * support;
-#endif
-#ifdef Maverick // locust2 connected_pawns modfication #84935cb
-      v += (Seed[r] + (phalanx ? (Seed[r + 1] - Seed[r]) / 2 : 0)) >> opposedBlocked;
-
-      Connected[opposedBlocked][phalanx][support][r] = make_score(v, v * (r - 2) / 4);
-#else
-      v += (Seed[r] + (phalanx ? (Seed[r + 1] - Seed[r]) / 2 : 0)) >> opposed;
-
-      Connected[opposed][phalanx][support][r] = make_score(v, v * (r - 2) / 4);
-#endif
-  }
-}
 
 /// Pawns::probe() looks up the current position's pawns configuration in
 /// the pawns hash table. It returns a pointer to the Entry if the position
@@ -220,17 +168,8 @@ Entry* probe(const Position& pos) {
   e->key = key;
   e->scores[WHITE] = evaluate<WHITE>(pos, e);
   e->scores[BLACK] = evaluate<BLACK>(pos, e);
-//<<<<<<< HEAD
-  e->passedCount= popcount(e->passedPawns[WHITE] | e->passedPawns[BLACK])
-#ifdef Maverick  //from sac3 by xoto10
-			  + (pos.count<PAWN>(WHITE) != pos.count<PAWN>(BLACK));
-#else
-	;
-#endif
-//=======
- // e->passedCount= popcount(e->passedPawns[WHITE] | e->passedPawns[BLACK]);
+  e->passedCount= popcount(e->passedPawns[WHITE] | e->passedPawns[BLACK]);
 
-//>>>>>>> 7133598a98301cf84857d39194026b876da48b96
   return e;
 }
 
@@ -252,7 +191,7 @@ Value Entry::evaluate_shelter(const Position& pos, Square ksq) {
   Value safety = (shift<Down>(theirPawns) & (FileABB | FileHBB) & BlockRanks & ksq) ?
                  Value(374) : Value(5);
 
-  File center = std::max(FILE_B, std::min(FILE_G, file_of(ksq)));
+  File center = clamp(file_of(ksq), FILE_B, FILE_G);
   for (File f = File(center - 1); f <= File(center + 1); ++f)
   {
       b = ourPawns & file_bb(f);

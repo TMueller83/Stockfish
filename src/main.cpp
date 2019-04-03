@@ -47,18 +47,16 @@ int main(int argc, char* argv[]) {
   Bitboards::init();
   Position::init();
   Bitbases::init();
-#ifdef Add_Features
+
   Search::init();
-#else
-  Search::init();
-#endif
-  Pawns::init();
+
 #ifdef Maverick
    Eval::init();   //  Replace Mobility table with log equations (with rook mg exception). #1784
    polybook1.init(Options["Book File 1"]);  // book idea from Marco Zerbanti
    polybook2.init(Options["Book File 2"]);
    polybook3.init(Options["Book File 3"]);
 #endif
+
   Threads.set(Options["Threads"]);
   Search::clear(); // After threads are up
 

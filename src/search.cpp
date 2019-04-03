@@ -19,7 +19,6 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <cstring>   // For std::memset
@@ -104,11 +103,10 @@ namespace {
     return d > 17 ? 0 : 29 * d * d + 138 * d - 134;
   }
 
-  // Add a small random component to draw evaluations to keep search dynamic
-  // and to avoid 3fold-blindness.
+  // Add a small random component to draw evaluations to avoid 3fold-blindness
   Value value_draw(Depth depth, Thread* thisThread) {
     return depth < 4 ? VALUE_DRAW
-                     : VALUE_DRAW + Value(2 * (thisThread->nodes.load(std::memory_order_relaxed) % 2) - 1);
+                     : VALUE_DRAW + Value(2 * (thisThread->nodes & 1) - 1);
   }
 
   // Skill structure is used to implement strength limit
@@ -138,13 +136,6 @@ int   aggressiveness, attack, jekell, tactical, uci_elo, variety;
   void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus);
   void update_quiet_stats(const Position& pos, Stack* ss, Move move, Move* quiets, int quietCount, int bonus);
   void update_capture_stats(const Position& pos, Move move, Move* captures, int captureCount, int bonus);
-
-  inline bool gives_check(const Position& pos, Move move) {
-    Color us = pos.side_to_move();
-    return  type_of(move) == NORMAL && !(pos.blockers_for_king(~us) & pos.pieces(us))
-          ? pos.check_squares(type_of(pos.moved_piece(move))) & to_sq(move)
-          : pos.gives_check(move);
-  }
 
   // perft() is our utility to verify move generation. All the leaf nodes up
   // to the given depth are generated and counted, and the sum is returned.
@@ -178,20 +169,19 @@ int   aggressiveness, attack, jekell, tactical, uci_elo, variety;
 /// Search::init() is called at startup to initialize various lookup tables
 
 void Search::init() {
-#ifdef Maverick   // MichaelB7
+	
+    #ifdef Maverick   // MichaelB7
 	for (int imp = 0; imp <= 1; ++imp)
 		for (int d = 1; d < 64; ++d)
 			for (int mc = 1; mc < 64; ++mc)
 			{
-				int red = int((log(d) * log(mc) + .5) * 1100) >> 1;
-				Reductions[imp][d][mc] = red/1000;
+				int red = int(log(d) * log(mc) + .85 ) / 2;
+				Reductions[imp][d][mc] = red;
 				
 				// Increase reduction for non-PV nodes when eval is not improving
-				if (!imp && red > 750)
+				if (!imp && red > 1)
 					Reductions[imp][d][mc]++;
-				
 			 }
-
 	for (int d = 0; d < 16; ++d)
 	{
 		FutilityMoveCounts[0][d] = int(2.4 + 0.74 * pow(d, 1.78));
@@ -212,12 +202,12 @@ void Search::clear() {
   Time.availableNodes = 0;
   TT.clear();
   Threads.clear();
-  Tablebases::init(Options["SyzygyPath"]); // Free up mapped files
+  Tablebases::init(Options["SyzygyPath"]); // Free mapped files
 }
 
 
-/// MainThread::search() is called by the main thread when the program receives
-/// the UCI 'go' command. It searches from the root position and outputs the "bestmove".
+/// MainThread::search() is started when the program receives the UCI 'go'
+/// command. It searches from the root position and outputs the "bestmove".
 
 void MainThread::search() {
 
@@ -230,14 +220,14 @@ void MainThread::search() {
 #ifdef Add_Features
     aggressiveness	= Options["DC_Slider"];
     bruteForce		= Options["BruteForce"];
-	cleanSearch		= Options["Clean Search"];
+    cleanSearch		= Options["Clean Search"];
     jekell			= Options["Jekell_&_Hyde"];
     limitStrength	= Options["UCI_LimitStrength"];
     minOutput		= Options["Minimal_Output"];
     noNULL			= Options["No_Null_Moves"];
     tactical		= Options["Tactical"];
     uci_elo			= Options["UCI_ELO"];
-	variety 		= Options["Variety"];
+    variety 		= Options["Variety"];
 #endif
 
   Color us = rootPos.side_to_move();
@@ -350,8 +340,9 @@ void MainThread::search() {
   if (Limits.npmsec)
       Time.availableNodes += Limits.inc[us] - Threads.nodes_searched();
 
-  // Check if there are threads with a better score than main thread
   Thread* bestThread = this;
+
+  // Check if there are threads with a better score than main thread
   if (    Options["MultiPV"] == 1
       && !Limits.depth
       && !Skill(Options["Skill Level"]).enabled()
@@ -402,14 +393,12 @@ void MainThread::search() {
 
 void Thread::search() {
 
-  // To allow access to (ss-5) up to (ss+2), the stack must be oversized.
+  // To allow access to (ss-7) up to (ss+2), the stack must be oversized.
   // The former is needed to allow update_continuation_histories(ss-1, ...),
-  // which accesses its argument at ss-4, also near the root.
+  // which accesses its argument at ss-6, also near the root.
   // The latter is needed for statScores and killer initialization.
   Stack stack[MAX_PLY+10], *ss = stack+7;
-#ifndef Mavrick  // #2043 by J Oster
   Move  pv[MAX_PLY+1];
-#endif 
   Value bestValue, alpha, beta, delta;
   Move  lastBestMove = MOVE_NONE;
   Depth lastBestMoveDepth = DEPTH_ZERO;
@@ -425,9 +414,8 @@ void Thread::search() {
   for (int i = 7; i > 0; i--)
 
      (ss-i)->continuationHistory = &this->continuationHistory[NO_PIECE][0]; // Use as sentinel
-#ifndef Mavrick  // #2043 by J Oster  
 ss->pv = pv;
-#endif
+
 #ifdef Add_Features
   if (cleanSearch)
 	  Search::clear();
@@ -472,7 +460,7 @@ ss->pv = pv;
           : Options["Analysis Contempt"] == "Black" && us == WHITE ? -ct
           : ct;
 
-  // In evaluate.cpp the evaluation is from the white point of view
+  // Evaluation score is from the white point of view
   contempt = (us == WHITE ?  make_score(ct, ct / 2)
                           : -make_score(ct, ct / 2));
 
@@ -660,7 +648,7 @@ ss->pv = pv;
           && !mainThread->stopOnPonderhit)
       {
           double fallingEval = (306 + 9 * (mainThread->previousScore - bestValue)) / 581.0;
-          fallingEval        = std::max(0.5, std::min(1.5, fallingEval));
+          fallingEval = clamp(fallingEval, 0.5, 1.5);
 
           // If the bestMove is stable over several iterations, reduce time accordingly
           timeReduction = lastBestMoveDepth + 10 * ONE_PLY < completedDepth ? 1.95 : 1.0;
@@ -753,9 +741,9 @@ namespace {
     bool captureOrPromotion, doFullDepthSearch, moveCountPruning, ttCapture;
 
     Piece movedPiece;
-#ifdef Maverick //MichaelB7
+/*#ifdef Maverick //MichaelB7
     Piece capturedPiece;
-#endif
+#endif*/
     int moveCount, captureCount, quietCount;
 
     // Step 1. Initialize node
@@ -832,6 +820,15 @@ namespace {
     ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
             : ttHit    ? tte->move() : MOVE_NONE;
     ttPv = (ttHit && tte->is_pv()) || (PvNode && depth > 4 * ONE_PLY);
+
+    // if position has been searched at higher depths and we are shuffling, return value_draw
+    if (pos.rule50_count() > 36
+        && ss->ply > 36
+        && depth < 3 * ONE_PLY
+        && ttHit
+        && tte->depth() > depth
+        && pos.count<PAWN>() > 0)
+        return VALUE_DRAW;
 
     // At non-PV nodes we check for an early TT cutoff
     if (  !PvNode
@@ -1181,8 +1178,7 @@ namespace {
     }
 
     // Step 11. Internal iterative deepening (~2 Elo)
-    if (    depth >= 8 * ONE_PLY
-        && !ttMove)
+    if (depth >= 8 * ONE_PLY && !ttMove)
     {
         search<NT>(pos, ss, alpha, beta, depth - 7 * ONE_PLY, cutNode);
 
@@ -1196,6 +1192,7 @@ moves_loop: // When in check, search starts from here
     const PieceToHistory* contHist[] = { (ss-1)->continuationHistory, (ss-2)->continuationHistory,
                                           nullptr, (ss-4)->continuationHistory,
                                           nullptr, (ss-6)->continuationHistory };
+
     Move countermove = thisThread->counterMoves[pos.piece_on(prevSq)][prevSq];
 
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory,
@@ -1203,8 +1200,8 @@ moves_loop: // When in check, search starts from here
                                       contHist,
                                       countermove,
                                       ss->killers);
-    value = bestValue; // Workaround a bogus 'uninitialized' warning under gcc
 
+    value = bestValue; // Workaround a bogus 'uninitialized' warning under gcc
     moveCountPruning = false;
     ttCapture = ttMove && pos.capture_or_promotion(ttMove);
 
@@ -1241,10 +1238,11 @@ moves_loop: // When in check, search starts from here
       extension = DEPTH_ZERO;
       captureOrPromotion = pos.capture_or_promotion(move);
       movedPiece = pos.moved_piece(move);
-#ifdef Maverick //MichaelB7
+
+/*#ifdef Maverick //MichaelB7
       capturedPiece = pos.captured_piece();
-#endif
-      givesCheck = gives_check(pos, move);
+#endif*/
+      givesCheck = pos.gives_check(move);
 
       // Step 13. Extensions (~70 Elo)
 
@@ -1295,28 +1293,27 @@ moves_loop: // When in check, search starts from here
       else if (    givesCheck
                && (pos.blockers_for_king(~us) & from_sq(move) || pos.see_ge(move)))
           extension = ONE_PLY;
-		
-#ifdef Maverick //MichaelB7
-      else if (    type_of(capturedPiece) == type_of(movedPiece)
-	   		|| pos.promotion_pawn_push(move))
+
+      // Shuffle extension
+      else if(pos.rule50_count() > 14 && ss->ply > 14 && depth < 3 * ONE_PLY && PvNode)
           extension = ONE_PLY;
-#endif
+
       // Castling extension
       else if (type_of(move) == CASTLING)
           extension = ONE_PLY;
 #ifdef Maverick //Moez Jellouli endgame extension
 	  else if (pos.non_pawn_material() == 0
-			   &&  abs(ss->staticEval) <= Value(160)
-			   &&  abs(ss->staticEval) >= Value(10)
-			   &&  pos.rule50_count() <= 10
-			   &&  depth >= 4 * ONE_PLY
-			   &&  (PvNode || (!PvNode && improving)))	// Endgame extension
+               &&  abs(ss->staticEval) <= Value(160)
+               &&  abs(ss->staticEval) >= Value(10)
+               &&  pos.rule50_count() <= 10
+               &&  depth >= 4 * ONE_PLY
+               &&  (PvNode || (!PvNode && improving)))	// Endgame extension
 		  extension = ONE_PLY;
 #endif
 #ifdef Maverick  // Vondele Extend anti-shuffle moves
 	  else if (   pos.rule50_count() > 20
-				&& pos.rule50_count() < 30
-				&& (type_of(movedPiece) == PAWN || captureOrPromotion))
+               && pos.rule50_count() < 30
+               && (type_of(movedPiece) == PAWN || captureOrPromotion))
 		  extension = ONE_PLY;
 #endif	
 
@@ -1326,18 +1323,19 @@ moves_loop: // When in check, search starts from here
       // Step 14. Pruning at shallow depth (~170 Elo)
       if (  !rootNode
 #ifdef Add_Features
-	      && !bruteForce
+          && !bruteForce
 #endif			
           && pos.non_pawn_material(us)
           && bestValue > VALUE_MATED_IN_MAX_PLY)
       {
           // Skip quiet moves if movecount exceeds our FutilityMoveCount threshold
 #ifdef Maverick
-		  moveCountPruning = depth < 16 * ONE_PLY
-                          && moveCount >= FutilityMoveCounts[improving][depth / ONE_PLY];
+          moveCountPruning = depth < 16 * ONE_PLY
+             && moveCount >= futility_move_count(improving, depth / ONE_PLY);
 #else
-		  moveCountPruning = moveCount >= futility_move_count(improving,depth / ONE_PLY);
+          moveCountPruning = moveCount >= futility_move_count(improving, depth / ONE_PLY);
 #endif
+
 
           if (   !captureOrPromotion
               && !givesCheck
@@ -1541,7 +1539,7 @@ moves_loop: // When in check, search starts from here
                   alpha = value;
               else
               {
-   //               assert(value >= beta); // Fail high
+                 //assert(value >= beta); // Fail high
                   ss->statScore = 0;
 
 #ifdef Maverick// Gunther Demetz
@@ -1640,15 +1638,13 @@ moves_loop: // When in check, search starts from here
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
 			
 #ifdef Add_Features
-			if (jekell && variety && bestValue > 100 && popcount(pos.pieces()) > 10)
+			if (jekell && variety && PvNode && bestValue > 100 && popcount(pos.pieces()) > 10)
 			{
 				std::mt19937 gen2(now());
 				std::uniform_int_distribution<int> dis(0, 2 * variety * jekell);
 				bestValue -= dis(gen2);
 			}
-#endif
-			
-
+#endif			
     return bestValue;
   }
 
@@ -1674,14 +1670,13 @@ moves_loop: // When in check, search starts from here
     Value bestValue, value, ttValue, futilityValue, futilityBase, oldAlpha;
     bool ttHit, pvHit, inCheck, givesCheck, evasionPrunable;
     int moveCount;
-#ifndef Mavrick  // #2043 by J Oster
+
     if (PvNode)
     {
         oldAlpha = alpha; // To flag BOUND_EXACT when eval above alpha and no available moves
         (ss+1)->pv = pv;
         ss->pv[0] = MOVE_NONE;
     }
-#endif
 
     Thread* thisThread = pos.this_thread();
     (ss+1)->ply = ss->ply + 1;
@@ -1694,19 +1689,8 @@ moves_loop: // When in check, search starts from here
     if (   pos.is_draw(ss->ply)
         || ss->ply >= MAX_PLY)
         return (ss->ply >= MAX_PLY && !inCheck) ? evaluate(pos) : VALUE_DRAW;
-#ifdef Mavrick  // #2043 by J Oster
-    assert(1 <= ss->ply && ss->ply < MAX_PLY);
-#else
+
     assert(0 <= ss->ply && ss->ply < MAX_PLY);
-#endif
-#ifdef Mavrick  // #2043 by J Oster
-    if (PvNode)
-    {
-        oldAlpha = alpha; // To flag BOUND_EXACT when eval above alpha and no available moves
-        (ss+1)->pv = pv;
-        (ss+1)->pv[0] = MOVE_NONE;
-    }
-#endif
 
     // Decide whether or not to include checks: this fixes also the type of
     // TT entry depth that we are going to use. Note that in qsearch we use
@@ -1762,9 +1746,9 @@ moves_loop: // When in check, search starts from here
 #ifdef Add_Features
             if (jekell && variety && bestValue > 100 && popcount(pos.pieces()) > 10)
 			{
-				std::mt19937 gen3(now());
-				std::uniform_int_distribution<int> dis(0, 2 * variety * jekell);
-				bestValue -= dis(gen3);
+                          std::mt19937 gen3(now());
+                          std::uniform_int_distribution<int> dis(0, 2 * variety * jekell);
+                          bestValue -= dis(gen3);
 			}
 #endif
 
@@ -1795,7 +1779,7 @@ moves_loop: // When in check, search starts from here
     {
       assert(is_ok(move));
 
-      givesCheck = gives_check(pos, move);
+      givesCheck = pos.gives_check(move);
 
       moveCount++;
 
@@ -1831,7 +1815,7 @@ moves_loop: // When in check, search starts from here
       // Don't search moves with negative SEE values
       if (  (!inCheck || evasionPrunable)
 #ifdef Maverick // Günther Demetz - Avoid pruning disocver checks with negative SEE value
-		  && !(givesCheck && (pos.blockers_for_king(~pos.side_to_move()) & from_sq(move)))
+          && !(givesCheck && (pos.blockers_for_king(~pos.side_to_move()) & from_sq(move)))
 #endif
           && !pos.see_ge(move))
           continue;
@@ -1893,9 +1877,9 @@ moves_loop: // When in check, search starts from here
 #ifdef Add_Features
 	if (jekell && variety && bestValue > 100 && popcount(pos.pieces()) > 10)
 	  {
-		  std::mt19937 gen4(now());
-				std::uniform_int_distribution<int> dis(0, 2 * variety * jekell);
-		  bestValue -= dis(gen4);
+              std::mt19937 gen4(now());
+              std::uniform_int_distribution<int> dis(0, 2 * variety * jekell);
+              bestValue -= dis(gen4);
 	  }
 #endif
 

@@ -19,7 +19,6 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <algorithm>
 #include <cassert>
 #include <cstring>   // For std::memset
 #include <iomanip>
@@ -371,15 +370,6 @@ constexpr Score Outpost            = S(  9,  3);
 
             // Penalty if the piece is far from the king
             score -= KingProtector * distance(s, pos.square<KING>(Us));
-#ifdef Maverick  //Alayan-stk-2
-            // Penalty for a lone knight having to protect or defend aganist 
-            // multiple split passed pawns
-            if (Pt == KNIGHT && (pos.non_pawn_material(Us) <= KnightValueEg))
-            {
-                score -= KnightPassedPawns * (pe->split_passed_pawns(Them)-2);
-                score -= KnightPassedPawns * (pe->split_passed_pawns(Us)-2);
-            }
-#endif
 
             if (Pt == BISHOP)
             {
@@ -899,7 +889,7 @@ constexpr Score Outpost            = S(  9,  3);
             sf = 16 + 4 * pe->passed_count();
 
         else
-            sf = std::min( 40 + (pos.opposite_bishops() ? 2 : 7) * pos.count<PAWN>(strongSide),sf );
+            sf = std::min( 40 + (pos.opposite_bishops() ? 2 : 7) * pos.count<PAWN>(strongSide), sf );
     }
 
     return ScaleFactor(sf);

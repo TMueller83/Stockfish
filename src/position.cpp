@@ -19,7 +19,6 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <algorithm>
 #include <cassert>
 #include <cstddef> // For offsetof()
 #include <cstring> // For std::memset, std::memcmp
@@ -630,7 +629,7 @@ bool Position::pseudo_legal(const Move m) const {
   {
       // We have already handled promotion moves, so destination
       // cannot be on the 8th/1st rank.
-      if (rank_of(to) == relative_rank(us, RANK_8))
+      if ((Rank8BB | Rank1BB) & to)
           return false;
 
       if (   !(attacks_from<PAWN>(from, us) & pieces(~us) & to) // Not a capture
@@ -1025,11 +1024,7 @@ void Position::do_null_move(StateInfo& newSt) {
   }
 
   st->key ^= Zobrist::side;
-#ifdef Maverick // from snicolet
-  prefetch(TT.first_entry(key()));
-#else
   prefetch(TT.first_entry(st->key));
-#endif
 
   ++st->rule50;
   st->pliesFromNull = 0;
@@ -1060,11 +1055,8 @@ Key Position::key_after(Move m) const {
   Square to = to_sq(m);
   Piece pc = piece_on(from);
   Piece captured = piece_on(to);
-#ifdef Maverick //  from snicolet
-   Key k = key() ^ Zobrist::side;
-#else
   Key k = st->key ^ Zobrist::side;
-#endif
+
   if (captured)
       k ^= Zobrist::psq[captured][to];
 
