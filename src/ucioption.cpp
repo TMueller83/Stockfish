@@ -143,7 +143,7 @@ void init(OptionsMap& o) {
 	o["Bench_KNPS"]             << Option (1500, 500, 5000);//used for UCI Play By Elo
 #endif
 #ifdef Add_Features
-	o["Jekell_&_Hyde"]          << Option(0, 0, 15);
+	o["Jekyll_&_Hyde"]          << Option(0, 0, 15);
 	o["Tactical"]               << Option(0, 0,  8);
 	o["Variety"]                << Option(0, 0, 15);
 #endif

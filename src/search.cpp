@@ -121,7 +121,7 @@ namespace {
   };
 #ifdef Add_Features
 bool  bruteForce, cleanSearch, minOutput, limitStrength, noNULL;
-int   aggressiveness, attack, jekell, tactical, uci_elo, variety;
+int   aggressiveness, attack, jekyll, tactical, uci_elo, variety;
 #endif
 
   template <NodeType NT>
@@ -221,7 +221,7 @@ void MainThread::search() {
     aggressiveness	= Options["DC_Slider"];
     bruteForce		= Options["BruteForce"];
     cleanSearch		= Options["Clean Search"];
-    jekell			= Options["Jekell_&_Hyde"];
+    jekyll			= Options["Jekyll_&_Hyde"];
     limitStrength	= Options["UCI_LimitStrength"];
     minOutput		= Options["Minimal_Output"];
     noNULL			= Options["No_Null_Moves"];
@@ -1638,10 +1638,10 @@ moves_loop: // When in check, search starts from here
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
 			
 #ifdef Add_Features
-			if (jekell && variety && bestValue > 100 && popcount(pos.pieces()) > 10)
+			if (jekyll && variety && bestValue > 100 && popcount(pos.pieces()) > 10)
 			{
 				std::mt19937 gen2(now());
-				std::uniform_int_distribution<int> dis(0, 2 * variety * jekell);
+				std::uniform_int_distribution<int> dis(0, 2 * variety * jekyll);
 				bestValue -= dis(gen2);
 			}
 #endif			
@@ -1744,10 +1744,10 @@ moves_loop: // When in check, search starts from here
                           DEPTH_NONE, MOVE_NONE, ss->staticEval);
 			
 #ifdef Add_Features
-            if (jekell && variety && bestValue > 100 && popcount(pos.pieces()) > 10)
+            if (jekyll && variety && bestValue > 100 && popcount(pos.pieces()) > 10)
 			{
                           std::mt19937 gen3(now());
-                          std::uniform_int_distribution<int> dis(0, 2 * variety * jekell);
+                          std::uniform_int_distribution<int> dis(0, 2 * variety * jekyll);
                           bestValue -= dis(gen3);
 			}
 #endif
@@ -1875,10 +1875,10 @@ moves_loop: // When in check, search starts from here
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
 	  
 #ifdef Add_Features
-	if (jekell && variety && bestValue > 100 && popcount(pos.pieces()) > 10)
+	if (jekyll && variety && bestValue > 100 && popcount(pos.pieces()) > 10)
 	  {
               std::mt19937 gen4(now());
-              std::uniform_int_distribution<int> dis(0, 2 * variety * jekell);
+              std::uniform_int_distribution<int> dis(0, 2 * variety * jekyll);
               bestValue -= dis(gen4);
 	  }
 #endif
