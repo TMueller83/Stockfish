@@ -1638,7 +1638,7 @@ moves_loop: // When in check, search starts from here
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
 			
 #ifdef Add_Features
-			if (jekell && variety && PvNode && bestValue > 100 && popcount(pos.pieces()) > 10)
+			if (jekell && variety && bestValue > 100 && popcount(pos.pieces()) > 10)
 			{
 				std::mt19937 gen2(now());
 				std::uniform_int_distribution<int> dis(0, 2 * variety * jekell);
