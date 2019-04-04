@@ -154,7 +154,6 @@ constexpr Score FlankAttacks       = S(  8,  0);
 constexpr Score Hanging            = S( 69, 36);
 constexpr Score KingProtector      = S(  7,  8);
 constexpr Score KnightManeuver     = S(  8,  4);  // miguel-l
-constexpr Score KnightPassedPawns  = S(  0, 12);  //  Alayan-stk-2
 constexpr Score KnightOnQueen      = S( 16, 12);
 constexpr Score LongDiagonalBishop = S( 45,  0);
 constexpr Score MinorBehindPawn    = S( 18,  3);
