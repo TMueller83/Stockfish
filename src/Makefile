@@ -52,9 +52,9 @@ endif
 ifeq ($(VERSION),maverick)
 	CXXFLAGS += -DMaverick
 	ifeq ($(COMP),mingw)
-		EXE = McCain-X2.exe
+		EXE = McCain-X3-dev-$(DATE).exe
 	else
-		EXE = McCain-X2
+		EXE = McCain-X3-dev-$(DATE)
 
 endif
 	else
