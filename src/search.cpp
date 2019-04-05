@@ -730,7 +730,7 @@ namespace {
     Key posKey;
     Move ttMove, move, excludedMove, bestMove;
     Depth extension, newDepth;
-    Value bestValue, value, ttValue, eval, maxValue, pureStaticEval;
+    Value bestValue, value, ttValue, eval, maxValue;
 
 #ifdef Maverick  // Blocked Position MJZ1977
     bool ttHit, ttPv, inCheck, givesCheck, improving, potentiallyBlocked;
@@ -921,16 +921,16 @@ namespace {
     // Step 6. Static evaluation of the position
     if (inCheck)
     {
-        ss->staticEval = eval = pureStaticEval = VALUE_NONE;
+        ss->staticEval = eval = VALUE_NONE;
         improving = false;
         goto moves_loop;  // Skip early pruning when in check
     }
     else if (ttHit)
     {
         // Never assume anything on values stored in TT
-        ss->staticEval = eval = pureStaticEval = tte->eval();
+        ss->staticEval = eval = tte->eval();
         if (eval == VALUE_NONE)
-            ss->staticEval = eval = pureStaticEval = evaluate(pos);
+            ss->staticEval = eval = evaluate(pos);
 
         // Can ttValue be used as a better position evaluation?
         if (    ttValue != VALUE_NONE
@@ -943,13 +943,12 @@ namespace {
         {
             int bonus = -(ss-1)->statScore / 512;
 
-            pureStaticEval = evaluate(pos);
-            ss->staticEval = eval = pureStaticEval + bonus;
+            ss->staticEval = eval = evaluate(pos) + bonus;
         }
         else
-            ss->staticEval = eval = pureStaticEval = -(ss-1)->staticEval + 2 * Eval::Tempo;
+            ss->staticEval = eval = -(ss-1)->staticEval + 2 * Eval::Tempo;
 
-        tte->save(posKey, VALUE_NONE, ttPv, BOUND_NONE, DEPTH_NONE, MOVE_NONE, pureStaticEval);
+        tte->save(posKey, VALUE_NONE, ttPv, BOUND_NONE, DEPTH_NONE, MOVE_NONE, eval);
     }
 
     // Step 7. Razoring (~2 Elo)
@@ -986,12 +985,12 @@ namespace {
 #ifdef Maverick  // Blocked Position MJZ1977
         && (((ss-1)->statScore < 23200
              &&  eval >= beta
-             &&  pureStaticEval >= beta - 36 * depth / ONE_PLY + 225)
+             &&  ss->staticEval >= beta - 36 * depth / ONE_PLY + 225)
 		   || potentiallyBlocked)
 #else
         && (ss-1)->statScore < 23200
         &&  eval >= beta
-        &&  pureStaticEval >= beta - 36 * depth / ONE_PLY + 225
+        &&  ss->staticEval >= beta - 36 * depth / ONE_PLY + 225
 #endif
         && !excludedMove
 #ifdef Maverick
@@ -1167,7 +1166,7 @@ namespace {
                         {
 			   if (!excludedMove)
 				tte->save(posKey, value_to_tt(value, ss->ply), ttPv,
-				BOUND_LOWER, depth - 4 * ONE_PLY, move, pureStaticEval);
+				BOUND_LOWER, depth - 4 * ONE_PLY, move, ss->staticEval);
 					
                     return value;
                 }
@@ -1238,10 +1237,6 @@ moves_loop: // When in check, search starts from here
       extension = DEPTH_ZERO;
       captureOrPromotion = pos.capture_or_promotion(move);
       movedPiece = pos.moved_piece(move);
-
-/*#ifdef Maverick //MichaelB7
-      capturedPiece = pos.captured_piece();
-#endif*/
       givesCheck = pos.gives_check(move);
 
       // Step 13. Extensions (~70 Elo)
@@ -1329,13 +1324,13 @@ moves_loop: // When in check, search starts from here
           && bestValue > VALUE_MATED_IN_MAX_PLY)
       {
           // Skip quiet moves if movecount exceeds our FutilityMoveCount threshold
+
 #ifdef Maverick
           moveCountPruning = depth < 16 * ONE_PLY
              && moveCount >= futility_move_count(improving, depth / ONE_PLY);
 #else
           moveCountPruning = moveCount >= futility_move_count(improving, depth / ONE_PLY);
 #endif
-
 
           if (   !captureOrPromotion
               && !givesCheck
@@ -1633,7 +1628,7 @@ moves_loop: // When in check, search starts from here
         tte->save(posKey, value_to_tt(bestValue, ss->ply), ttPv,
                   bestValue >= beta ? BOUND_LOWER :
                   PvNode && bestMove ? BOUND_EXACT : BOUND_UPPER,
-                  depth, bestMove, pureStaticEval);
+                  depth, bestMove, ss->staticEval);
 
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
 			

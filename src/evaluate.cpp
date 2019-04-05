@@ -270,6 +270,8 @@ constexpr Score Outpost            = S(  9,  3);
 
     const Square ksq = pos.square<KING>(Us);
 
+    Bitboard dblAttackByPawn = pawn_double_attacks_bb<Us>(pos.pieces(Us, PAWN));
+
     // Find our pawns that are blocked or on the first two ranks
     Bitboard b = pos.pieces(Us, PAWN) & (shift<Down>(pos.pieces()) | LowRanks);
 
@@ -281,7 +283,8 @@ constexpr Score Outpost            = S(  9,  3);
     attackedBy[Us][KING] = pos.attacks_from<KING>(ksq);
     attackedBy[Us][PAWN] = pe->pawn_attacks(Us);
     attackedBy[Us][ALL_PIECES] = attackedBy[Us][KING] | attackedBy[Us][PAWN];
-    attackedBy2[Us]            = attackedBy[Us][KING] & attackedBy[Us][PAWN];
+    attackedBy2[Us]            = (attackedBy[Us][KING] & attackedBy[Us][PAWN])
+                                 | dblAttackByPawn;
 
     // Init our king safety tables
     kingRing[Us] = attackedBy[Us][KING];
@@ -298,7 +301,7 @@ constexpr Score Outpost            = S(  9,  3);
     kingAttacksCount[Them] = kingAttackersWeight[Them] = 0;
 
     // Remove from kingRing[] the squares defended by two pawns
-    kingRing[Us] &= ~pawn_double_attacks_bb<Us>(pos.pieces(Us, PAWN));
+    kingRing[Us] &= ~dblAttackByPawn;
   }
 
 
