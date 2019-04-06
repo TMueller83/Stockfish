@@ -226,7 +226,7 @@ void MainThread::search() {
     minOutput		= Options["Minimal_Output"];
     noNULL			= Options["No_Null_Moves"];
     tactical		= Options["Tactical"];
-    uci_elo			= Options["UCI_ELO"];
+    uci_elo			= Options["UCI_Elo"];
     variety 		= Options["Variety"];
 #endif
 

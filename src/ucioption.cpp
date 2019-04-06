@@ -123,12 +123,12 @@ void init(OptionsMap& o) {
     o["Minimal_Output"]         << Option(false);
     o["No_Null_Moves"]          << Option(false);
     o["UCI_LimitStrength"]      << Option(false);
-	o["Levels"]                 << Option("var World_Champion var Super_GM "
+	o["Levels"]                 << Option("World_Champion var Super_GM "
 								"var GM  var Deep_Thought var SIM var Cray_Blitz "
 								"var IM var Master var Expert var Class_A "
 								"var Class_B var Class_C var Class_D var Boris "
 								"var Novice var None ", "World_Champ");
-	o["UCI_ELO"]                << Option(1300, 1300, 2850);
+	o["UCI_Elo"]                << Option(1300, 1300, 2850);
 #endif
 #ifdef Maverick
 	o["MultiPV"]                << Option(1, 1, 256);
