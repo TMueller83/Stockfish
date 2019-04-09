@@ -63,10 +63,10 @@ namespace {
 #endif
 
 #if(defined Maverick && defined Add_Features)
-const string Version = "X2a";
+const string Version = "";
 #else
 #ifdef Maverick
-const string Version = "X2a";
+const string Version = "";
 #endif
 #endif
 
@@ -147,7 +147,7 @@ const string engine_info(bool to_uci) {
     string month, day, year;
     stringstream ss, date(__DATE__); // From compiler, format is "Sep 21 2008"
 #ifdef Maverick
-    ss << "McCain-" << Version << setfill('0');
+    ss << "McCain-X3-dev-" << Version << setfill('0');
 #else
     ss << "Stockfish " << Version << setfill('0');
 #endif
