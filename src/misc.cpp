@@ -155,7 +155,7 @@ const string engine_info(bool to_uci) {
     if (Version.empty())
     {
         date >> month >> day >> year;
-		ss << setw(2) << (1 + months.find(month) / 4) <<setw(2) << day << year.substr(2) << "a";
+		ss << setw(2) << (1 + months.find(month) / 4) <<setw(2) << day << year.substr(2) << "";
     }
 #ifdef Maverick
     ss	<< (to_uci  ? "\nid author ": " by ")

@@ -1296,6 +1296,10 @@ moves_loop: // When in check, search starts from here
 #ifdef Maverick
       else if (    givesCheck)
           extension = ONE_PLY;
+		  
+		  else if (    pos.promotion_pawn_push(move) && move == ss->killers[0])
+		  extension = ONE_PLY;
+		  
 #else
       else if (    givesCheck
                && (pos.blockers_for_king(~us) & from_sq(move) || pos.see_ge(move)))

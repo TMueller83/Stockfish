@@ -24,8 +24,8 @@
 ### ==========================================================================
 
 ### Executable name
-### McCain bench nodes  4262837 based on  commits up to 4/6/2019
-### stockfish bench nodes 3506898 > based on commits up to 4/6/2019
+### McCain bench nodes  4333301 based on  commits up to 4/10/2019
+### stockfish bench nodes 3445945 > based on commits up to 4/10/2019
 
 ####  Always leave the three lines below as is (any subsequent defines will override)
 DATE=$(shell date +"%m%d%y")
@@ -52,9 +52,9 @@ endif
 ifeq ($(VERSION),maverick)
 	CXXFLAGS += -DMaverick
 	ifeq ($(COMP),mingw)
-		EXE = McCain-X3-dev-$(DATE)a.exe
+		EXE = McCain-X3-dev-$(DATE).exe
 	else
-		EXE = McCain-X3-dev-$(DATE)a
+		EXE = McCain-X3-dev-$(DATE)
 
 endif
 	else
