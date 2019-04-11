@@ -170,12 +170,12 @@ int   aggressiveness, attack, jekyll, tactical, uci_elo, variety;
 
 void Search::init() {
 	
-    #ifdef Maverick   // MichaelB7
+#ifdef Maverick   // MichaelB7
 	for (int imp = 0; imp <= 1; ++imp)
 		for (int d = 1; d < 64; ++d)
 			for (int mc = 1; mc < 64; ++mc)
 			{
-				int red = int(log(d) * log(mc) + .85 ) / 2;
+				int red = int(log(d) * log(mc) + .85) / 2;
 				Reductions[imp][d][mc] = red;
 				
 				// Increase reduction for non-PV nodes when eval is not improving
@@ -189,7 +189,7 @@ void Search::init() {
 	}
 #else
 	for (int i = 1; i < 64; ++i)
-		Reductions[i] = int(1024 * std::log(i) / std::sqrt(1.95));
+		Reductions[i] = int(1024 * std::log(i) / std::sqrt(1.91));
 #endif
 }
 
@@ -1297,9 +1297,8 @@ moves_loop: // When in check, search starts from here
       else if (    givesCheck)
           extension = ONE_PLY;
 		  
-		  else if (    pos.promotion_pawn_push(move) && move == ss->killers[0])
-		  extension = ONE_PLY;
-		  
+     else if (    pos.promotion_pawn_push(move) && move == ss->killers[0])
+          extension = ONE_PLY;
 #else
       else if (    givesCheck
                && (pos.blockers_for_king(~us) & from_sq(move) || pos.see_ge(move)))
