@@ -571,7 +571,6 @@ constexpr Score Outpost            = S(  9,  3);
 	  score -= kingDanger ? make_score(kingDanger * kingDanger / 4096, kingDanger / 16) : make_score(0, 0);
 #else
 	// Transform the kingDanger units into a Score, and subtract it from the evaluation
-	//if (kingDanger > 100)
     if (kingDanger > 100)
 		score -= make_score(kingDanger * kingDanger / 4096, kingDanger / 16);
 #endif

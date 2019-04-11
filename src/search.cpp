@@ -1296,7 +1296,7 @@ moves_loop: // When in check, search starts from here
 #ifdef Maverick
       else if (    givesCheck)
           extension = ONE_PLY;
-		  
+     // Passed pawn extension
      else if (    pos.promotion_pawn_push(move) && move == ss->killers[0])
           extension = ONE_PLY;
 #else
@@ -1311,6 +1311,16 @@ moves_loop: // When in check, search starts from here
       // Castling extension
       else if (type_of(move) == CASTLING)
           extension = ONE_PLY;
+
+#ifdef Maverick
+#else
+	 // Passed pawn extension
+	  else if (   move == ss->killers[0]
+			   && pos.advanced_pawn_push(move)
+			   && pos.pawn_passed(us, to_sq(move)))
+		  extension = ONE_PLY;
+#endif
+		  
 #ifdef Maverick //Moez Jellouli endgame extension
 	  else if (pos.non_pawn_material() == 0
                &&  abs(ss->staticEval) <= Value(160)
@@ -1325,13 +1335,7 @@ moves_loop: // When in check, search starts from here
                && pos.rule50_count() < 30
                && (type_of(movedPiece) == PAWN || captureOrPromotion))
 		  extension = ONE_PLY;
-#endif	
-
-      // Passed pawn extension
-      else if (   move == ss->killers[0]
-               && pos.advanced_pawn_push(move)
-               && pos.pawn_passed(us, to_sq(move)))
-          extension = ONE_PLY;
+#endif
 
       // Calculate new depth for this move
       newDepth = depth - ONE_PLY + extension;
