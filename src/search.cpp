@@ -82,9 +82,9 @@ namespace {
 #else
 	int Reductions[64]; // [imp or moveNumber]
 #endif
-#ifdef Maverick // 	joergoster Bugfix of the new reduction arrays. #2017
+#ifdef Maverick // revert #2017 
 	template <bool PvNode> Depth reduction(bool i, Depth d, int mn) {
-		return std::max(Reductions[i][std::min(d / ONE_PLY, 63)][std::min(mn, 63)] - PvNode, 0) * ONE_PLY;
+		return (Reductions[i][std::min(d / ONE_PLY, 63)][std::min(mn, 63)] - PvNode) * ONE_PLY;
 #else
   template <bool PvNode> Depth reduction(bool i, Depth d, int mn) {
     int r = Reductions[std::min(d / ONE_PLY, 63)] * Reductions[std::min(mn, 63)] / 1024;
@@ -189,7 +189,7 @@ void Search::init() {
 	}
 #else
 	for (int i = 1; i < 64; ++i)
-		Reductions[i] = int(1024 * std::log(i) / std::sqrt(1.91));
+		Reductions[i] = int(1024 * std::log(i) / std::sqrt(1.95));
 #endif
 }
 
@@ -716,10 +716,6 @@ namespace {
     }
 
     // Dive into quiescence search when the depth reaches zero
-#ifdef Maverick  // Blocked Position MJZ1977
-	if (PvNode && ss->ply > 40 && pos.rule50_count() > 40 && pos.count<PAWN>() >= 1 && depth < ONE_PLY)
-		return VALUE_DRAW;
-#endif
     if (depth < ONE_PLY)
         return qsearch<NT>(pos, ss, alpha, beta);
 
@@ -736,19 +732,10 @@ namespace {
     Move ttMove, move, excludedMove, bestMove;
     Depth extension, newDepth;
     Value bestValue, value, ttValue, eval, maxValue;
-
-#ifdef Maverick  // Blocked Position MJZ1977
-    bool ttHit, ttPv, inCheck, givesCheck, improving, potentiallyBlocked;
-#else
     bool ttHit, ttPv, inCheck, givesCheck, improving;
-#endif
-
     bool captureOrPromotion, doFullDepthSearch, moveCountPruning, ttCapture;
 
     Piece movedPiece;
-/*#ifdef Maverick //MichaelB7
-    Piece capturedPiece;
-#endif*/
     int moveCount, captureCount, quietCount;
 
     // Step 1. Initialize node
@@ -814,26 +801,12 @@ namespace {
     // search to overwrite a previous full search TT value, so we use a different
     // position key in case of an excluded move.
     excludedMove = ss->excludedMove;
-#ifdef Maverick // Blocked Position MJZ1977
-    potentiallyBlocked = (ss->ply > 16 + 4 * depth / ONE_PLY && pos.rule50_count() > 24);
-    posKey = (pos.key() ^ Key(potentiallyBlocked << 17)) ^ Key(excludedMove << 16); // Isn't a very good hash
-#else
     posKey = pos.key() ^ Key(excludedMove << 16); // Isn't a very good hash
-#endif
     tte = TT.probe(posKey, ttHit);
     ttValue = ttHit ? value_from_tt(tte->value(), ss->ply) : VALUE_NONE;
     ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
             : ttHit    ? tte->move() : MOVE_NONE;
     ttPv = (ttHit && tte->is_pv()) || (PvNode && depth > 4 * ONE_PLY);
-
-    // if position has been searched at higher depths and we are shuffling, return value_draw
-    if (pos.rule50_count() > 36
-        && ss->ply > 36
-        && depth < 3 * ONE_PLY
-        && ttHit
-        && tte->depth() > depth
-        && pos.count<PAWN>() > 0)
-        return VALUE_DRAW;
 
     // At non-PV nodes we check for an early TT cutoff
     if (  !PvNode
@@ -987,16 +960,9 @@ namespace {
     if (   !PvNode
 #endif
         && (ss-1)->currentMove != MOVE_NULL
-#ifdef Maverick  // Blocked Position MJZ1977
-        && (((ss-1)->statScore < 23200
-             &&  eval >= beta
-             &&  ss->staticEval >= beta - 36 * depth / ONE_PLY + 225)
-		   || potentiallyBlocked)
-#else
         && (ss-1)->statScore < 23200
         &&  eval >= beta
         &&  ss->staticEval >= beta - 36 * depth / ONE_PLY + 225
-#endif
         && !excludedMove
 #ifdef Maverick
         && thisThread->selDepth + 3 > thisThread->rootDepth / ONE_PLY  //idea from Corchess by Ivan Ivec (modfied here)
@@ -1005,25 +971,13 @@ namespace {
         && (ss->ply >= thisThread->nmpMinPly || us != thisThread->nmpColor)
 )
     {
-#ifdef Maverick  // Blocked Position MJZ1977
-        assert(eval - beta >= 0 || potentiallyBlocked);
-#else
         assert(eval - beta >= 0);
-#endif
-        // Null move dynamic reduction based on depth and value
-#ifdef Maverick  // Blocked Position MJZ1977
-        Depth R = ((823 + 67 * depth / ONE_PLY) / 256 + std::max(std::min(int(eval - beta) / 200, 3),0)) * ONE_PLY;
-#else
-        Depth R = ((823 + 67 * depth / ONE_PLY) / 256 + std::min(int(eval - beta) / 200, 3)) * ONE_PLY;
-#endif
 
+        Depth R = ((823 + 67 * depth / ONE_PLY) / 256 + std::min(int(eval - beta) / 200, 3)) * ONE_PLY;
         ss->currentMove = MOVE_NULL;
         ss->continuationHistory = &thisThread->continuationHistory[NO_PIECE][0];
-
         pos.do_null_move(st);
-
         Value nullValue = -search<NonPV>(pos, ss+1, -beta, -beta+1, depth-R, !cutNode);
-
         pos.undo_null_move();
 
         if (nullValue >= beta)
@@ -1033,12 +987,10 @@ namespace {
                 nullValue = beta;
 
             if (thisThread->nmpMinPly || (abs(beta) < VALUE_KNOWN_WIN && depth < 12 * ONE_PLY))
-#ifdef Maverick  // Blocked Position MJZ1977
-                return (potentiallyBlocked? nullValue * std::min((std::min(ss->ply, pos.rule50_count()) - 40) / 40, 0) : nullValue);
-#else
                 return nullValue;
-#endif
+			
             assert(!thisThread->nmpMinPly); // Recursive verification is not allowed
+			
 #ifdef Maverick //Gunther Demetz zugzwangSolver
 			if  ( depth % 2 == 1 ){
             thisThread->nmpColor = us;
@@ -1122,11 +1074,7 @@ namespace {
             thisThread->nmpMinPly = 0;
 
             if (v >= beta)
-#ifdef Maverick  // Blocked Position MJZ1977
-                return (potentiallyBlocked? nullValue * std::min((std::min(ss->ply, pos.rule50_count()) - 40) / 40, 0) : nullValue);
-#else
                 return nullValue;
-#endif
         }
     }
 
@@ -1304,9 +1252,6 @@ moves_loop: // When in check, search starts from here
                && (pos.blockers_for_king(~us) & from_sq(move) || pos.see_ge(move)))
 		  extension = ONE_PLY;
 #endif
-      // Shuffle extension
-      else if(pos.rule50_count() > 14 && ss->ply > 14 && depth < 3 * ONE_PLY && PvNode)
-          extension = ONE_PLY;
 
       // Castling extension
       else if (type_of(move) == CASTLING)

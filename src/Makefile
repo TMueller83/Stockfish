@@ -24,15 +24,15 @@
 ### ==========================================================================
 
 ### Executable name
-### McCain bench nodes  3905723 based on  commits up to 4/10/2019
-### stockfish bench nodes 3666092 > based on commits up to 4/10/2019
+### McCain bench nodes  4289028 based on  commits up to 4/12/2019
+### stockfish bench nodes 3243738 > based on commits up to 4/12/2019
 
 ####  Always leave the three lines below as is (any subsequent defines will override)
 DATE=$(shell date +"%m%d%y")
 VERSION=
 FEATURE1=
 ### Uncomment the line below for McCain, comment out for Stockfish
-	VERSION=maverick
+###	VERSION=maverick
 ### Uncomment for use with Raspberry Pi -  a slower NPS UCI option setting used in Play
 ### by Elo and personalities
 ###	RASPBERRY=Pi
