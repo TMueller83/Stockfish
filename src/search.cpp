@@ -624,7 +624,6 @@ namespace {
     ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
             : ttHit    ? tte->move() : MOVE_NONE;
 
-
     // At non-PV nodes we check for an early TT cutoff
     if (  !PvNode
         && ttHit
