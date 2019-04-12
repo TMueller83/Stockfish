@@ -1244,6 +1244,7 @@ moves_loop: // When in check, search starts from here
 #ifdef Maverick
       else if (    givesCheck)
           extension = ONE_PLY;
+
      // Passed pawn extension
      else if (    pos.promotion_pawn_push(move) && move == ss->killers[0])
           extension = ONE_PLY;
