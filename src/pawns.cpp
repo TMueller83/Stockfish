@@ -18,7 +18,6 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <algorithm>
 #include <cassert>
 
 #include "bitboard.h"
@@ -37,7 +36,7 @@ namespace {
   constexpr Score Isolated = S( 5, 15);
 
   // Connected pawn bonus
-  constexpr int Connected[RANK_NB] = { 0, 13, 24, 18, 65, 100, 175, 330 };
+  constexpr int Connected[RANK_NB] = { 0, 13, 17, 24, 59, 96, 171 };
 
   // Strength of pawn shelter for our king by [distance from edge][rank].
   // RANK_1 = 0 is used for files where we have no pawn, or pawn is behind our king.
@@ -90,6 +89,7 @@ namespace {
         assert(pos.piece_on(s) == make_piece(Us, PAWN));
 
         File f = file_of(s);
+        Rank r = relative_rank(Us, s);
 
         e->semiopenFiles[Us]   &= ~(1 << f);
         e->pawnAttacksSpan[Us] |= pawn_attack_span(Us, s);
@@ -118,8 +118,7 @@ namespace {
             && popcount(phalanx) >= popcount(leverPush))
             e->passedPawns[Us] |= s;
 
-        else if (   stoppers == SquareBB[s + Up]
-                 && relative_rank(Us, s) >= RANK_5)
+        else if (stoppers == square_bb(s + Up) && r >= RANK_5)
         {
             b = shift<Up>(support) & ~theirPawns;
             while (b)
@@ -130,8 +129,7 @@ namespace {
         // Score this pawn
         if (support | phalanx)
         {
-            int r = relative_rank(Us, s);
-            int v = phalanx ? Connected[r] + Connected[r + 1] : 2 * Connected[r];
+            int v = (phalanx ? 3 : 2) * Connected[r];
             v = 17 * popcount(support) + (v >> (opposed + 1));
             score += make_score(v, v * (r - 2) / 4);
         }
@@ -191,7 +189,7 @@ Value Entry::evaluate_shelter(const Position& pos, Square ksq) {
   Value safety = (shift<Down>(theirPawns) & (FileABB | FileHBB) & BlockRanks & ksq) ?
                  Value(374) : Value(5);
 
-  File center = std::max(FILE_B, std::min(FILE_G, file_of(ksq)));
+  File center = clamp(file_of(ksq), FILE_B, FILE_G);
   for (File f = File(center - 1); f <= File(center + 1); ++f)
   {
       b = ourPawns & file_bb(f);
