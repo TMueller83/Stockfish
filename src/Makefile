@@ -32,7 +32,7 @@ DATE=$(shell date +"%m%d%y")
 VERSION=
 FEATURE1=
 ### Uncomment the line below for McCain, comment out for Stockfish
-	VERSION=maverick
+###	VERSION=maverick
 ### Uncomment for use with Raspberry Pi -  a slower NPS UCI option setting used in Play
 ### by Elo and personalities
 ###	RASPBERRY=Pi
@@ -52,9 +52,10 @@ endif
 ifeq ($(VERSION),maverick)
 	CXXFLAGS += -DMaverick
 	ifeq ($(COMP),mingw)
-		EXE = McCain-X3-dev-$(DATE).exe
+		EXE = McCain-X2b.exe
 	else
-		EXE = McCain-X3-dev-$(DATE)
+		EXE = McCain-X2b
+###$(DATE)
 
 endif
 	else

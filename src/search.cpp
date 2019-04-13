@@ -75,26 +75,23 @@ namespace {
     return Value((175 - 50 * improving) * d / ONE_PLY);
   }
 #ifdef Maverick
-  // Reductions lookup table, initialized at startup
-	int FutilityMoveCounts[2][16]; // [improving][depth]
-
+    // Reductions lookup table, initialized at startup
 	int Reductions[2][64][64];  // [improving][depth][moveNumber]
 #else
 	int Reductions[64]; // [imp or moveNumber]
 #endif
-#ifdef Maverick // revert #2017 
+#ifdef Maverick // revert #2017
 	template <bool PvNode> Depth reduction(bool i, Depth d, int mn) {
-		return (Reductions[i][std::min(d / ONE_PLY, 63)][std::min(mn, 63)] - PvNode) * ONE_PLY;
+		return (Reductions[i][std::min(d / ONE_PLY, 63)][std::min(mn, 63)] - PvNode ) * ONE_PLY;
 #else
   template <bool PvNode> Depth reduction(bool i, Depth d, int mn) {
     int r = Reductions[std::min(d / ONE_PLY, 63)] * Reductions[std::min(mn, 63)] / 1024;
-    return ((r + 512) / 1024 + (!i && r > 1024) - PvNode) * ONE_PLY;
+    return ((r + 512) / 1024 + (!i && r > 1024) - PvNode ) * ONE_PLY;
 #endif
   }
-
+			 
   constexpr int futility_move_count(bool improving, int depth) {
     return (5 + depth * depth) * (1 + improving) / 2;
-
   }
 
   // History and stats update bonus, based on depth
@@ -182,11 +179,6 @@ void Search::init() {
 				if (!imp && red > 1)
 					Reductions[imp][d][mc]++;
 			 }
-	for (int d = 0; d < 16; ++d)
-	{
-		FutilityMoveCounts[0][d] = int(2.4 + 0.74 * pow(d, 1.78));
-		FutilityMoveCounts[1][d] = int(5.0 + 1.00 * pow(d, 2.00));
-	}
 #else
 	for (int i = 1; i < 64; ++i)
 		Reductions[i] = int(1024 * std::log(i) / std::sqrt(1.95));
@@ -1296,12 +1288,7 @@ moves_loop: // When in check, search starts from here
       {
           // Skip quiet moves if movecount exceeds our FutilityMoveCount threshold
 
-#ifdef Maverick
-          moveCountPruning = depth < 16 * ONE_PLY
-             && moveCount >= futility_move_count(improving, depth / ONE_PLY);
-#else
           moveCountPruning = moveCount >= futility_move_count(improving, depth / ONE_PLY);
-#endif
 
           if (   !captureOrPromotion
               && !givesCheck
