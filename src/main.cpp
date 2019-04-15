@@ -52,9 +52,9 @@ int main(int argc, char* argv[]) {
 
 #ifdef Maverick
    Eval::init();   //  Replace Mobility table with log equations (with rook mg exception). #1784
-   polybook1.init(Options["Book File 1"]);  // book idea from Marco Zerbanti
-   polybook2.init(Options["Book File 2"]);
-   polybook3.init(Options["Book File 3"]);
+   polybook1.init(Options["Book_File_1"]);  // book idea from Marco Zerbanti
+   polybook2.init(Options["Book_File_2"]);
+   polybook3.init(Options["Book_File_3"]);
 #endif
 
   Threads.set(Options["Threads"]);

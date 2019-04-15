@@ -238,11 +238,11 @@ void MainThread::search() {
 #ifdef Add_Features
       Move bookMove = MOVE_NONE;
 
-      if (bool(Options["Use Book 1"]) && !Limits.infinite && !Limits.mate)
+      if (bool(Options["Use_Book_1"]) && !Limits.infinite && !Limits.mate)
           bookMove = polybook1.probe(rootPos);
-      if (bool(Options["Use Book 2"]) && !bookMove && !Limits.infinite && !Limits.mate)
+      if (bool(Options["Use_Book_2"]) && !bookMove && !Limits.infinite && !Limits.mate)
           bookMove = polybook2.probe(rootPos);
-      if (bool(Options["Use Book 3"]) && !bookMove && !Limits.infinite && !Limits.mate)
+      if (bool(Options["Use_Book_3"]) && !bookMove && !Limits.infinite && !Limits.mate)
           bookMove = polybook3.probe(rootPos);
 
       if (bookMove && std::count(rootMoves.begin(), rootMoves.end(), bookMove))

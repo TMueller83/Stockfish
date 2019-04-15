@@ -75,7 +75,7 @@ void init(OptionsMap& o) {
     constexpr int MaxHashMB = Is64Bit ? 131072 : 2048;
 	
     o["Debug Log File"]       << Option("<empty>", on_logger);
-	o["Clear Hash"]            << Option(on_clear_hash);
+	o["Clear_Hash"]            << Option(on_clear_hash);
 
 #ifdef Maverick
     o["W_Contempt"] 	      << Option(  22, -150, 150);
@@ -89,23 +89,23 @@ void init(OptionsMap& o) {
     o["Analysis Contempt"]    << Option("Both var Off var White var Black var Both", "Both");
 #endif
 #ifdef Add_Features
-    o["Use Book 1"] 	        << Option(false);
-    o["Book File 1"] 	        << Option("var None var Cerebellum var Champions "
+    o["Use_Book_1"] 	        << Option(false);
+    o["Book_File_1"] 	        << Option("var None var Cerebellum var Champions "
 										"var Alekhine var Anand var Botvinnik "
 										"var Capablanca var Carlsen var Fischer "
 										"var Karpov var Kasparov var Kortschnoi "
 										"var Kramink var Lasker var Petrosian "
 										"var Tal ","Carlsen", on_book_file1);
-    o["Best Move 1"] 	        << Option(false, on_best_book_move1);
-    o["Book Depth 1"] 	        << Option(127, 1, 127, on_book_depth1);
-    o["Use Book 2"] 	        << Option(false);
-    o["Book File 2"] 	        << Option("Champions", on_book_file2);
-    o["Best Move 2"] 	        << Option(false, on_best_book_move2);
-    o["Book Depth 2"] 	        << Option(127, 1, 127, on_book_depth2);
-    o["Use Book 3"] 	        << Option(false);
-    o["Book File 3"]            << Option("Cerebellum", on_book_file3);
-    o["Best Move 3"]            << Option(true, on_best_book_move3);
-    o["Book Depth 3"]           << Option(127, 1, 127, on_book_depth3);
+    o["Best_Move_1"] 	        << Option(false, on_best_book_move1);
+    o["Book_Depth_1"] 	        << Option(127, 1, 127, on_book_depth1);
+    o["Use_Book_2"] 	        << Option(false);
+    o["Book_File_2"] 	        << Option("Champions", on_book_file2);
+    o["Best_Move_2"] 	        << Option(false, on_best_book_move2);
+    o["Book_Depth_2"] 	        << Option(127, 1, 127, on_book_depth2);
+    o["Use_Book_3"] 	        << Option(false);
+    o["Book_File_3"]            << Option("Cerebellum", on_book_file3);
+    o["Best_Move_3"]            << Option(true, on_best_book_move3);
+    o["Book_Depth_3"]           << Option(127, 1, 127, on_book_depth3);
 
 #endif
     o["Skill Level"]            << Option(20, 0, 20);
