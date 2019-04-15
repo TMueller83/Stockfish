@@ -1239,11 +1239,12 @@ bool Position::has_game_cycle(int ply) const {
 
               if (ply > i)
                   return true;
-
+#ifdef Maverick // #2097 by svivanov72
               // For nodes before or at the root, check that the move is a repetition one
               // rather than a move to the current position
               if (color_of(piece_on(empty(s1) ? s2 : s1)) != side_to_move())
                   continue;
+#endif
 
               // For repetitions before or at the root, require one more
               StateInfo* next_stp = stp;
