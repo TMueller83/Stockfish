@@ -1,15 +1,15 @@
 /*
-  Stockfish, a UCI chess playing engine derived from Glaurung 2.1
+  SugaR, a UCI chess playing engine derived from Stockfish
   Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
   Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad
   Copyright (C) 2015-2019 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad
 
-  Stockfish is free software: you can redistribute it and/or modify
+  SugaR is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
-  Stockfish is distributed in the hope that it will be useful,
+  SugaR is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
@@ -23,6 +23,7 @@
 
 #include "misc.h"
 #include "types.h"
+#include <unordered_map>
 
 /// TTEntry struct is the 10 bytes transposition table entry, defined as below:
 ///
@@ -79,10 +80,18 @@ class TranspositionTable {
 public:
  ~TranspositionTable() { free(mem); }
   void new_search() { generation8 += 8; } // Lower 3 bits are used by PV flag and Bound
+
+  void infinite_search() { generation8 = 8; }
+  uint8_t generation() const { return generation8; }
   TTEntry* probe(const Key key, bool& found) const;
   int hashfull() const;
   void resize(size_t mbSize);
   void clear();
+  void set_hash_file_name(const std::string& fname);
+  bool save();
+  void load();
+  void load_epd_to_hash();
+  std::string hashfilename = "hash.hsh";
 
   // The 32 lowest order bits of the key are used to get the index of the cluster
   TTEntry* first_entry(const Key key) const {
@@ -97,6 +106,53 @@ private:
   void* mem;
   uint8_t generation8; // Size must be not bigger than TTEntry::genBound8
 };
+
+struct ExpEntry
+{
+	uint64_t hashkey;
+	Depth depth;
+	Value score;
+	Move move;
+};
+
+void EXPresize();
+void EXPawnresize();
+void startposition();
+void EXPload(char* fen);
+
+extern TranspositionTable EXP;
+
+
+void EXPresize();
+void EXPawnresize();
+void startposition();
+void EXPload(char* fen);
+void mctsInsert(ExpEntry tempExpEntry);
+
+const int MAX_CHILDREN = 25;
+
+struct Child
+{
+	Move move;
+	Depth depth;
+	Value score;
+	int visits;
+};
+
+struct NodeInfo
+{
+	Key hashkey;
+	Child child[20];
+	int sons;
+	int totalVisits;
+};
+
+typedef NodeInfo* Node;
+Node get_node(Key key);
+// The Monte-Carlo tree is stored implicitly in one big hash table
+typedef std::unordered_multimap<Key, NodeInfo> MCTSHashTable;
+
+extern MCTSHashTable MCTS;
 
 extern TranspositionTable TT;
 

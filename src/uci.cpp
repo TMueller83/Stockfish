@@ -1,15 +1,15 @@
 /*
-  Stockfish, a UCI chess playing engine derived from Glaurung 2.1
+  SugaR, a UCI chess playing engine derived from Stockfish
   Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
   Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad
   Copyright (C) 2015-2019 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad
 
-  Stockfish is free software: you can redistribute it and/or modify
+  SugaR is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
-  Stockfish is distributed in the hope that it will be useful,
+  SugaR is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
@@ -48,32 +48,92 @@ namespace {
   // or the starting position ("startpos") and then makes the moves given in the
   // following move list ("moves").
 
+  bool startposition = false;
+  Key FileKey = 0;
+
   void position(Position& pos, istringstream& is, StateListPtr& states) {
 
     Move m;
     string token, fen;
-
+    string Newfen; 
+    bool mctsSelfLearning=Options["NN MCTS Self-Learning"]; 
     is >> token;
 
     if (token == "startpos")
     {
-        fen = StartFEN;
-        is >> token; // Consume "moves" token if any
+      if(mctsSelfLearning)
+      {
+	startposition = true;
+      }
+      fen = StartFEN;
+      if(mctsSelfLearning)
+      {
+	 Newfen = fen;
+      }
+      is >> token; // Consume "moves" token if any
     }
     else if (token == "fen")
-        while (is >> token && token != "moves")
-            fen += token + " ";
+    {
+      if(mctsSelfLearning)
+      {
+	startposition = false;
+	Newfen = token;
+      }
+      while (is >> token && token != "moves")
+	      fen += token + " ";
+    }
     else
-        return;
+	    return;
 
     states = StateListPtr(new std::deque<StateInfo>(1)); // Drop old and create a new one
     pos.set(fen, Options["UCI_Chess960"], &states->back(), Threads.main());
+
+    int movesplayed = 0;
+    int OPmoves = 0;
+    if(mctsSelfLearning)
+    {
+      if (StartFEN != Newfen)
+      {
+	      startposition = false;
+	      FileKey = pos.key();
+      }
+      else
+      {
+	      startposition = true;
+	      FileKey = 0;
+      }
+    }
 
     // Parse move list (if any)
     while (is >> token && (m = UCI::to_move(pos, token)) != MOVE_NONE)
     {
         states->emplace_back();
+
+        if(mctsSelfLearning)
+        {
+	  if (!FileKey)
+	  {
+	    if ((movesplayed == 2 || movesplayed == 4 || movesplayed == 6 || movesplayed == 8 || movesplayed == 10 || movesplayed == 12 || movesplayed == 14 || movesplayed == 16) && Newfen == StartFEN)
+	    {
+		    files(OPmoves, pos.key());
+		    OPmoves++;
+		    kelly(startposition);
+
+	    }
+	    if (movesplayed == 16 && Newfen == StartFEN)
+	    {
+		    FileKey = pos.key();
+		    kelly(startposition);
+	    }
+	  }
+        }
+
         pos.do_move(m, states->back());
+
+        if(mctsSelfLearning)
+        {
+            movesplayed++;
+        }
     }
   }
 
@@ -255,7 +315,7 @@ string UCI::value(Value v) {
   stringstream ss;
 
   if (abs(v) < VALUE_MATE - MAX_PLY)
-      ss << "cp " << v * 100 / PawnValueEg;
+      ss << "cp " << v * 80 / PawnValueEg;
   else
       ss << "mate " << (v > 0 ? VALUE_MATE - v + 1 : -VALUE_MATE - v) / 2;
 

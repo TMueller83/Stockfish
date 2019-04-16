@@ -1,15 +1,15 @@
 /*
-  Stockfish, a UCI chess playing engine derived from Glaurung 2.1
+  SugaR, a UCI chess playing engine derived from Stockfish
   Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
   Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad
   Copyright (C) 2015-2019 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad
 
-  Stockfish is free software: you can redistribute it and/or modify
+  SugaR is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
-  Stockfish is distributed in the hope that it will be useful,
+  SugaR is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
@@ -28,6 +28,8 @@
 #include "material.h"
 #include "pawns.h"
 #include "thread.h"
+
+extern bool Options_Dynamic_Strategy;
 
 namespace Trace {
 
@@ -472,10 +474,10 @@ namespace {
                  -   6 * mg_value(score) / 8
                  +       mg_value(mobility[Them] - mobility[Us])
                  +   5 * kingFlankAttacks * kingFlankAttacks / 16
-                 -   15;
+                 -   25;
 
     // Transform the kingDanger units into a Score, and subtract it from the evaluation
-    if (kingDanger > 100)
+    if (kingDanger > 0)
         score -= make_score(kingDanger * kingDanger / 4096, kingDanger / 16);
 
     // Penalty when our king is on a pawnless flank
@@ -830,14 +832,46 @@ namespace {
             + pieces<WHITE, ROOK  >() - pieces<BLACK, ROOK  >()
             + pieces<WHITE, QUEEN >() - pieces<BLACK, QUEEN >();
 
-    score += mobility[WHITE] - mobility[BLACK];
+	Value v_Dynamic_test = v;
+	
+	constexpr double DYNAMIC_ADVANTAGE_PAWNS_COUNT = 1.0;
+	constexpr Value DYNAMIC_ADVANTAGE_VALUE = Value(int(DYNAMIC_ADVANTAGE_PAWNS_COUNT * double(PawnValueMg + PawnValueEg) / 2.0));
+	constexpr double Dynamic_Scale_Factor_Default = 1.0;
 
-    score +=  king<   WHITE>() - king<   BLACK>()
-            + threats<WHITE>() - threats<BLACK>()
-            + passed< WHITE>() - passed< BLACK>()
-            + space<  WHITE>() - space<  BLACK>();
+	double king_Dynamic_scale = Dynamic_Scale_Factor_Default;
+	double passed_Dynamic_scale = Dynamic_Scale_Factor_Default;
+												 
+												  
 
-    score += initiative(eg_value(score));
+	if (Options_Dynamic_Strategy)
+	{
+		{
+			constexpr double Dynamic_Winning_Scale_Factor_Default = 0.05;
+
+			constexpr double Alpha = 0.5;
+			const double Beta = abs(Dynamic_Winning_Scale_Factor_Default * 2 / (MidgameLimit + EndgameLimit));
+
+			const double Dynamic_Scale_Factor_Bonus = (-abs(v_Dynamic_test / DYNAMIC_ADVANTAGE_VALUE) + Alpha);
+
+			if (abs(v_Dynamic_test) >= double(PawnValueMg + PawnValueEg) / 2.0)
+			{
+				king_Dynamic_scale = Dynamic_Scale_Factor_Default - Dynamic_Scale_Factor_Bonus * Beta;
+			}
+			else
+			{
+				passed_Dynamic_scale = Dynamic_Scale_Factor_Default + Dynamic_Scale_Factor_Bonus * Beta;
+			}
+		}
+	}
+	score += mobility[WHITE] - mobility[BLACK];
+	Score default_king = king<   WHITE>() - king<   BLACK>();
+	Score score_king = Score(int(double(default_king) * king_Dynamic_scale));
+	score += score_king;
+	score += threats<WHITE>() - threats<BLACK>();
+	Score default_passed = passed< WHITE>() - passed< BLACK>();
+	Score score_passed = Score(int(double(default_passed) * passed_Dynamic_scale));
+	score += score_passed;
+	score += initiative(eg_value(score));
 
     // Interpolate between a middlegame and a (scaled by 'sf') endgame score
     ScaleFactor sf = scale_factor(eg_value(score));
@@ -861,7 +895,6 @@ namespace {
   }
 
 } // namespace
-
 
 /// evaluate() is the evaluator for the outer world. It returns a static
 /// evaluation of the position from the point of view of the side to move.
