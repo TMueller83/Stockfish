@@ -373,6 +373,18 @@ void MainThread::search() {
   if (bestThread != this)
       sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << sync_endl;
 
+#ifdef Maverick  // joergoster and Stefano80 monteCarloJ_03
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Print stats of all root moves
+/*  sync_cout << "Printing some stats of all root moves!" << sync_endl;
+
+  for (auto& rm : bestThread->rootMoves)
+      if (rm.visits) // avoids a division by zero
+          sync_cout << UCI::move(rm.pv[0], rootPos.is_chess960()) << "      AB score: "        << (rm.score == -VALUE_INFINITE ? "n/a   " : UCI::value(rm.score))
+                                                                  << "      MCTS-like score: " << UCI::value(Value(rm.zScore / rm.visits))
+                                                                  << "      Visits: "          << rm.visits << sync_endl;*/
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#endif
   sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[0].pv[0], rootPos.is_chess960());
 
   if (bestThread->rootMoves[0].pv.size() > 1 || bestThread->rootMoves[0].extract_ponder_from_tt(rootPos))
@@ -472,9 +484,15 @@ ss->pv = pv;
 
       size_t pvFirst = 0;
       pvLast = 0;
+
 #if Maverick  //Vondele - Fix issues from using adjustedDepth too broadly #1792
-        Depth adjustedDepth = rootDepth;
+      Depth adjustedDepth = rootDepth;
+
+      // Reset mcts values -> joergoster and Stefano80 monteCarloJ_03
+      visits = 0;
+      allScores = 0;
 #endif
+
       // MultiPV loop. We perform a full root search for each PV line
       for (pvIdx = 0; pvIdx < multiPV && !Threads.stop; ++pvIdx)
       {
@@ -562,7 +580,11 @@ ss->pv = pv;
 
               // In case of failing low/high increase aspiration window and
               // re-search, otherwise exit the loop.
+#ifdef Maverick   // joergoster and Stefano80 monteCarloJ_03
+              if (bestValue <= alpha || Value(rootMoves[0].zScore / rootMoves[0].visits) <= alpha - (PawnValueMg * 4) / 10  )
+#else
               if (bestValue <= alpha)
+#endif
               {
                   beta = (alpha + beta) / 2;
                   alpha = std::max(bestValue - delta, -VALUE_INFINITE);
@@ -690,7 +712,9 @@ namespace {
 
     constexpr bool PvNode = NT == PV;
     const bool rootNode = PvNode && ss->ply == 0;
-
+#ifdef Maverick// joergoster and Stefano80 monteCarloJ_03
+    Thread* thisThread = pos.this_thread();
+#endif
     // Check if we have an upcoming move which draws by repetition, or
     // if the opponent had an alternative move earlier to this position.
     if (   pos.rule50_count() >= 3
@@ -698,19 +722,33 @@ namespace {
         && !rootNode
         && pos.has_game_cycle(ss->ply))
     {
-#ifdef Maverick //  xoto10  perpetuals 1015b5d
-        alpha = depth < 4 ? value_draw(depth, pos.this_thread()) : value_draw(depth, pos.this_thread()) - 1 ;
-#else
         alpha = value_draw(depth, pos.this_thread());
-#endif
+
         if (alpha >= beta)
+        {
+#ifdef Maverick  // joergoster and Stefano80 monteCarloJ_03
+            thisThread->visits++;
+            thisThread->allScores += (ss->ply % 2 == 0) ? alpha : -alpha;
+#endif
+
             return alpha;
+        }
     }
 
     // Dive into quiescence search when the depth reaches zero
     if (depth < ONE_PLY)
-        return qsearch<NT>(pos, ss, alpha, beta);
+#ifdef Maverick	// joergoster and Stefano80 monteCarloJ_03
+    {
+        Value qs = qsearch<NT>(pos, ss, alpha, beta);
 
+        thisThread->visits++;
+        thisThread->allScores += (ss->ply % 2 == 0) ? qs : -qs;
+
+        return qs;
+    }
+#else
+    return qsearch<NT>(pos, ss, alpha, beta);
+#endif
     assert(-VALUE_INFINITE <= alpha && alpha < beta && beta <= VALUE_INFINITE);
   //  assert(PvNode || (alpha == beta - 1));
     assert(DEPTH_ZERO < depth && depth < DEPTH_MAX);
@@ -731,7 +769,11 @@ namespace {
     int moveCount, captureCount, quietCount;
 
     // Step 1. Initialize node
+#ifdef Maverick 	// joergoster and Stefano80 monteCarloJ_03
+//    Thread* thisThread = pos.this_thread();
+#else
     Thread* thisThread = pos.this_thread();
+#endif
     inCheck = pos.checkers();
     Color us = pos.side_to_move();
     moveCount = captureCount = quietCount = ss->moveCount = 0;
@@ -752,14 +794,23 @@ namespace {
         if (   Threads.stop.load(std::memory_order_relaxed)
             || pos.is_draw(ss->ply)
             || ss->ply >= MAX_PLY)
-#ifdef Maverick  //xoto10 perpetuals 1015b5d
-            return (ss->ply >= MAX_PLY && !inCheck) ? evaluate(pos)
-							: depth < 4 ? value_draw(depth, pos.this_thread())
-							: value_draw(depth, pos.this_thread()) - 1;
+
+#ifdef Maverick
+        {
+			//  joergoster and Stefano80 monteCarloJ_03
+			Value draw = value_draw(depth, pos.this_thread());
+			thisThread->visits++;
+			thisThread->allScores += (ss->ply % 2 == 0) ? draw : -draw;
+			
+			return (ss->ply >= MAX_PLY && !inCheck) ? evaluate(pos) : draw;
+			// joergoster and Stefano80 monteCarloJ_03
+		
+		}
 #else
             return (ss->ply >= MAX_PLY && !inCheck) ? evaluate(pos)
 							: value_draw(depth, pos.this_thread());
 #endif
+
         // Step 3. Mate distance pruning. Even if we mate at the next move our score
         // would be at best mate_in(ss->ply+1), but if alpha is already bigger because
         // a shorter mate was found upward in the tree then there is no need to search
@@ -828,6 +879,10 @@ namespace {
                 update_continuation_histories(ss, pos.moved_piece(ttMove), to_sq(ttMove), penalty);
             }
         }
+#ifdef Maverick //  joergoster and Stefano80 monteCarloJ_03
+        thisThread->visits++;
+        thisThread->allScores += (ss->ply % 2 == 0) ? ttValue : -ttValue;
+#endif
         return ttValue;
     }
 
@@ -872,7 +927,10 @@ namespace {
                     tte->save(posKey, value_to_tt(value, ss->ply), ttPv, b,
                               std::min(DEPTH_MAX - ONE_PLY, depth + 6 * ONE_PLY),
                               MOVE_NONE, VALUE_NONE);
-
+#ifdef Maverick  //  joergoster and Stefano80 monteCarloJ_03
+                    thisThread->visits++;
+                    thisThread->allScores += (ss->ply % 2 == 0) ? value : -value;
+#endif
                     return value;
                 }
 
@@ -921,15 +979,34 @@ namespace {
     }
 
     // Step 7. Razoring (~2 Elo)
+#ifdef Maverick  //  joergoster and Stefano80 monteCarloJ_03
+	  if (   !rootNode // The required rootNode PV handling is not available in qsearch
+#ifdef Add_Features
+		  && !bruteForce
+#endif
+		  &&  depth < 2 * ONE_PLY
+		  &&  eval <= alpha - RazorMargin)
+//  joergoster and Stefano80 monteCarloJ_03 start
+	  {
+		  Value razor = qsearch<NT>(pos, ss, alpha, beta);
+		  
+		  thisThread->visits++;
+		  thisThread->allScores += (ss->ply % 2 == 0) ? razor : -razor;
+		  
+		  return razor;
+	  }
+//  joergoster and Stefano80 monteCarloJ_03 end
+#else
     if (   !rootNode // The required rootNode PV handling is not available in qsearch
 #ifdef Add_Features
- 	&& !bruteForce
+		&& !bruteForce
 #endif
         &&  depth < 2 * ONE_PLY
         &&  eval <= alpha - RazorMargin
-
-)
+		
+		)
         return qsearch<NT>(pos, ss, alpha, beta);
+#endif
 
     improving =   ss->staticEval >= (ss-2)->staticEval
                || (ss-2)->staticEval == VALUE_NONE;
@@ -942,7 +1019,13 @@ namespace {
         &&  depth < 7 * ONE_PLY
         &&  eval - futility_margin(depth, improving) >= beta
         &&  eval < VALUE_KNOWN_WIN) // Do not return unproven wins
+	  {
+#ifdef Maverick  //  joergoster and Stefano80 monteCarloJ_03
+        thisThread->visits++;
+        thisThread->allScores += (ss->ply % 2 == 0) ? eval : -eval;
+#endif
         return eval;
+	  }
 
     // Step 9. Null move search with verification search (~40 Elo)
 #ifdef Add_Features
@@ -978,8 +1061,14 @@ namespace {
                 nullValue = beta;
 
             if (thisThread->nmpMinPly || (abs(beta) < VALUE_KNOWN_WIN && depth < 12 * ONE_PLY))
+            {
+#ifdef Maverick  //  joergoster and Stefano80 monteCarloJ_03
+                thisThread->visits++;
+                thisThread->allScores += (ss->ply % 2 == 0) ? nullValue : -nullValue;
+#endif
                 return nullValue;
-			
+			}
+
             assert(!thisThread->nmpMinPly); // Recursive verification is not allowed
 			
 #ifdef Maverick //Gunther Demetz zugzwangSolver
@@ -1065,7 +1154,13 @@ namespace {
             thisThread->nmpMinPly = 0;
 
             if (v >= beta)
+            {
+#ifdef Maverick  //  joergoster and Stefano80 monteCarloJ_03
+                thisThread->visits++;
+                thisThread->allScores += (ss->ply % 2 == 0) ? nullValue : -nullValue;
+#endif
                 return nullValue;
+            }
         }
     }
 
@@ -1106,18 +1201,23 @@ namespace {
                 pos.undo_move(move);
 
                 if (value >= raisedBeta)
+
 #ifdef Maverick  //  Moez Jellouli -> Save_probcut #e05dc73
-                        {
-			   if (!excludedMove)
-				tte->save(posKey, value_to_tt(value, ss->ply), ttPv,
-				BOUND_LOWER, depth - 4 * ONE_PLY, move, ss->staticEval);
+
+				{
+					if (!excludedMove)
+					tte->save(posKey, value_to_tt(value, ss->ply), ttPv,
+							  BOUND_LOWER, depth - 4 * ONE_PLY, move, ss->staticEval);
+					
+					thisThread->visits++;
+					thisThread->allScores += (ss->ply % 2 == 0) ? value : -value;
 					
                     return value;
                 }
 #else
                     return value;
 #endif
-        }	
+        }
     }
 
     // Step 11. Internal iterative deepening (~2 Elo)
@@ -1228,7 +1328,13 @@ moves_loop: // When in check, search starts from here
           // that is multiple moves fail high, and we can prune the whole subtree by returning
           // the hard beta bound.
           else if (cutNode && singularBeta > beta)
+          {
+#ifdef Maverick  //  joergoster and Stefano80 monteCarloJ_03
+              thisThread->visits++;
+              thisThread->allScores += (ss->ply % 2 == 0) ? beta : -beta;
+#endif
               return beta;
+          }
       }
 
       // Check extension (~2 Elo)
@@ -1447,6 +1553,15 @@ moves_loop: // When in check, search starts from here
           RootMove& rm = *std::find(thisThread->rootMoves.begin(),
                                     thisThread->rootMoves.end(), move);
 
+#ifdef Maverick  //  joergoster and Stefano80 monteCarloJ_03
+          // Add all visits and returned scores to this root move's stats
+          rm.visits += thisThread->visits;
+          rm.zScore += thisThread->allScores;
+          
+          thisThread->visits = 0;
+          thisThread->allScores = 0;
+#endif
+          
           // PV move or new best move?
           if (moveCount == 1 || value > alpha)
           {
@@ -1598,7 +1713,15 @@ moves_loop: // When in check, search starts from here
 				std::uniform_int_distribution<int> dis(0, 2 * variety * jekyll);
 				bestValue -= dis(gen2);
 			}
-#endif			
+#endif
+			
+    assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
+
+#ifdef Maverick  //  joergoster and Stefano80 monteCarloJ_03
+    thisThread->visits++;
+    thisThread->allScores += (ss->ply % 2 == 0) ? bestValue : -bestValue;
+#endif
+
     return bestValue;
   }
 

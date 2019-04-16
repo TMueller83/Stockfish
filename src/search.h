@@ -69,6 +69,10 @@ struct RootMove {
 
   Value score = -VALUE_INFINITE;
   Value previousScore = -VALUE_INFINITE;
+#ifdef Maverick //  joergoster and Stefano80 monteCarloJ_03
+  int64_t zScore = 0;
+  int64_t visits = 0;
+#endif
   int selDepth = 0;
   int tbRank;
   Value tbScore;
