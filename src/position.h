@@ -96,6 +96,7 @@ public:
   template<PieceType Pt> int count() const;
   template<PieceType Pt> const Square* squares(Color c) const;
   template<PieceType Pt> Square square(Color c) const;
+  int semiopen_file(Color c, File f) const;
 
   // Castling
   int castling_rights(Color c) const;
@@ -132,6 +133,7 @@ public:
   // Piece specific
   bool pawn_passed(Color c, Square s) const;
   bool opposite_bishops() const;
+  int  pawns_on_same_color_squares(Color c, Square s) const;
 
     // Doing and undoing moves
     void do_move(Move m, StateInfo& newSt);
@@ -268,6 +270,10 @@ inline Square Position::ep_square() const {
   return st->epSquare;
 }
 
+inline int Position::semiopen_file(Color c, File f) const {
+  return !(pieces(c, PAWN) & file_bb(f));
+}
+
 inline bool Position::can_castle(CastlingRight cr) const {
   return st->castlingRights & cr;
 }
@@ -331,6 +337,10 @@ inline bool Position::promotion_pawn_push(Move m) const {
              && relative_rank(sideToMove, from_sq(m)) > RANK_5;
 }
 #endif
+
+inline int Position::pawns_on_same_color_squares(Color c, Square s) const {
+  return popcount(pieces(c, PAWN) & ((DarkSquares & s) ? DarkSquares : ~DarkSquares));
+}
 
 inline Key Position::key() const {
   return st->key;
