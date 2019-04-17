@@ -215,6 +215,7 @@ void MainThread::search() {
     cleanSearch		= Options["Clean Search"];
     jekyll			= Options["Jekyll_&_Hyde"];
     limitStrength	= Options["UCI_LimitStrength"];
+
     minOutput		= Options["Minimal_Output"];
     noNULL			= Options["No_Null_Moves"];
     tactical		= Options["Tactical"];
@@ -415,6 +416,7 @@ void Thread::search() {
 
 #ifdef Add_Features
   TB::SevenManProbe = Options["7 Man Probing"];
+
 #endif
 	
   std::memset(ss-7, 0, 10 * sizeof(Stack));
@@ -434,7 +436,8 @@ ss->pv = pv;
   Skill skill(Options["Skill Level"]);
 
 #ifdef Maverick //zugzwangMates
-    zugzwangMates=0;
+  zugzwangMates=0;
+  int mctsFactor  = Options["MCTS_Slider"];
 #endif
 
 
@@ -581,7 +584,7 @@ ss->pv = pv;
               // In case of failing low/high increase aspiration window and
               // re-search, otherwise exit the loop.
 #ifdef Maverick   // joergoster and Stefano80 monteCarloJ_03
-              if (bestValue <= alpha || Value(rootMoves[0].zScore / rootMoves[0].visits) <= alpha - (PawnValueMg * 4) / 10  )
+              if (bestValue <= alpha || Value(rootMoves[0].zScore / rootMoves[0].visits) <= alpha - (PawnValueMg * mctsFactor) / 100  )
 #else
               if (bestValue <= alpha)
 #endif

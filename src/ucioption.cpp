@@ -131,11 +131,13 @@ void init(OptionsMap& o) {
 	o["UCI_Elo"]                << Option(1300, 1300, 2850);
 #endif
 #ifdef Maverick
-	o["MultiPV"]                << Option(1, 1, 256);
 	o["DC_Slider"]              << Option(65, -180, 180);
+	o["MCTS_Slider"]            << Option(40, 0, 100);
+	o["MultiPV"]                << Option(1, 1, 256);
+
 #else
-	o["MultiPV"]                << Option(1, 1, 500);
 	o["DC_Slider"]              << Option(0, -180, 180);
+	o["MultiPV"]                << Option(1, 1, 500);
 #endif
 #ifdef Pi
 	o["Bench_KNPS"]             << Option (200, 100, 1000);//used for UCI Play By Elo
