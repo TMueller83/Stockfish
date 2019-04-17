@@ -949,7 +949,11 @@ namespace {
     }
 
     // Step 6. Static evaluation of the position
-    if (inCheck)
+#ifdef Maverick
+	  if (inCheck || (PvNode  && depth < 2 * ONE_PLY))
+#else
+	  if (inCheck)
+#endif
     {
         ss->staticEval = eval = VALUE_NONE;
         improving = false;
