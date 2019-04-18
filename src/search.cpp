@@ -213,13 +213,12 @@ void MainThread::search() {
     aggressiveness	= Options["DC_Slider"];
     bruteForce		= Options["BruteForce"];
     cleanSearch		= Options["Clean Search"];
-    jekyll			= Options["Jekyll_&_Hyde"];
+    jekyll		    = Options["Jekyll_&_Hyde"];
     limitStrength	= Options["UCI_LimitStrength"];
-
     minOutput		= Options["Minimal_Output"];
-    noNULL			= Options["No_Null_Moves"];
+    noNULL		    = Options["No_Null_Moves"];
     tactical		= Options["Tactical"];
-    uci_elo			= Options["UCI_Elo"];
+    uci_elo		    = Options["UCI_Elo"];
     variety 		= Options["Variety"];
 #endif
 
@@ -439,8 +438,6 @@ ss->pv = pv;
   zugzwangMates=0;
   int mctsFactor  = Options["MCTS_Slider"];
 #endif
-
-
 
 #ifdef Add_Features
     if (tactical) multiPV = pow(2, tactical);
@@ -949,7 +946,7 @@ namespace {
     }
 
     // Step 6. Static evaluation of the position
-    if (inCheck)
+    if (inCheck && (PvNode && depth < 3 * ONE_PLY))
     {
         ss->staticEval = eval = VALUE_NONE;
         improving = false;
@@ -1075,81 +1072,81 @@ namespace {
             assert(!thisThread->nmpMinPly); // Recursive verification is not allowed
 			
 #ifdef Maverick //Gunther Demetz zugzwangSolver
-			if  ( depth % 2 == 1 ){
-            thisThread->nmpColor = us;
-            Pawns::Entry* pe;
-            if (  !inCheck
-                    && thisThread->zugzwangMates < 1000000
+		    if  ( depth % 2 == 1 ){
+				thisThread->nmpColor = us;
+				Pawns::Entry* pe;
+				if (  !inCheck
+					&& thisThread->zugzwangMates < 1000000
                     && (pe = Pawns::probe(pos)) != nullptr
                     && popcount(pe->passedPawns[us])
                     && popcount(pe->passedPawns[us]) <= 2
                     && popcount(pos.pieces(us)) <= 7
                     && popcount(pos.pieces())   <= 12
                     && MoveList<LEGAL, KING>(pos).size() < 1)
-            {
-                bool oneOpponentPasser = popcount(pe->passedPawns[~us]) == 1 &&
-                                         !(pos.pieces() & forward_file_bb(~us, lsb(pe->passedPawns[~us])));
-                Bitboard passed = pe->passedPawns[us] & ~pos.blockers_for_king(us) &  ~pos.blockers_for_king(~us);
-                while (passed)
-                {
-                    Square s = pop_lsb(&passed);
-                    Square promo = make_square(file_of(s), us == WHITE ? RANK_8 : RANK_1);
-                    if ((pos.pieces() & between_bb(promo, s)) || promo == pos.square<KING>(us)) // king can't move
-                        continue; // passer blocked
-                    Move directPromotion = make_move(s, promo);
-                    bool killPromo =  (pos.pieces(~us) & promo) || !pos.see_ge(directPromotion); // opponent controls promotion-square
-                    if (!killPromo && !oneOpponentPasser)
-                        continue;
+				{
+					bool oneOpponentPasser = popcount(pe->passedPawns[~us]) == 1 &&
+						!(pos.pieces() & forward_file_bb(~us, lsb(pe->passedPawns[~us])));
+					Bitboard passed = pe->passedPawns[us] & ~pos.blockers_for_king(us) &  ~pos.blockers_for_king(~us);
+					while (passed)
+					{
+						Square s = pop_lsb(&passed);
+						Square promo = make_square(file_of(s), us == WHITE ? RANK_8 : RANK_1);
+						if ((pos.pieces() & between_bb(promo, s)) || promo == pos.square<KING>(us)) // king can't move
+							continue; // passer blocked
+						Move directPromotion = make_move(s, promo);
+						bool killPromo =  (pos.pieces(~us) & promo) || !pos.see_ge(directPromotion); // opponent controls promotion-square
+						if (!killPromo && !oneOpponentPasser)
+							continue;
+						
+						StateInfo s1,s2,s3;
+						Square p2, p3 = SQ_NONE;
+						if (oneOpponentPasser && !killPromo)
+						{
+							Rank r1 = relative_rank(~us, rank_of(lsb(pe->passedPawns[~us])));
+							Rank r2 = relative_rank( us, rank_of(s));
+							if (r2 > r1)
+								continue; // if our passed is more advanced we will promote earlier and probably defend with success
+							if (pawn_attack_span(us, s) & pos.pieces(~us, PAWN))
+							{   // pseudo passed pawn: will be passed after levers
+								p2 = lsb(pawn_attack_span(us, s) & pos.pieces(~us, PAWN));
+								Bitboard removeLevers = forward_file_bb(~us, p2) & pos.pieces( us, PAWN);
+								if (removeLevers)
+								{
+									p3 = lsb(removeLevers);
+									pos.removePawn(p2, s2);
+									pos.removePawn(p3, s3);
+								}
+							}
+						}
 
-                    StateInfo s1,s2,s3;
-                    Square p2, p3 = SQ_NONE;
-                    if (oneOpponentPasser && !killPromo)
-                    {
-                        Rank r1 = relative_rank(~us, rank_of(lsb(pe->passedPawns[~us])));
-                        Rank r2 = relative_rank( us, rank_of(s));
-                        if (r2 > r1)
-                            continue; // if our passed is more advanced we will promote earlier and probably defend with success
-                        if (pawn_attack_span(us, s) & pos.pieces(~us, PAWN))
-                        {   // pseudo passed pawn: will be passed after levers
-                            p2 = lsb(pawn_attack_span(us, s) & pos.pieces(~us, PAWN));
-                            Bitboard removeLevers = forward_file_bb(~us, p2) & pos.pieces( us, PAWN);
-                            if (removeLevers)
-                            {
-                                p3 = lsb(removeLevers);
-                                pos.removePawn(p2, s2);
-                                pos.removePawn(p3, s3);
-                            }
-                        }
-                    }
+						thisThread->nmpMinPly = MAX_PLY;
+						pos.removePawn(s, s1);
+						Move pv1[MAX_PLY+1];
+						(ss)->pv = pv1;
+						(ss)->pv[0] = MOVE_NONE;
+						Depth nd = (oneOpponentPasser && !killPromo) ? depth - R - 2 * ONE_PLY : depth - 4 * ONE_PLY;
+						Value v = search<PV>(pos, ss, mated_in(0), VALUE_MATED_IN_MAX_PLY, nd, false);
+						
+						pos.undo_removePawn(s, us);
+						if (p3 != SQ_NONE) // reput the lever pawns
+							pos.undo_removePawn(p3, us), pos.undo_removePawn(p2, ~us);
+						if (v > mated_in(0) && v < VALUE_MATED_IN_MAX_PLY)
 
-                    thisThread->nmpMinPly = MAX_PLY;
-                    pos.removePawn(s, s1);
-                    Move pv1[MAX_PLY+1];
-                    (ss)->pv = pv1;
-                    (ss)->pv[0] = MOVE_NONE;
-                    Depth nd = (oneOpponentPasser && !killPromo) ? depth - R - 2 * ONE_PLY : depth - 4 * ONE_PLY;
-                    Value v = search<PV>(pos, ss, mated_in(0), VALUE_MATED_IN_MAX_PLY, nd, false);
-
-                    pos.undo_removePawn(s, us);
-                    if (p3 != SQ_NONE) // reput the lever pawns
-                        pos.undo_removePawn(p3, us), pos.undo_removePawn(p2, ~us);
-
-                    if (v > mated_in(0) && v < VALUE_MATED_IN_MAX_PLY)
-                    {
+						{
                         //sync_cout << pos << "info mate " << UCI::value(v) << " detected with depth " << nd << " !  at score " << thisThread->rootMoves[0].score << sync_endl;
-                        thisThread->zugzwangMates++;
-                        thisThread->nmpMinPly = 0;
+							thisThread->zugzwangMates++;
+							thisThread->nmpMinPly = 0;
                         // Early return here with a low value, this will spotlight this promising variation
-                        return Value(thisThread->rootMoves[0].score * (thisThread->rootPos.side_to_move() != us ? 1 : -1) - 80);
-                    }
-                } // end processing of passed pawns
-            }
-	}
+							return Value(thisThread->rootMoves[0].score * (thisThread->rootPos.side_to_move() != us ? 1 : -1) - 80);
+						}
+					} // end processing of passed pawns
+				}
+			}
 #endif
-
-            // Do verification search at high depths, with null move pruning disabled
+			
+			// Do verification search at high depths, with null move pruning disabled
             // for us, until ply exceeds nmpMinPly.
-            thisThread->nmpMinPly = ss->ply + 3 * (depth-R) / (4 * ONE_PLY);
+			thisThread->nmpMinPly = ss->ply + 3 * (depth-R) / (4 * ONE_PLY);
             thisThread->nmpColor = us;
 
             Value v = search<NonPV>(pos, ss, beta-1, beta, depth-R, false);
