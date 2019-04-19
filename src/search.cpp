@@ -172,7 +172,7 @@ void Search::init() {
 		for (int d = 1; d < 32; ++d)
 			for (int mc = 1; mc < 80; ++mc) // record in a "real" game is 79 moves
 			{  // more weight on depth for LMR reductions than move number ( as an aside, Crafty did the same) MichaelB7
-				int red = int(log( d * 1.8 ) * log( mc * .9 )) / 2; //#2 1.75/.85 failed , tune after commiting
+				int red = int(log( d * 1.85 ) * log( mc * .90 )) / 2; 
 				Reductions[imp][d][mc] = red;
 				
 				// Increase reduction for non-PV nodes when eval is not improving
