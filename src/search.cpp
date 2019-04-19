@@ -76,13 +76,13 @@ namespace {
   }
 #ifdef Maverick
     // Reductions lookup table, initialized at startup
-	int Reductions[2][64][64];  // [improving][depth][moveNumber]
+	int Reductions[2][32][80];  // [improving][depth][moveNumber]
 #else
 	int Reductions[64]; // [imp or moveNumber]
 #endif
-#ifdef Maverick // revert #2017
+#ifdef Maverick // MichaelB7
 	template <bool PvNode> Depth reduction(bool i, Depth d, int mn) {
-		return (Reductions[i][std::min(d / ONE_PLY, 63)][std::min(mn, 63)] - PvNode ) * ONE_PLY;
+		return (Reductions[i][std::min(d / ONE_PLY, 31)][mn] - PvNode ) * ONE_PLY;
 #else
   template <bool PvNode> Depth reduction(bool i, Depth d, int mn) {
     int r = Reductions[std::min(d / ONE_PLY, 63)] * Reductions[std::min(mn, 63)] / 1024;
@@ -169,10 +169,10 @@ void Search::init() {
 	
 #ifdef Maverick   // MichaelB7
 	for (int imp = 0; imp <= 1; ++imp)
-		for (int d = 1; d < 64; ++d)
-			for (int mc = 1; mc < 64; ++mc)
-			{
-				int red = int(log(d) * log(mc) + .85) / 2;
+		for (int d = 1; d < 32; ++d)
+			for (int mc = 1; mc < 80; ++mc) // record in a "real" game is 79 moves
+			{  // more weight on depth for LMR reductions than move number ( as an aside, Crafty did the same) MichaelB7
+				int red = int(log( d * 1.8 ) * log( mc * .9 )) / 2; //#2 1.75/.85 failed , tune after commiting
 				Reductions[imp][d][mc] = red;
 				
 				// Increase reduction for non-PV nodes when eval is not improving
