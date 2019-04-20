@@ -851,6 +851,16 @@ namespace {
             : ttHit    ? tte->move() : MOVE_NONE;
     ttPv = (ttHit && tte->is_pv()) || (PvNode && depth > 4 * ONE_PLY);
 
+    // If position has been searched at higher depths and we are shuffling, return value_draw
+    if (pos.rule50_count() > 36 - 6 * (pos.count<ALL_PIECES>() > 14)
+        && ss->ply > 36 - 6 * (pos.count<ALL_PIECES>() > 14)
+        && ttHit
+        && tte->depth() > depth
+        && pos.count<PAWN>() > 0)
+        {
+           return VALUE_DRAW;
+        }
+
     // At non-PV nodes we check for an early TT cutoff
     if (  !PvNode
         && ttHit
@@ -1346,11 +1356,18 @@ moves_loop: // When in check, search starts from here
       // Check extension (~2 Elo)
 #ifdef Maverick
       else if (    givesCheck)
-          extension = ONE_PLY;
+		  extension = ONE_PLY;
 
-     // Passed pawn extension
-     else if (    pos.promotion_pawn_push(move) && move == ss->killers[0])
+     // MB Passed pawn extension
+     else if ( move == ss->killers[0]
+			  && pos.promotion_pawn_push(move))
+		  extension = ONE_PLY;
+	// SF pawn extension
+     else if ( move == ss->killers[0]
+			  && pos.advanced_pawn_push(move)
+			  && pos.pawn_passed(us, to_sq(move)))
           extension = ONE_PLY;
+		  
 #else
       else if (    givesCheck
                && (pos.blockers_for_king(~us) & from_sq(move) || pos.see_ge(move)))
@@ -1362,7 +1379,7 @@ moves_loop: // When in check, search starts from here
           extension = ONE_PLY;
 
 #ifdef Maverick
-#else
+#else // SF pawn extension
 	 // Passed pawn extension
 	  else if (   move == ss->killers[0]
 			   && pos.advanced_pawn_push(move)
@@ -1379,11 +1396,15 @@ moves_loop: // When in check, search starts from here
                &&  (PvNode || (!PvNode && improving)))	// Endgame extension
 		  extension = ONE_PLY;
 #endif
-#ifdef Maverick  // Vondele Extend anti-shuffle moves
-	  else if (   pos.rule50_count() > 20
-               && pos.rule50_count() < 30
-               && (type_of(movedPiece) == PAWN || captureOrPromotion))
-		  extension = ONE_PLY;
+
+#ifdef Maverick
+      // Shuffle extension
+      else if (pos.rule50_count() > 18
+              && ss->ply > 18
+              && depth < 3 * ONE_PLY
+              && (PvNode || (!PvNode && improving))
+              && ss->ply < 3 * thisThread->rootDepth / ONE_PLY)	           // To avoid infinite loops
+          extension = ONE_PLY;
 #endif
 
       // Calculate new depth for this move
