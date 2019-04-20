@@ -74,19 +74,21 @@ namespace {
   Value futility_margin(Depth d, bool improving) {
     return Value((175 - 50 * improving) * d / ONE_PLY);
   }
+
 #ifdef Maverick
     // Reductions lookup table, initialized at startup
 	int Reductions[2][32][80];  // [improving][depth][moveNumber]
 #else
-	int Reductions[64]; // [imp or moveNumber]
+	// Reductions lookup table, initialized at startup
+	int Reductions[MAX_MOVES]; // [depth or moveNumber]
 #endif
 #ifdef Maverick // MichaelB7
 	template <bool PvNode> Depth reduction(bool i, Depth d, int mn) {
 		return (Reductions[i][std::min(d / ONE_PLY, 31)][mn] - PvNode ) * ONE_PLY;
 #else
   template <bool PvNode> Depth reduction(bool i, Depth d, int mn) {
-    int r = Reductions[std::min(d / ONE_PLY, 63)] * Reductions[std::min(mn, 63)] / 1024;
-    return ((r + 512) / 1024 + (!i && r > 1024) - PvNode ) * ONE_PLY;
+    int r = Reductions[d / ONE_PLY] * Reductions[mn] / 1024;
+    return ((r + 512) / 1024 + (!i && r > 1024) - PvNode) * ONE_PLY;
 #endif
   }
 			 
@@ -180,11 +182,10 @@ void Search::init() {
 					Reductions[imp][d][mc]++;
 			 }
 #else
-	for (int i = 1; i < 64; ++i)
-		Reductions[i] = int(1024 * std::log(i) / std::sqrt(1.95));
+  for (int i = 1; i < MAX_MOVES; ++i)
+      Reductions[i] = int(1024 * std::log(i) / std::sqrt(1.95));
 #endif
 }
-
 /// Search::clear() resets search state to its initial value
 
 void Search::clear() {
