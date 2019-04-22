@@ -78,7 +78,7 @@ namespace Eval {
 namespace {
 #endif
 
-#ifdef Maverick //corchess
+#ifdef Maverick //removal of lazy threshold from corchess by Ivan Ivec
   // Threshold for space evaluation
   constexpr Value SpaceThreshold = Value(12222);
 #else

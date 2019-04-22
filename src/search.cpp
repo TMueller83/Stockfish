@@ -434,7 +434,7 @@ ss->pv = pv;
 	  Search::clear();
 #endif
 #ifdef Maverick
-  bestValue = delta1 = delta2 = alpha = -VALUE_INFINITE; //corchess
+  bestValue = delta1 = delta2 = alpha = -VALUE_INFINITE; //corchess by Ivan Ivec
 #else
   bestValue = delta = alpha = -VALUE_INFINITE;
 #endif
@@ -607,7 +607,7 @@ ss->pv = pv;
               {
                   beta = (alpha + beta) / 2;
 #ifdef Maverick
-                  alpha = std::max(bestValue - delta1, -VALUE_INFINITE); //corchess
+                  alpha = std::max(bestValue - delta1, -VALUE_INFINITE); //corchess by Ivan Ivec
 #else
                   alpha = std::max(bestValue - delta, -VALUE_INFINITE);
 #endif
@@ -619,21 +619,22 @@ ss->pv = pv;
               }
               else if (bestValue >= beta)
               {
-#ifndef Maverick
-                  beta = std::min(bestValue + delta, VALUE_INFINITE);
-#endif
+
 #ifdef Maverick //  Gunther Demetz zugzwangSolver
-                  beta = std::min(bestValue + delta2, VALUE_INFINITE);  //corchess
+                  beta = std::min(bestValue + delta2, VALUE_INFINITE);  //corchess by Ivan Ivec
                   if (zugzwangMates > 5)
                       zugzwangMates-=100;
+#else
+                  beta = std::min(bestValue + delta, VALUE_INFINITE);
 #endif
+
                   if (mainThread)
                       ++failedHighCnt;
               }
               else
                   break;
 
-#ifdef Maverick //corchess
+#ifdef Maverick //corchess by Ivan Ivec
               delta1 += delta1 / 4 + 5;
               delta2 += delta2 / 4 + 5;
 #else
@@ -891,16 +892,6 @@ namespace {
            return VALUE_DRAW;
         }
 #endif
-/* corchess
-    // if position has been searched at higher depths and we are shuffling, return value_draw
-    if (pos.rule50_count() > 36
-        && ss->ply > 36
-        && depth < 3 * ONE_PLY
-        && ttHit
-        && tte->depth() > depth
-        && pos.count<PAWN>() > 0)
-        return VALUE_DRAW;
- */
 
     // At non-PV nodes we check for an early TT cutoff
     if (  !PvNode
@@ -1096,8 +1087,8 @@ namespace {
         &&  ss->staticEval >= beta - 36 * depth / ONE_PLY + 225
         && !excludedMove
 #ifdef Maverick
-        && thisThread->selDepth + 5 > thisThread->rootDepth / ONE_PLY  //idea from Corchess by Ivan Ivec (modfied here)
-        &&  pos.non_pawn_material(us) > BishopValueMg
+        && thisThread->selDepth + 3 > thisThread->rootDepth / ONE_PLY  //idea from corchess by Ivan Ivec (modfied here)
+        &&  pos.non_pawn_material(us) > BishopValueMg  //corchess by Ivan Ivec
 #else
         &&  pos.non_pawn_material(us)
 #endif
@@ -1107,7 +1098,6 @@ namespace {
         assert(eval - beta >= 0);
 
         Depth R = ((823 + 67 * depth / ONE_PLY) / 256 + std::min(int(eval - beta) / 200, 3)) * ONE_PLY;
-        //Depth R = std::max(1, int(2.6 * log(depth / ONE_PLY)) + std::min(int(eval - beta) / 200, 3)) * ONE_PLY; corchess
         ss->currentMove = MOVE_NULL;
         ss->continuationHistory = &thisThread->continuationHistory[NO_PIECE][0];
         pos.do_null_move(st);
@@ -1418,15 +1408,10 @@ moves_loop: // When in check, search starts from here
 		  extension = ONE_PLY;
 #endif
 
-/* corchess
-      // Shuffle extension
-      else if(pos.rule50_count() > 14 && ss->ply > 14 && depth < 3 * ONE_PLY && PvNode)
-          extension = ONE_PLY;
-
       // Castling extension
       else if (type_of(move) == CASTLING)
           extension = ONE_PLY;
-*/
+
 #ifdef Maverick
 #else // SF pawn extension
 	 // Passed pawn extension
