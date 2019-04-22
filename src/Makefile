@@ -32,7 +32,7 @@ DATE=$(shell date +"%m%d%y")
 VERSION=
 FEATURE1=
 ### Uncomment the line below for McCain, comment out for Stockfish
-	VERSION=maverick
+###	VERSION=maverick
 ### Uncomment for use with Raspberry Pi -  a slower NPS UCI option setting used in Play
 ### by Elo and personalities
 ###	RASPBERRY=Pi

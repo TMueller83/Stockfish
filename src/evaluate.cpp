@@ -78,10 +78,15 @@ namespace Eval {
 namespace {
 #endif
 
+#ifdef Maverick //corchess
+  // Threshold for space evaluation
+  constexpr Value SpaceThreshold = Value(12222);
+#else
+
   // Threshold for lazy and space evaluation
   constexpr Value LazyThreshold  = Value(1500);
   constexpr Value SpaceThreshold = Value(12222);
-
+#endif
   // KingAttackWeights[PieceType] contains king attack weights by piece type
   constexpr int KingAttackWeights[PIECE_TYPE_NB] = { 0, 0, 77, 55, 44, 10 };
 
@@ -929,11 +934,14 @@ constexpr Score Outpost            = S(  9,  3);
     pe = Pawns::probe(pos);
     score += pe->pawn_score(WHITE) - pe->pawn_score(BLACK);
 
+#ifdef Maverick
+    Value v;
+#else
     // Early exit if score is high
     Value v = (mg_value(score) + eg_value(score)) / 2;
     if (abs(v) > LazyThreshold)
-       return pos.side_to_move() == WHITE ? v : -v;
-
+      return pos.side_to_move() == WHITE ? v : -v;
+#endif
     // Main evaluation begins here
 
     initialize<WHITE>();

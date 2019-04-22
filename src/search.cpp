@@ -91,7 +91,7 @@ namespace {
     return ((r + 512) / 1024 + (!i && r > 1024) - PvNode) * ONE_PLY;
 #endif
   }
-			 
+		
   constexpr int futility_move_count(bool improving, int depth) {
     return (5 + depth * depth) * (1 + improving) / 2;
   }
@@ -407,7 +407,11 @@ void Thread::search() {
   // The latter is needed for statScores and killer initialization.
   Stack stack[MAX_PLY+10], *ss = stack+7;
   Move  pv[MAX_PLY+1];
+#ifdef Maverick
+  Value bestValue, alpha, beta, delta1, delta2;
+#else
   Value bestValue, alpha, beta, delta;
+#endif
   Move  lastBestMove = MOVE_NONE;
   Depth lastBestMoveDepth = DEPTH_ZERO;
   MainThread* mainThread = (this == Threads.main() ? Threads.main() : nullptr);
@@ -429,7 +433,12 @@ ss->pv = pv;
   if (cleanSearch)
 	  Search::clear();
 #endif
+#ifdef Maverick
+  bestValue = delta1 = delta2 = alpha = -VALUE_INFINITE; //corchess
+#else
   bestValue = delta = alpha = -VALUE_INFINITE;
+#endif
+
   beta = VALUE_INFINITE;
 
   size_t multiPV = Options["MultiPV"];
@@ -507,16 +516,25 @@ ss->pv = pv;
 
           // Reset UCI info selDepth for each depth and each PV line
           selDepth = 0;
-
+#ifdef Maverick
           // Reset aspiration window starting size
+          if (rootDepth >= 5 * ONE_PLY)
+          {
+              Value previousScore = rootMoves[pvIdx].previousScore;
+              delta1 = (previousScore < 0) ? Value(int(12.0 + 0.07 * abs(previousScore))) : Value(16);
+              delta2 = (previousScore > 0) ? Value(int(12.0 + 0.07 * abs(previousScore))) : Value(16);
+              alpha = std::max(previousScore - delta1,-VALUE_INFINITE);
+              beta  = std::min(previousScore + delta2, VALUE_INFINITE);
+#else
+           // Reset aspiration window starting size
           if (rootDepth >= 5 * ONE_PLY)
           {
               Value previousScore = rootMoves[pvIdx].previousScore;
               delta = Value(20);
               alpha = std::max(previousScore - delta,-VALUE_INFINITE);
               beta  = std::min(previousScore + delta, VALUE_INFINITE);
-
-                // Adjust contempt based on root move's previousScore (dynamic contempt)
+#endif
+		// Adjust contempt based on root move's previousScore (dynamic contempt)
 		int dct;
 #ifdef Add_Features
 		bool dc = Options["Dynamic_Contempt"];
@@ -588,8 +606,11 @@ ss->pv = pv;
 #endif
               {
                   beta = (alpha + beta) / 2;
+#ifdef Maverick
+                  alpha = std::max(bestValue - delta1, -VALUE_INFINITE); //corchess
+#else
                   alpha = std::max(bestValue - delta, -VALUE_INFINITE);
-
+#endif
                   if (mainThread)
                   {
                       failedHighCnt = 0;
@@ -598,10 +619,13 @@ ss->pv = pv;
               }
               else if (bestValue >= beta)
               {
+#ifndef Maverick
                   beta = std::min(bestValue + delta, VALUE_INFINITE);
+#endif
 #ifdef Maverick //  Gunther Demetz zugzwangSolver
-                    if (zugzwangMates > 5)
-                        zugzwangMates-=100;
+                  beta = std::min(bestValue + delta2, VALUE_INFINITE);  //corchess
+                  if (zugzwangMates > 5)
+                      zugzwangMates-=100;
 #endif
                   if (mainThread)
                       ++failedHighCnt;
@@ -609,7 +633,12 @@ ss->pv = pv;
               else
                   break;
 
+#ifdef Maverick //corchess
+              delta1 += delta1 / 4 + 5;
+              delta2 += delta2 / 4 + 5;
+#else
               delta += delta / 4 + 5;
+#endif
 
               assert(alpha >= -VALUE_INFINITE && beta <= VALUE_INFINITE);
           }
@@ -851,7 +880,7 @@ namespace {
     ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
             : ttHit    ? tte->move() : MOVE_NONE;
     ttPv = (ttHit && tte->is_pv()) || (PvNode && depth > 4 * ONE_PLY);
-
+#ifdef Maverick // SF PR #2108 by MJZ1977
     // If position has been searched at higher depths and we are shuffling, return value_draw
     if (pos.rule50_count() > 36 - 6 * (pos.count<ALL_PIECES>() > 14)
         && ss->ply > 36 - 6 * (pos.count<ALL_PIECES>() > 14)
@@ -861,6 +890,17 @@ namespace {
         {
            return VALUE_DRAW;
         }
+#endif
+/* corchess
+    // if position has been searched at higher depths and we are shuffling, return value_draw
+    if (pos.rule50_count() > 36
+        && ss->ply > 36
+        && depth < 3 * ONE_PLY
+        && ttHit
+        && tte->depth() > depth
+        && pos.count<PAWN>() > 0)
+        return VALUE_DRAW;
+ */
 
     // At non-PV nodes we check for an early TT cutoff
     if (  !PvNode
@@ -1056,15 +1096,18 @@ namespace {
         &&  ss->staticEval >= beta - 36 * depth / ONE_PLY + 225
         && !excludedMove
 #ifdef Maverick
-        && thisThread->selDepth + 3 > thisThread->rootDepth / ONE_PLY  //idea from Corchess by Ivan Ivec (modfied here)
-#endif
+        && thisThread->selDepth + 5 > thisThread->rootDepth / ONE_PLY  //idea from Corchess by Ivan Ivec (modfied here)
+        &&  pos.non_pawn_material(us) > BishopValueMg
+#else
         &&  pos.non_pawn_material(us)
+#endif
         && (ss->ply >= thisThread->nmpMinPly || us != thisThread->nmpColor)
 )
     {
         assert(eval - beta >= 0);
 
         Depth R = ((823 + 67 * depth / ONE_PLY) / 256 + std::min(int(eval - beta) / 200, 3)) * ONE_PLY;
+        //Depth R = std::max(1, int(2.6 * log(depth / ONE_PLY)) + std::min(int(eval - beta) / 200, 3)) * ONE_PLY; corchess
         ss->currentMove = MOVE_NULL;
         ss->continuationHistory = &thisThread->continuationHistory[NO_PIECE][0];
         pos.do_null_move(st);
@@ -1375,10 +1418,15 @@ moves_loop: // When in check, search starts from here
 		  extension = ONE_PLY;
 #endif
 
+/* corchess
+      // Shuffle extension
+      else if(pos.rule50_count() > 14 && ss->ply > 14 && depth < 3 * ONE_PLY && PvNode)
+          extension = ONE_PLY;
+
       // Castling extension
       else if (type_of(move) == CASTLING)
           extension = ONE_PLY;
-
+*/
 #ifdef Maverick
 #else // SF pawn extension
 	 // Passed pawn extension

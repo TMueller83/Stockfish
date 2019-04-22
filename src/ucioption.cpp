@@ -166,7 +166,6 @@ void init(OptionsMap& o) {
 
 }
 
-
 /// operator<<() is used to print all the options default values in chronological
 /// insertion order (the idx field) and in the format defined by the UCI protocol.
 
