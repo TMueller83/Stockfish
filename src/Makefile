@@ -31,6 +31,9 @@
 DATE=$(shell date +"%m%d%y")
 VERSION=
 FEATURE1=
+TEST=
+TESTv1=
+TESTv2=
 ### Uncomment the line below for McCain, comment out for Stockfish
 	VERSION=maverick
 ### Uncomment for use with Raspberry Pi -  a slower NPS UCI option setting used in Play
@@ -53,23 +56,25 @@ ifeq ($(VERSION),maverick)
 	CXXFLAGS += -DMaverick
 	ifeq ($(COMP),mingw)
 		EXE = McCain-dev-$(DATE).exe
+	endif
+	ifeq ($(TEST),tt)
+		EXE = McCain-$(TESTv1)$(TESTv2)
 	else
 		EXE = McCain-dev-$(DATE)
-###$(DATE)
-
+	endif
 endif
-	else
+
 ### Note: Comment below is for for building cur-dev stockfish with the features noted.
 ### McCain always include those features
 ### Uncomment out the two lines below for additional features for stockfish, such as play by ELO ,
 ### cerebellum book, tactical mode, variety play and additional GUI options.
+ifneq ($(VERSION),maverick)
 	ifeq ($(COMP),mingw)
 		EXE = stockfish-$(DATE).exe
 	else
 		EXE = stockfish-$(DATE)
 	endif
 endif
-
 ### Installation dir definitions
 PREFIX = /opt/local
 #PREFIX = /usr/local

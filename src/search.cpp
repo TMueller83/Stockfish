@@ -172,15 +172,17 @@ void Search::init() {
 #ifdef Maverick   // MichaelB7
 	for (int imp = 0; imp <= 1; ++imp)
 		for (int d = 1; d < 32; ++d)
-			for (int mc = 1; mc < 80; ++mc) // record in a "real" game is 79 moves
-			{  // more weight on depth for LMR reductions than move number ( as an aside, Crafty did the same) MichaelB7
-				int red = int(log( d * 1.85 ) * log( mc * .90 )) / 2; 
-				Reductions[imp][d][mc] = red;
-				
-				// Increase reduction for non-PV nodes when eval is not improving
-				if (!imp && red > 1)
-					Reductions[imp][d][mc]++;
-			 }
+			for (int mc = 1; mc < 80; ++mc) // record in a "real" game is 79 moves,
+				// in a search of one million games, found one posiiton with 78 possible moves.
+				// more weight on depth for LMR reductions than move count
+				// (from Crafty) MichaelB7
+				{
+					int red = int(log( d * 1.87 ) * log( mc * .90 )) / 2;
+					Reductions[imp][d][mc] = red;
+					// Increase reduction for non-PV nodes when eval is not improving
+					if (!imp && red > 1)
+						Reductions[imp][d][mc]++;
+				}
 #else
   for (int i = 1; i < MAX_MOVES; ++i)
       Reductions[i] = int(1024 * std::log(i) / std::sqrt(1.95));
