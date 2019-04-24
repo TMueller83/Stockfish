@@ -177,7 +177,7 @@ void Search::init() {
 				// more weight on depth for LMR reductions than move count
 				// (from Crafty) MichaelB7
 				{
-					int red = int(log( d * 1.87 ) * log( mc * .90 )) / 2;
+					int red = int(log( d * 1.87 ) * log( mc * .95 )) / 2;
 					Reductions[imp][d][mc] = red;
 					// Increase reduction for non-PV nodes when eval is not improving
 					if (!imp && red > 1)
@@ -1434,13 +1434,36 @@ moves_loop: // When in check, search starts from here
 #endif
 
 #ifdef Maverick
-      // Shuffle extension
-      else if (pos.rule50_count() > 18
-              && ss->ply > 18
-              && depth < 3 * ONE_PLY
-              && (PvNode || (!PvNode && improving))
-              && ss->ply < 3 * thisThread->rootDepth / ONE_PLY)	           // To avoid infinite loops
-          extension = ONE_PLY;
+
+		  // Shuffle extension. If a reduced search returns the same score of
+		  // current position then extend one ply.
+		  //Submitted by Marco Costalba
+		  //http://tests.stockfishchess.org/tests/view/5cbda2df0ebc5925cf025bed
+		  //Scaled very well at long time control TC
+		  else if (   PvNode
+				   && depth >= 8 * ONE_PLY
+				   && pos.rule50_count() > 8
+				   && ttHit
+				   && move == ttMove // Only once per node
+				   && tte->depth() > depth
+				   && abs(ttValue) < VALUE_KNOWN_WIN
+				   /*
+					*  Next condition includes both the shuffle detection and the stop
+					*  condition. It stops when rule50_count() becomes so high that ttValue
+					*  can no more stay above it.
+					*/
+				   && abs(ttValue) < PawnValueMg * pos.rule50_count() / 8)
+		  {
+			  Value shufflerAlpha = ttValue - 2 * depth / ONE_PLY;
+			  Value shufflerBeta = ttValue + 2 * depth / ONE_PLY;
+			  Depth halfDepth = depth / (2 * ONE_PLY) * ONE_PLY; // ONE_PLY invariant
+			  
+			  value = search<PV>(pos, ss, shufflerAlpha, shufflerBeta, halfDepth, false);
+			  
+			  if (value > shufflerAlpha && value < shufflerBeta)
+				  extension = ONE_PLY;
+		  }
+
 #endif
 
       // Calculate new depth for this move
