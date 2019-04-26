@@ -24,50 +24,71 @@
 ### ==========================================================================
 
 ### Executable name
-### McCain bench nodes ----> 4685351 > based on commits up to 4/22/2019
+### McCain bench nodes ----> 4725155 > based on commits up to 4/23/2019
 ### stockfish bench nodes -> 3402947 > based on commits up to 4/22/2019
 
 ####  Always leave the three lines below as is (any subsequent defines will override)
 DATE=$(shell date +"%m%d%y")
-VERSION=
 FEATURE1=
-TEST=
-TESTv1=
-TESTv2=
+
+### TEST versions, enter yes and labels below to build named test exe's
+TEST = no
+TESTv1 =
+TESTv2 =
+
+### Release versions , enter yes and release version below foor releases
+RELEASE = yes
+RELVERSION =X3
+
 ### Uncomment the line below for McCain, comment out for Stockfish
 	VERSION=maverick
+
 ### Uncomment for use with Raspberry Pi -  a slower NPS UCI option setting used in Play
 ### by Elo and personalities
 ###	RASPBERRY=Pi
 
-### should be no reason to change anything below here!
-### Only McCain and stockfish with feature 1 will be publicly distributed a this time, although feel free to play with privately
-### features include : Cerebellum book functionality, play by Elo (UCI limit strength), keyboard shortcuts and a few other items
+### Features include : Cerebellum book functionality, play by Elo (UCI limit strength), keyboard shortcuts and a few other items. Comment out to eliminate
 	FEATURE1=add_features
+
+### should be no reason to change anything below here!
+### Only McCain with feature 1 will be publicly distributed at this time
+
 ifeq ($(FEATURE1),add_features)
 	CXXFLAGS += -DAdd_Features
 	FILES = with_c_book
 	SUFFIX1 =
 endif
+
+###  to reduce NPS setting using "setoption" command, to enable more similiar play when
+###  playimg at reduced strength on hardware
 ifeq ($(RASPBERRY),Pi)
 CXXFLAGS += -DPi
 endif
+
 ifeq ($(VERSION),maverick)
 	CXXFLAGS += -DMaverick
-	ifeq ($(COMP),mingw)
-		EXE = McCain-dev-$(DATE).exe
+	ifeq ($(RELEASE),no)
+		ifeq ($(TEST),no)
+			ifeq ($(COMP),mingw)
+				EXE = McCain-dev-$(DATE).exe
+			else
+				EXE = McCain-dev-$(DATE)
+			endif
+		endif
+		ifeq ($(TEST),yes)
+			EXE = McCain-$(TESTv1)$(TESTv2)
+		endif
 	endif
-	ifeq ($(TEST),tt)
-		EXE = McCain-$(TESTv1)$(TESTv2)
-	else
-		EXE = McCain-dev-$(DATE)
+	ifeq ($(RELEASE),yes)
+		ifeq ($(COMP),mingw)
+			EXE = McCain-$(RELVERSION).exe
+		else
+			EXE = McCain-$(RELVERSION)
+		endif
 	endif
 endif
 
-### Note: Comment below is for for building cur-dev stockfish with the features noted.
-### McCain always include those features
-### Uncomment out the two lines below for additional features for stockfish, such as play by ELO ,
-### cerebellum book, tactical mode, variety play and additional GUI options.
+### Note:  For building cur-dev stockfish with the features added.
 ifneq ($(VERSION),maverick)
 	ifeq ($(COMP),mingw)
 		EXE = stockfish-$(DATE).exe
@@ -75,6 +96,7 @@ ifneq ($(VERSION),maverick)
 		EXE = stockfish-$(DATE)
 	endif
 endif
+
 ### Installation dir definitions
 PREFIX = /opt/local
 #PREFIX = /usr/local
