@@ -1304,6 +1304,7 @@ moves_loop: // When in check, search starts from here
 
       // Castling extension
       else if (type_of(move) == CASTLING)
+          extension = ONE_PLY;
 
       // Shuffle extension
       else if (   PvNode
