@@ -63,10 +63,10 @@ namespace {
 #endif
 
 #if(defined Maverick && defined Add_Features)
-const string Version = "X3";
+const string Version = "";
 #else
 #ifdef Maverick
-const string Version = "X3";
+const string Version = "";
 #endif
 #endif
 

@@ -861,8 +861,7 @@ namespace {
     assert(0 <= ss->ply && ss->ply < MAX_PLY);
 
     (ss+1)->ply = ss->ply + 1;
-    ss->currentMove = (ss+1)->excludedMove = bestMove = MOVE_NONE;
-    ss->continuationHistory = &thisThread->continuationHistory[NO_PIECE][0];
+    (ss+1)->excludedMove = bestMove = MOVE_NONE;
     (ss+2)->killers[0] = (ss+2)->killers[1] = MOVE_NONE;
     Square prevSq = to_sq((ss-1)->currentMove);
 
@@ -883,17 +882,15 @@ namespace {
     ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
             : ttHit    ? tte->move() : MOVE_NONE;
     ttPv = (ttHit && tte->is_pv()) || (PvNode && depth > 4 * ONE_PLY);
-#ifdef Maverick // SF PR #2108 by MJZ1977
-    // If position has been searched at higher depths and we are shuffling, return value_draw
-    if (pos.rule50_count() > 36 - 6 * (pos.count<ALL_PIECES>() > 14)
+
+    // If position has been searched at higher depths and we are shuffling,
+    // return value_draw.
+    if (   pos.rule50_count() > 36 - 6 * (pos.count<ALL_PIECES>() > 14)
         && ss->ply > 36 - 6 * (pos.count<ALL_PIECES>() > 14)
         && ttHit
         && tte->depth() > depth
         && pos.count<PAWN>() > 0)
-        {
            return VALUE_DRAW;
-        }
-#endif
 
     // At non-PV nodes we check for an early TT cutoff
     if (  !PvNode
@@ -1394,15 +1391,12 @@ moves_loop: // When in check, search starts from here
       else if (    givesCheck)
 		  extension = ONE_PLY;
 
-     // MB Passed pawn extension
+     // MichaelB7 Passed pawn extension
      else if ( move == ss->killers[0]
-			  && pos.promotion_pawn_push(move))
+			  && (pos.promotion_pawn_push(move)
+				  || (pos.advanced_pawn_push(move)
+				  && pos.pawn_passed(us, to_sq(move)))))
 		  extension = ONE_PLY;
-	// SF pawn extension
-     else if ( move == ss->killers[0]
-			  && pos.advanced_pawn_push(move)
-			  && pos.pawn_passed(us, to_sq(move)))
-          extension = ONE_PLY;
 		  
 #else
       else if (    givesCheck
@@ -1414,10 +1408,44 @@ moves_loop: // When in check, search starts from here
       else if (type_of(move) == CASTLING)
           extension = ONE_PLY;
 
-#ifdef Maverick
-#else // SF pawn extension
-	 // Passed pawn extension
-	  else if (   move == ss->killers[0]
+#ifdef Maverick  // Shuffle extension. If a reduced search returns the same score of
+				 // current position then extend one ply.
+                 // by Marco Costalba
+		  
+      else if (   PvNode
+			   && depth >= 8 * ONE_PLY
+			   && pos.rule50_count() > 8
+			   && ttHit
+			   && move == ttMove // Only once per node
+			   && tte->depth() > depth
+			   && abs(ttValue) < VALUE_KNOWN_WIN
+			   && abs(ttValue) < PawnValueMg * pos.rule50_count() / 8)  // See note below.
+		  
+		       //  Note: Previous condition includes both the shuffle detection and the
+			   // stop condition. It stops when rule50_count() becomes so high that ttValue
+			   // can no more stay above it.
+		  
+		  {
+			  Value shufflerAlpha = ttValue - 2 * depth / ONE_PLY;
+			  Value shufflerBeta = ttValue + 2 * depth / ONE_PLY;
+			  Depth halfDepth = depth / (2 * ONE_PLY) * ONE_PLY; // ONE_PLY invariant
+			  
+			  value = search<PV>(pos, ss, shufflerAlpha, shufflerBeta, halfDepth, false);
+			  
+			  if (value > shufflerAlpha && value < shufflerBeta)
+			extension = ONE_PLY;
+		  }
+#else
+      // Shuffle extension
+      else if (   PvNode
+			   && pos.rule50_count() > 18
+			   && ss->ply > 18
+			   && depth < 3 * ONE_PLY
+			   && ss->ply < 3 * thisThread->rootDepth / ONE_PLY) // To avoid infinite loops
+		  extension = ONE_PLY;
+		  
+      // SF Passed pawn extension
+      else if (   move == ss->killers[0]
 			   && pos.advanced_pawn_push(move)
 			   && pos.pawn_passed(us, to_sq(move)))
 		  extension = ONE_PLY;
@@ -1432,40 +1460,6 @@ moves_loop: // When in check, search starts from here
                &&  (PvNode || (!PvNode && improving)))	// Endgame extension
 		  extension = ONE_PLY;
 #endif
-
-#ifdef Maverick
-
-		  // Shuffle extension. If a reduced search returns the same score of
-		  // current position then extend one ply.
-		  //Submitted by Marco Costalba
-		  //http://tests.stockfishchess.org/tests/view/5cbda2df0ebc5925cf025bed
-		  //Scaled very well at long time control TC
-		  else if (   PvNode
-				   && depth >= 8 * ONE_PLY
-				   && pos.rule50_count() > 8
-				   && ttHit
-				   && move == ttMove // Only once per node
-				   && tte->depth() > depth
-				   && abs(ttValue) < VALUE_KNOWN_WIN
-				   /*
-					*  Next condition includes both the shuffle detection and the stop
-					*  condition. It stops when rule50_count() becomes so high that ttValue
-					*  can no more stay above it.
-					*/
-				   && abs(ttValue) < PawnValueMg * pos.rule50_count() / 8)
-		  {
-			  Value shufflerAlpha = ttValue - 2 * depth / ONE_PLY;
-			  Value shufflerBeta = ttValue + 2 * depth / ONE_PLY;
-			  Depth halfDepth = depth / (2 * ONE_PLY) * ONE_PLY; // ONE_PLY invariant
-			  
-			  value = search<PV>(pos, ss, shufflerAlpha, shufflerBeta, halfDepth, false);
-			  
-			  if (value > shufflerAlpha && value < shufflerBeta)
-				  extension = ONE_PLY;
-		  }
-
-#endif
-
       // Calculate new depth for this move
       newDepth = depth - ONE_PLY + extension;
 

@@ -34,11 +34,11 @@ FEATURE1=
 ### TEST versions, enter yes and labels below to build named test exe's
 TEST = no
 TESTv1 =
-TESTv2 =
+TESTv2 = 
 
 ### Release versions , enter yes and release version below foor releases
-RELEASE = yes
-RELVERSION =X3
+RELEASE = no
+RELVERSION = no
 
 ### Uncomment the line below for McCain, comment out for Stockfish
 	VERSION=maverick

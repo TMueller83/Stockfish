@@ -558,27 +558,17 @@ constexpr Score Outpost            = S(  9,  3);
                  +  69 * kingAttacksCount[Them]
                  + 185 * popcount(kingRing[Us] & weak)
                  - 100 * bool(attackedBy[Us][KNIGHT] & attackedBy[Us][KING])
+                 -  35 * bool(attackedBy[Us][BISHOP] & attackedBy[Us][KING])
                  + 150 * popcount(pos.blockers_for_king(Us) | unsafeChecks)
                  - 873 * !pos.count<QUEEN>(Them)
                  -   6 * mg_value(score) / 8
                  +       mg_value(mobility[Them] - mobility[Us])
                  +   5 * kingFlankAttacks * kingFlankAttacks / 16
-#ifdef Maverick
-                 -  25;
-#else
-                 -  15;
-#endif
+                 -   7;
 
-#ifdef Maverick
-	  int mobilityDanger = mg_value(mobility[Them] - mobility[Us]);
-	  mobilityDanger = std::max(0, mobilityDanger);
-	  kingDanger = std::max(0, kingDanger + mobilityDanger);
-	  score -= kingDanger ? make_score(kingDanger * kingDanger / 4096, kingDanger / 16) : make_score(0, 0);
-#else
-	// Transform the kingDanger units into a Score, and subtract it from the evaluation
+    // Transform the kingDanger units into a Score, and subtract it from the evaluation
     if (kingDanger > 100)
 		score -= make_score(kingDanger * kingDanger / 4096, kingDanger / 16);
-#endif
 
     // Penalty when our king is on a pawnless flank
     if (!(pos.pieces(PAWN) & KingFlank[file_of(ksq)]))
