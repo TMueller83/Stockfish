@@ -436,7 +436,6 @@ ss->pv = pv;
 
 #ifdef Maverick //zugzwangMates
   zugzwangMates=0;
-//  int mctsFactor  = Options["MCTS_Slider"];
 #endif
 
 #ifdef Add_Features

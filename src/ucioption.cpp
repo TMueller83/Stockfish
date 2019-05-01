@@ -132,7 +132,6 @@ void init(OptionsMap& o) {
 #endif
 #ifdef Maverick
 	o["DC_Slider"]              << Option(65, -180, 180);
-	o["MCTS_Slider"]            << Option(40, 0, 100);
 	o["MultiPV"]                << Option(1, 1, 256);
 
 #else
