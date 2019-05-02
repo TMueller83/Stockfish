@@ -155,7 +155,7 @@ constexpr Score MobilityBonus[][32] = {
 // Assorted bonuses and penalties
 constexpr Score BishopPawns        = S(  3,  7);
 constexpr Score CorneredBishop     = S( 50, 50);
-constexpr Score FlankAttacks       = S(  7,  0);
+constexpr Score FlankAttacks       = S(  8,  0);
 constexpr Score Hanging            = S( 69, 36);
 constexpr Score KingProtector      = S(  7,  8);
 constexpr Score KnightManeuver     = S(  8,  4);  // miguel-l
@@ -563,22 +563,12 @@ constexpr Score Outpost            = S(  9,  3);
                  - 873 * !pos.count<QUEEN>(Them)
                  -   6 * mg_value(score) / 8
                  +       mg_value(mobility[Them] - mobility[Us])
-#ifdef Maverick  //@Vizvezdenec, 31m059  & SFisGOD
-                 +   3 * kingFlankAttacks * kingFlankAttacks / 8
-                 -   6; // tweaked by MichaelB7
-#else
                  +   5 * kingFlankAttacks * kingFlankAttacks / 16
                  -   7;
-#endif
 
     // Transform the kingDanger units into a Score, and subtract it from the evaluation
-#ifdef Maverick //tweaked by MichelB7
-    if (abs(kingDanger) > 50 )
-		score -= make_score(9 * kingDanger * kingDanger / 32768 , kingDanger / 16);//tweak Michael B7
-#else
-	if (kingDanger > 100)
+    if (kingDanger > 100)
 		score -= make_score(kingDanger * kingDanger / 4096, kingDanger / 16);
-#endif
 
     // Penalty when our king is on a pawnless flank
     if (!(pos.pieces(PAWN) & KingFlank[file_of(ksq)]))

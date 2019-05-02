@@ -64,11 +64,18 @@ namespace {
 
 #if(defined Maverick && defined Add_Features)
 const string Version = "";
+#else
+#ifdef Maverick
+const string Version = "";
+#endif
 #endif
 
 #if(defined Stockfish && defined Add_Features)
-const string Version = "";
-
+	const string Version =git status "";
+#else
+#ifdef Stockfish
+	const string Version = "";
+#endif
 #endif
 
 /// Our fancy logging facility. The trick here is to replace cin.rdbuf() and
