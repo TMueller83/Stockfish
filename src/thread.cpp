@@ -21,6 +21,7 @@
 #include <algorithm> // For std::count
 #include <cassert>
 
+#include <algorithm> // For std::count
 #include "movegen.h"
 #include "search.h"
 #include "thread.h"
