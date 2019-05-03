@@ -24,7 +24,7 @@
 ### ==========================================================================
 
 ### Executable name
-### McCain bench nodes ----> 4725155 > based on commits up to 4/23/2019
+### McCain bench nodes ----> 4148855 > based on commits up to 4/23/2019
 ### stockfish bench nodes -> 3402947 > based on commits up to 4/22/2019
 
 ####  Always leave the three lines below as is (any subsequent defines will override)
@@ -34,7 +34,7 @@ FEATURE1=
 ### TEST versions, enter yes and labels below to build named test exe's
 TEST = no
 TESTv1 =
-TESTv2 = 
+TESTv2 =
 
 ### Release versions , enter yes and release version below foor releases
 RELEASE = no

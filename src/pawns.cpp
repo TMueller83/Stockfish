@@ -21,6 +21,7 @@
 
 #include <cassert>
 
+
 #include "bitboard.h"
 #include "pawns.h"
 #include "position.h"
@@ -200,6 +201,15 @@ Value Entry::evaluate_shelter(const Position& pos, Square ksq) {
                                                         : UnblockedStorm[d][theirRank];
   }
 
+#ifdef Maverick //Pawn Majority inspired by S. Nicolet efforts.
+	// A large enemy pawn majority in the king side is a big danger
+	Bitboard kf = KingFlank[file_of(ksq)];
+	int majorArray[2] {16, 28};
+	int majority = std::min(popcount(theirPawns & kf) - popcount(ourPawns & kf),3);
+	if (majority > 1)
+		safety -= majorArray[majority - 2]; //array elements 0 and 1 align to majority of 2 and 3 ,
+	                                        //higher bonuses for a majority of 4 or more were regressive
+#endif
   return safety;
 }
 
