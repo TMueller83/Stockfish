@@ -68,10 +68,10 @@ namespace {
   }
 
   // Reductions lookup tables, initialized at startup
-  int Reductions[2][MAX_PLY][128];  // [improving][depth][moveNumber]
+  int Reductions[2][MAX_PLY][64];  // [improving][depth][moveNumber]
 
   template <bool PvNode> Depth reduction(bool i, Depth d, int mn) {
-    return (Reductions[i][d / ONE_PLY][std::min(mn, 127)] - PvNode) * ONE_PLY;
+    return (Reductions[i][d / ONE_PLY][std::min(mn, 63)] - PvNode) * ONE_PLY;
   }
     
   constexpr int futility_move_count(bool improving, int depth) {
@@ -149,7 +149,7 @@ void Search::init() {
 
   for (int imp = 0; imp <= 1; ++imp)
       for (int d = 1; d < MAX_PLY; ++d)
-          for (int mc = 1; mc < 128; ++mc)
+          for (int mc = 1; mc < 64; ++mc)
           {
               double r = 0.215 * d * (1.0 - exp(-8.0 / d)) * log(mc);
 
@@ -605,7 +605,10 @@ namespace {
     // starts with statScore = 0. Later grandchildren start with the last calculated
     // statScore of the previous grandchild. This influences the reduction rules in
     // LMR which are based on the statScore of parent position.
-    (ss+2)->statScore = 0;
+	if (rootNode)
+		(ss + 4)->statScore = 0;
+	else
+		(ss + 2)->statScore = 0;
 
     // Step 4. Transposition table lookup. We don't want the score of a partial
     // search to overwrite a previous full search TT value, so we use a different
@@ -617,17 +620,6 @@ namespace {
     ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
             : ttHit    ? tte->move() : MOVE_NONE;
     ttPv = (ttHit && tte->is_pv()) || (PvNode && depth > 4 * ONE_PLY);
-
-
-
-    // If position has been searched at higher depths and we are shuffling,
-    // return value_draw.
-    if (   pos.rule50_count() > 36 - 6 * (pos.count<ALL_PIECES>() > 14)
-        && ss->ply > 36 - 6 * (pos.count<ALL_PIECES>() > 14)
-        && ttHit
-        && tte->depth() > depth
-        && pos.count<PAWN>() > 0)
-           return VALUE_DRAW;
 
     // At non-PV nodes we check for an early TT cutoff
     if (  !PvNode
@@ -945,10 +937,6 @@ moves_loop: // When in check, search starts from here
       // Check extension (~2 Elo)
       else if (    givesCheck
                && (pos.blockers_for_king(~us) & from_sq(move) || pos.see_ge(move)))
-          extension = ONE_PLY;
-
-      // Shuffle extension
-      else if(pos.rule50_count() > 14 && ss->ply > 14 && depth < 3 * ONE_PLY && PvNode)
           extension = ONE_PLY;
 
       // Castling extension
