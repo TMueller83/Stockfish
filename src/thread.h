@@ -32,7 +32,7 @@
 #include "pawns.h"
 #include "position.h"
 #include "search.h"
-#include "thread_win32_osx.h"
+#include "thread_win32.h"
 
 
 /// Thread class keeps together all the thread-related stuff. We use
@@ -46,13 +46,14 @@ class Thread {
   ConditionVariable cv;
   size_t idx;
   bool exit = false, searching = true; // Set before starting std::thread
-  NativeThread stdThread;
+  std::thread stdThread;
 
 public:
   explicit Thread(size_t);
   virtual ~Thread();
   virtual void search();
   void clear();
+  virtual Value playout(Move, Search::Stack*, Value);
   void idle_loop();
   void start_searching();
   void wait_for_search_finished();
@@ -62,10 +63,8 @@ public:
   Endgames endgames;
   size_t pvIdx, pvLast;
   int selDepth, nmpMinPly;
-
-  int64_t visits, allScores;
   Color nmpColor;
-  std::atomic<uint64_t> nodes, tbHits, bestMoveChanges;
+  std::atomic<uint64_t> nodes, tbHits;
 
   Position rootPos;
   Search::RootMoves rootMoves;
@@ -87,7 +86,7 @@ struct MainThread : public Thread {
   void search() override;
   void check_time();
 
-  double previousTimeReduction;
+  double bestMoveChanges, previousTimeReduction;
   Value previousScore;
   int callsCnt;
   bool stopOnPonderhit;

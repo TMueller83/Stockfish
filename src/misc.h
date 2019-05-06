@@ -31,6 +31,7 @@
 
 const std::string engine_info(bool to_uci = false);
 void prefetch(void* addr);
+void prefetch2(void* addr);
 void start_logger(const std::string& fname);
 
 void dbg_hit_on(bool b);
@@ -52,7 +53,7 @@ struct HashTable {
   Entry* operator[](Key key) { return &table[(uint32_t)key & (Size - 1)]; }
 
 private:
-  std::vector<Entry> table = std::vector<Entry>(Size); // Allocate on the heap
+  std::vector<Entry> table = std::vector<Entry>(Size);
 };
 
 

@@ -56,7 +56,7 @@ namespace {
 
 /// Version number. If Version is left empty, then compile date in the format
 /// DD-MM-YY and show in engine_info.
-const string Version = "";
+const string Version = "1.6.1";
 
 /// Our fancy logging facility. The trick here is to replace cin.rdbuf() and
 /// cout.rdbuf() with two Tie objects that tie cin and cout to a file stream. We
@@ -127,7 +127,7 @@ const string engine_info(bool to_uci) {
   string month, day, year;
   stringstream ss, date(__DATE__); // From compiler, format is "Sep 21 2008"
 
-  ss << "S_XPrO " << Version << setfill('0');
+  ss << "SugaR " << Version << setfill('0');
 
   if (Version.empty())
   {
@@ -135,7 +135,7 @@ const string engine_info(bool to_uci) {
       ss << setw(2) << day << setw(2) << (1 + months.find(month) / 4) << year.substr(2);
   }
 
-  ss << (Is64Bit ? " 64" : " 32")
+  ss << (Is64Bit ? " 64" : "")
      << (HasPext ? " BMI2" : (HasPopCnt ? " POPCNT" : ""))
      << (to_uci  ? "\nid author ": " by ")
      << "Stockfish Team, Marco Zerbinati, Sergey Aleksandrovitch Kozlov";
@@ -209,6 +209,12 @@ void prefetch(void* addr) {
 }
 
 #endif
+
+void prefetch2(void* addr) {
+
+  prefetch(addr);
+  prefetch((uint8_t*)addr + 64);
+}
 
 namespace WinProcGroup {
 

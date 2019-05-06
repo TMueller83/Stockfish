@@ -47,7 +47,6 @@ namespace {
   // The function sets up the position described in the given FEN string ("fen")
   // or the starting position ("startpos") and then makes the moves given in the
   // following move list ("moves").
-
   bool startposition = false;
   Key FileKey = 0;
 
@@ -55,86 +54,67 @@ namespace {
 
     Move m;
     string token, fen;
-    string Newfen; 
-    bool mctsSelfLearning=Options["NN MCTS Self-Learning"]; 
+	string Newfen;
+
     is >> token;
 
-    if (token == "startpos")
-    {
-      if(mctsSelfLearning)
-      {
-	startposition = true;
-      }
-      fen = StartFEN;
-      if(mctsSelfLearning)
-      {
-	 Newfen = fen;
-      }
-      is >> token; // Consume "moves" token if any
-    }
-    else if (token == "fen")
-    {
-      if(mctsSelfLearning)
-      {
-	startposition = false;
-	Newfen = token;
-      }
-      while (is >> token && token != "moves")
-	      fen += token + " ";
-    }
-    else
-	    return;
+	if (token == "startpos")
+	{
+		startposition = true;
+		fen = StartFEN;
+		Newfen = fen;
+		is >> token; // Consume "moves" token if any
+	}
+	else if (token == "fen")
+	{
+		startposition = false;
+		Newfen = token;
+		while (is >> token && token != "moves")
+			fen += token + " ";
+	}
+	else
+		return;
 
     states = StateListPtr(new std::deque<StateInfo>(1)); // Drop old and create a new one
     pos.set(fen, Options["UCI_Chess960"], &states->back(), Threads.main());
+	int movesplayed = 0;
+	int OPmoves = 0;
 
-    int movesplayed = 0;
-    int OPmoves = 0;
-    if(mctsSelfLearning)
-    {
-      if (StartFEN != Newfen)
-      {
-	      startposition = false;
-	      FileKey = pos.key();
-      }
-      else
-      {
-	      startposition = true;
-	      FileKey = 0;
-      }
-    }
+	if (StartFEN != Newfen)
+	{
+		startposition = false;
+		FileKey = pos.key();
+	}
+	else
+	{
+		startposition = true;
+		FileKey = 0;
+	}
 
     // Parse move list (if any)
     while (is >> token && (m = UCI::to_move(pos, token)) != MOVE_NONE)
     {
         states->emplace_back();
 
-        if(mctsSelfLearning)
-        {
-	  if (!FileKey)
-	  {
-	    if ((movesplayed == 2 || movesplayed == 4 || movesplayed == 6 || movesplayed == 8 || movesplayed == 10 || movesplayed == 12 || movesplayed == 14 || movesplayed == 16) && Newfen == StartFEN)
-	    {
-		    files(OPmoves, pos.key());
-		    OPmoves++;
-		    kelly(startposition);
+		if (!FileKey)
+		{
+			if ((movesplayed == 2 || movesplayed == 4 || movesplayed == 6 || movesplayed == 8 || movesplayed == 10 || movesplayed == 12 || movesplayed == 14 || movesplayed == 16) && Newfen == StartFEN)
+			{
+				files(OPmoves, pos.key());
+				OPmoves++;
+				kelly(startposition);
 
-	    }
-	    if (movesplayed == 16 && Newfen == StartFEN)
-	    {
-		    FileKey = pos.key();
-		    kelly(startposition);
-	    }
-	  }
-        }
+			}
+			if (movesplayed == 16 && Newfen == StartFEN)
+			{
+				FileKey = pos.key();
+				kelly(startposition);
+			}
+		}
 
         pos.do_move(m, states->back());
-
-        if(mctsSelfLearning)
-        {
-            movesplayed++;
-        }
-    }
+		movesplayed++;
+	}
   }
 
 
@@ -315,7 +295,7 @@ string UCI::value(Value v) {
   stringstream ss;
 
   if (abs(v) < VALUE_MATE - MAX_PLY)
-      ss << "cp " << v * 80 / PawnValueEg;
+      ss << "cp " << v * 70 / PawnValueEg;
   else
       ss << "mate " << (v > 0 ? VALUE_MATE - v + 1 : -VALUE_MATE - v) / 2;
 

@@ -22,7 +22,7 @@
 #include <cassert>
 #include <ostream>
 #include <iostream>
-#include <sstream>
+#include <thread>
 
 #include "misc.h"
 #include "search.h"
@@ -30,7 +30,6 @@
 #include "tt.h"
 #include "uci.h"
 #include "syzygy/tbprobe.h"
-
 #include "polybook.h"
 
 using std::string;
@@ -71,44 +70,45 @@ void init(OptionsMap& o) {
   // at most 2^32 clusters.
   constexpr int MaxHashMB = Is64Bit ? 131072 : 2048;
 
-  o["Use Book1"]                   << Option(false);
-  o["BestBook1Move"]               << Option(false, on_best_book_move1);
-  o["BookFile1"]                   << Option("book1.bin", on_book_file1);
-  o["BookDepth1"]                  << Option(100, 1, 120, on_book_depth1);
-  o["Use Book2"]                   << Option(false);
-  o["BestBook2Move"]               << Option(false, on_best_book_move2);
-  o["BookFile2"]                   << Option("book2.bin", on_book_file2);
-  o["BookDepth2"]                  << Option(100, 1, 120, on_book_depth2);
-  o["Debug Log File"]              << Option("", on_logger);
-  o["Contempt"]                    << Option(24, -100, 100);
-  o["Analysis Contempt"]           << Option("Both var Off var White var Black var Both", "Both");
-  o["Threads"]                     << Option(1, 1, 512, on_threads);
-  o["Hash"]                        << Option(16, 1, MaxHashMB, on_hash_size);
-  o["Clear Hash"]                  << Option(on_clear_hash);
-  o["Ponder"]                      << Option(false);
-  o["MultiPV"]                     << Option(1, 1, 500);
-  o["Skill Level"]                 << Option(20, 0, 20);
-  o["Move Overhead"]               << Option(100, 0, 5000);
-  o["Minimum Thinking Time"]       << Option(20, 0, 5000);
-  o["Slow Mover"]                  << Option(84, 10, 1000);
-  o["nodestime"]                   << Option(0, 0, 10000);
-  o["UCI_Chess960"]                << Option(false);
-  o["NeverClearHash"]              << Option(false);
-  o["HashFile"]                    << Option("hash.hsh", on_HashFile);
-  o["SaveHashtoFile"]              << Option(SaveHashtoFile);
-  o["LoadHashfromFile"]            << Option(LoadHashfromFile);
-  o["LoadEpdToHash"]               << Option(LoadEpdToHash);
-  o["UCI_AnalyseMode"]             << Option(false);
-  o["NN Perceptron Search"]        << Option(false);
-  o["NN MCTS Self-Learning"]       << Option(true);
-  o["MCTS Search"]                 << Option(false);
-  o["Dynamic Strategy"]            << Option(false);
-  o["ICCF Analyzes"]               << Option(0, 0,  8);
-  o["NullMove"]                    << Option(true);
-  o["SyzygyPath"]                  << Option("<empty>", on_tb_path);
-  o["SyzygyProbeDepth"]            << Option(1, 1, 100);
-  o["Syzygy50MoveRule"]            << Option(true);
-  o["SyzygyProbeLimit"]            << Option(7, 0, 7);
+  unsigned n = std::thread::hardware_concurrency();
+  if (!n) n = 1;
+
+  o["Use Book1"] << Option(false);
+  o["BestBook1Move"] << Option(false, on_best_book_move1);
+  o["BookFile1"] << Option("book1.bin", on_book_file1);
+  o["BookDepth1"] << Option(100, 1, 120, on_book_depth1);
+  o["Use Book2"] << Option(false);
+  o["BestBook2Move"] << Option(false, on_best_book_move2);
+  o["BookFile2"] << Option("book2.bin", on_book_file2);
+  o["BookDepth2"] << Option(100, 1, 120, on_book_depth2);
+  o["Debug Log File"]        << Option("", on_logger);
+  o["Contempt"]              << Option(24, -100, 100);
+  o["Analysis Contempt"]     << Option("Both var Off var White var Black var Both", "Both");
+  o["Threads"]               << Option(n, unsigned(1), unsigned(512), on_threads);
+  o["Hash"]                  << Option(16, 1, MaxHashMB, on_hash_size);
+  o["Clear_Hash"]            << Option(on_clear_hash);
+  o["Ponder"]                << Option(false);
+  o["MultiPV"]               << Option(1, 1, 500);
+  o["Skill Level"]           << Option(20, 0, 20);
+  o["Move Overhead"]         << Option(100, 0, 5000);
+  o["Minimum Thinking Time"] << Option(20, 0, 5000);
+  o["Slow Mover"]            << Option(84, 10, 1000);
+  o["nodestime"]             << Option(0, 0, 10000);
+  o["UCI_Chess960"]          << Option(false);
+  o["Dynamic Strategy"]      << Option(true);
+  o["NeverClearHash"]        << Option(false);
+  o["HashFile"]              << Option("hash.hsh", on_HashFile);
+  o["SaveHashtoFile"]        << Option(SaveHashtoFile);
+  o["LoadHashfromFile"]      << Option(LoadHashfromFile);
+  o["LoadEpdToHash"]         << Option(LoadEpdToHash);
+  o["UCI_AnalyseMode"]       << Option(false);
+  o["MCTS"]                  << Option(false);
+  o["SyzygyPath"]            << Option("<empty>", on_tb_path);
+  o["SyzygyProbeDepth"]      << Option(1, 1, 100);
+  o["Syzygy50MoveRule"]      << Option(true);
+  o["SyzygyProbeLimit"]      << Option(7, 0, 7);
+  o["ICCF Analyzes"]         << Option(0, 0,  8);
+  o["NullMove"]              << Option(true);
 }
 
 
@@ -168,8 +168,8 @@ Option::operator std::string() const {
 
 bool Option::operator==(const char* s) const {
   assert(type == "combo");
-  return   !CaseInsensitiveLess()(currentValue, s)
-        && !CaseInsensitiveLess()(s, currentValue);
+  return    !CaseInsensitiveLess()(currentValue, s)
+         && !CaseInsensitiveLess()(s, currentValue);
 }
 
 
@@ -185,8 +185,8 @@ void Option::operator<<(const Option& o) {
 
 
 /// operator=() updates currentValue and triggers on_change() action. It's up to
-/// the GUI to check for option's limits, but we could receive the new value
-/// from the user by console window, so let's check the bounds anyway.
+/// the GUI to check for option's limits, but we could receive the new value from
+/// the user by console window, so let's check the bounds anyway.
 
 Option& Option::operator=(const string& v) {
 
@@ -196,17 +196,6 @@ Option& Option::operator=(const string& v) {
       || (type == "check" && v != "true" && v != "false")
       || (type == "spin" && (stof(v) < min || stof(v) > max)))
       return *this;
-
-  if (type == "combo")
-  {
-      OptionsMap comboMap; // To have case insensitive compare
-      string token;
-      std::istringstream ss(defaultValue);
-      while (ss >> token)
-          comboMap[token] << Option();
-      if (!comboMap.count(v) || v == "var")
-          return *this;
-  }
 
   if (type != "button")
       currentValue = v;

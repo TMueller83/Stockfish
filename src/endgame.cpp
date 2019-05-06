@@ -18,6 +18,7 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <algorithm>
 #include <cassert>
 
 #include "bitboard.h"
@@ -76,7 +77,10 @@ namespace {
     if (file_of(pos.square<PAWN>(strongSide)) >= FILE_E)
         sq = Square(sq ^ 7); // Mirror SQ_H1 -> SQ_A1
 
-    return strongSide == WHITE ? sq : ~sq;
+    if (strongSide == BLACK)
+        sq = ~sq;
+
+    return sq;
   }
 
 } // namespace
@@ -277,21 +281,6 @@ Value Endgame<KQKR>::operator()(const Position& pos) const {
                 - RookValueEg
                 + PushToEdges[loserKSq]
                 + PushClose[distance(winnerKSq, loserKSq)];
-
-  return strongSide == pos.side_to_move() ? result : -result;
-}
-
-
-/// KNN vs KP. Simply push the opposing king to the corner
-template<>
-Value Endgame<KNNKP>::operator()(const Position& pos) const {
-
-  assert(verify_material(pos, strongSide, 2 * KnightValueMg, 0));
-  assert(verify_material(pos, weakSide, VALUE_ZERO, 1));
-
-  Value result =  2 * KnightValueEg
-                - PawnValueEg
-                + PushToEdges[pos.square<KING>(weakSide)];
 
   return strongSide == pos.side_to_move() ? result : -result;
 }
@@ -635,6 +624,8 @@ ScaleFactor Endgame<KBPPKB>::operator()(const Position& pos) const {
   Square ksq = pos.square<KING>(weakSide);
   Square psq1 = pos.squares<PAWN>(strongSide)[0];
   Square psq2 = pos.squares<PAWN>(strongSide)[1];
+  Rank r1 = rank_of(psq1);
+  Rank r2 = rank_of(psq2);
   Square blockSq1, blockSq2;
 
   if (relative_rank(strongSide, psq1) > relative_rank(strongSide, psq2))
@@ -668,7 +659,7 @@ ScaleFactor Endgame<KBPPKB>::operator()(const Position& pos) const {
         && opposite_colors(ksq, wbsq)
         && (   bbsq == blockSq2
             || (pos.attacks_from<BISHOP>(blockSq2) & pos.pieces(weakSide, BISHOP))
-            || distance<Rank>(psq1, psq2) >= 2))
+            || distance(r1, r2) >= 2))
         return SCALE_FACTOR_DRAW;
 
     else if (   ksq == blockSq2

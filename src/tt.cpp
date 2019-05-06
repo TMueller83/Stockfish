@@ -63,10 +63,8 @@ std::vector<std::string> split(const std::string &s, char delim) {
 
 TranspositionTable TT; // Our global transposition table
 
-/// TTEntry::save populates the TTEntry with a new node's data, possibly
-/// overwriting an old position. Update is not atomic and can be racy.
-
-void TTEntry::save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev) {
+/// TTEntry::save saves a TTEntry
+void TTEntry::save(Key k, Value v, bool PvNode, Bound b, Depth d, Move m, Value ev) {
 
   assert(d / ONE_PLY * ONE_PLY == d);
 
@@ -82,7 +80,7 @@ void TTEntry::save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev) 
       key16     = (uint16_t)(k >> 48);
       value16   = (int16_t)v;
       eval16    = (int16_t)ev;
-      genBound8 = (uint8_t)(TT.generation8 | uint8_t(pv) << 2 | b);
+      genBound8 = (uint8_t)(TT.generation8 | PvNode << 2 | b);
       depth8    = (int8_t)(d / ONE_PLY);
   }
 }
@@ -120,18 +118,18 @@ void TranspositionTable::clear() {
 
   std::vector<std::thread> threads;
 
-  for (size_t idx = 0; idx < Options["Threads"]; ++idx)
+  for (size_t idx = 0; idx < size_t(Options["Threads"]); ++idx)
   {
       threads.emplace_back([this, idx]() {
 
           // Thread binding gives faster search on systems with a first-touch policy
-          if (Options["Threads"] > 8)
+          if (int(Options["Threads"]) >= 8)
               WinProcGroup::bindThisThread(idx);
 
           // Each thread will zero its part of the hash table
-          const size_t stride = clusterCount / Options["Threads"],
+          const size_t stride = clusterCount / size_t(Options["Threads"]),
                        start  = stride * idx,
-                       len    = idx != Options["Threads"] - 1 ?
+                       len    = idx != size_t(Options["Threads"]) - 1 ?
                                 stride : clusterCount - start;
 
           std::memset(&table[start], 0, len * sizeof(Cluster));
@@ -491,7 +489,7 @@ TTEntry* TranspositionTable::probe(const Key key, bool& found) const {
   TTEntry* const tte = first_entry(key);
   const uint16_t key16 = key >> 48;  // Use the high 16 bits as key inside the cluster
 
-  for (int i = 0; i < ClusterSize; ++i)
+  for (size_t i = 0; i < ClusterSize; ++i)
       if (!tte[i].key16 || tte[i].key16 == key16)
       {
           tte[i].genBound8 = uint8_t(generation8 | (tte[i].genBound8 & 0x7)); // Refresh
@@ -501,7 +499,7 @@ TTEntry* TranspositionTable::probe(const Key key, bool& found) const {
 
   // Find an entry to be replaced according to the replacement strategy
   TTEntry* replace = tte;
-  for (int i = 1; i < ClusterSize; ++i)
+  for (size_t i = 1; i < ClusterSize; ++i)
       // Due to our packed storage format for generation and its cyclic
       // nature we add 263 (256 is the modulus plus 7 to keep the unrelated
       // lowest three bits from affecting the result) to calculate the entry
@@ -520,8 +518,8 @@ TTEntry* TranspositionTable::probe(const Key key, bool& found) const {
 int TranspositionTable::hashfull() const {
 
   int cnt = 0;
-  for (int i = 0; i < 1000 / ClusterSize; ++i)
-      for (int j = 0; j < ClusterSize; ++j)
+  for (size_t i = 0; i < 1000 / ClusterSize; ++i)
+      for (size_t j = 0; j < ClusterSize; ++j)
           cnt += (table[i].entry[j].genBound8 & 0xF8) == generation8;
 
   return cnt * 1000 / (ClusterSize * (1000 / ClusterSize));
@@ -646,7 +644,7 @@ void mctsInsert(ExpEntry tempExpEntry)
 					node->child[x].move = tempExpEntry.move;
 					node->child[x].depth = tempExpEntry.depth;
 					node->child[x].score = tempExpEntry.score;
-					node->child[x].visits++;
+					node->child[x].Visits++;
 					//	node->sons++;
 					node->totalVisits++;
 					break;
@@ -657,7 +655,7 @@ void mctsInsert(ExpEntry tempExpEntry)
 				node->child[node->sons].move = tempExpEntry.move;
 				node->child[node->sons].depth = tempExpEntry.depth;
 				node->child[node->sons].score = tempExpEntry.score;
-				node->child[node->sons].visits++;
+				node->child[node->sons].Visits++;
 				node->sons++;
 				node->totalVisits++;
 			}
@@ -681,7 +679,7 @@ void mctsInsert(ExpEntry tempExpEntry)
 		infos.child[0].move = MOVE_NONE;
 		infos.child[0].depth = DEPTH_NONE;
 		infos.child[0].score = VALUE_NONE;
-		infos.child[0].visits = 0;
+		infos.child[0].Visits = 0;
 		std::memset(infos.child, 0, sizeof(Child) * 20);
 
 		infos.hashkey = tempExpEntry.hashkey;        // Zobrist hash of pawns
@@ -690,7 +688,7 @@ void mctsInsert(ExpEntry tempExpEntry)
 		infos.child[0].move = tempExpEntry.move;
 		infos.child[0].depth = tempExpEntry.depth;
 		infos.child[0].score = tempExpEntry.score;
-		infos.child[0].visits = 1;       // number of sons expanded by the Monte-Carlo algorithm
+		infos.child[0].Visits = 1;       // number of sons expanded by the Monte-Carlo algorithm
 										 //infos.lastMove = MOVE_NONE; // the move between the parent and this node
 
 										 //debug << "inserting into the hash table: key = " << key1 << endl;

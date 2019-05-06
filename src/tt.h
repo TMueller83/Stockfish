@@ -32,7 +32,7 @@
 /// value      16 bit
 /// eval value 16 bit
 /// generation  5 bit
-/// pv node     1 bit
+/// PvNode      1 bit
 /// bound type  2 bit
 /// depth       8 bit
 
@@ -42,9 +42,9 @@ struct TTEntry {
   Value value() const { return (Value)value16; }
   Value eval()  const { return (Value)eval16; }
   Depth depth() const { return (Depth)(depth8 * int(ONE_PLY)); }
-  bool is_pv() const { return (bool)(genBound8 & 0x4); }
+  bool pv_hit() const { return (bool)(genBound8 & 0x4); }
   Bound bound() const { return (Bound)(genBound8 & 0x3); }
-  void save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev);
+  void save(Key k, Value v, bool PvNode, Bound b, Depth d, Move m, Value ev);
 
 private:
   friend class TranspositionTable;
@@ -80,7 +80,6 @@ class TranspositionTable {
 public:
  ~TranspositionTable() { free(mem); }
   void new_search() { generation8 += 8; } // Lower 3 bits are used by PV flag and Bound
-
   void infinite_search() { generation8 = 8; }
   uint8_t generation() const { return generation8; }
   TTEntry* probe(const Key key, bool& found) const;
@@ -136,7 +135,7 @@ struct Child
 	Move move;
 	Depth depth;
 	Value score;
-	int visits;
+	int Visits;
 };
 
 struct NodeInfo

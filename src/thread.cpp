@@ -18,9 +18,9 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <algorithm> // For std::count
 #include <cassert>
 
-#include <algorithm> // For std::count
 #include "movegen.h"
 #include "search.h"
 #include "thread.h"
@@ -32,7 +32,7 @@ ThreadPool Threads; // Global object
 
 
 /// Thread constructor launches the thread and waits until it goes to sleep
-/// in idle_loop(). Note that 'searching' and 'exit' should be already set.
+/// in idle_loop(). Note that 'searching' and 'exit' should be alredy set.
 
 Thread::Thread(size_t n) : idx(n), stdThread(&Thread::idle_loop, this) {
 
