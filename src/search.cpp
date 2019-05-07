@@ -733,12 +733,7 @@ namespace {
 
 	Value bestValue, value, ttValue, eval, maxValue, pureStaticEval, expttValue=VALUE_NONE;
     bool ttHit, ttPv, inCheck, givesCheck, improving, expttHit=false;
-
-//<<<<<<< HEAD
- //   bool captureOrPromotion, doFullDepthSearch, moveCountPruning, ttCapture;
-//=======
     bool captureOrPromotion, doFullDepthSearch, moveCountPruning, ttCapture;
-//>>>>>>> 76d2f5b94... Remove skipQuiets variable in search()
     Piece movedPiece;
     int moveCount, captureCount, quietCount;
 
