@@ -53,7 +53,9 @@ public:
   virtual ~Thread();
   virtual void search();
   void clear();
+#ifdef Maverick
   virtual Value playout(Move, Search::Stack*, Value);
+#endif
   void idle_loop();
   void start_searching();
   void wait_for_search_finished();

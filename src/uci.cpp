@@ -51,7 +51,7 @@ namespace {
   Key FileKey = 0;
 
   void position(Position& pos, istringstream& is, StateListPtr& states) {
-
+#ifdef Add_Features
     Move m;
     string token, fen;
 	string Newfen;
@@ -72,11 +72,30 @@ namespace {
 		while (is >> token && token != "moves")
 			fen += token + " ";
 	}
-	else
-		return;
+    else if (token == "f")
+        while (is >> token && token != "moves")
+            fen += token + " ";
+#else
+    Move m;
+    string token, fen;
+
+    is >> token;
+
+    if (token == "startpos")
+    {
+        fen = StartFEN;
+        is >> token; // Consume "moves" token if any
+    }
+    else if (token == "fen")
+        while (is >> token && token != "moves")
+            fen += token + " ";
+#endif
+    else
+        return;
 
     states = StateListPtr(new std::deque<StateInfo>(1)); // Drop old and create a new one
     pos.set(fen, Options["UCI_Chess960"], &states->back(), Threads.main());
+#ifdef Add_Features
 	int movesplayed = 0;
 	int OPmoves = 0;
 
@@ -90,12 +109,12 @@ namespace {
 		startposition = true;
 		FileKey = 0;
 	}
-
+#endif
     // Parse move list (if any)
     while (is >> token && (m = UCI::to_move(pos, token)) != MOVE_NONE)
     {
         states->emplace_back();
-
+#ifdef Add_Features
 		if (!FileKey)
 		{
 			if ((movesplayed == 2 || movesplayed == 4 || movesplayed == 6 || movesplayed == 8 || movesplayed == 10 || movesplayed == 12 || movesplayed == 14 || movesplayed == 16) && Newfen == StartFEN)
@@ -111,10 +130,12 @@ namespace {
 				kelly(startposition);
 			}
 		}
-
+#endif
         pos.do_move(m, states->back());
+#ifdef Add_Features
 		movesplayed++;
-	}
+#endif
+    }
   }
 
 
@@ -139,9 +160,35 @@ namespace {
         Options[name] = value;
     else
         sync_cout << "No such option: " << name << sync_endl;
-  }
+}
+#ifdef Add_Features
+// set() is called by typing "s" from the terminal when the user wants to use abbreviated
+// non-UCI comamnds and avoid the uci option protocol "setoption name (option name) value (xxx) ",
+// e.g., instead of typing "setoption name threads value 8" to set cores to 8 at the terminal,
+// the user simply types "s threads 8" - restricted to option names that do not contain
+// any white spaces - see ucioption.cpp.  The argument can take white spaces e.g.,
+// "s syzygypath /endgame tablebases/syzygy" will work
+void set(istringstream& is) {
+    string token, name, value;
 
+    // Read option name (no white spaces in option name)
+    is >> token;
+    name = token;
 
+    // Read option value (can contain white spaces)
+    while (is >> token)
+        value += string(" ", value.empty() ? 0 : 1) + token;
+
+    // provide user confirmation
+    if (Options.count(name)) {
+        Options[name] = value;
+        sync_cout << "Confirmation: "<< name << " set to " << value << sync_endl;
+
+    }
+    else
+        sync_cout << "No such option: " << name << sync_endl;
+}
+#endif
   // go() is called when engine receives the "go" UCI command. The function sets
   // the thinking time and other parameters from the input string, then starts
   // the search.
@@ -155,7 +202,11 @@ namespace {
     limits.startTime = now(); // As early as possible!
 
     while (is >> token)
+#ifdef Add_Features
+        if (token == "searchmoves" || token == "sm")
+#else
         if (token == "searchmoves")
+#endif
             while (is >> token)
                 limits.searchmoves.push_back(UCI::to_move(pos, token));
 
@@ -171,6 +222,10 @@ namespace {
         else if (token == "perft")     is >> limits.perft;
         else if (token == "infinite")  limits.infinite = 1;
         else if (token == "ponder")    ponderMode = true;
+#ifdef Add_Features
+        else if (token == "d")         is >> limits.depth;
+        else if (token == "i")         limits.infinite = 1;
+#endif
 
     Threads.start_thinking(pos, states, limits, ponderMode);
   }
@@ -203,6 +258,9 @@ namespace {
             nodes += Threads.nodes_searched();
         }
         else if (token == "setoption")  setoption(is);
+#ifdef Add_Features
+        else if (token == "s")          set(is);
+#endif
         else if (token == "position")   position(pos, is, states);
         else if (token == "ucinewgame") Search::clear();
     }
@@ -238,18 +296,32 @@ void UCI::loop(int argc, char* argv[]) {
   for (int i = 1; i < argc; ++i)
       cmd += std::string(argv[i]) + " ";
 
-  do {
-      if (argc == 1 && !getline(cin, cmd)) // Block here waiting for input or EOF
-          cmd = "quit";
+    do {
+        if (argc == 1 && !getline(cin, cmd)) // Block here waiting for input or EOF
+            cmd = "quit";
+#ifdef Add_Features
+        else if (token == "q")
+            cmd = "quit";
+#endif
 
       istringstream is(cmd);
 
       token.clear(); // Avoid a stale if getline() returns empty or blank line
       is >> skipws >> token;
 
-      if (    token == "quit"
-          ||  token == "stop")
-          Threads.stop = true;
+        // The GUI sends 'ponderhit' to tell us the user has played the expected move.
+        // So 'ponderhit' will be sent if we were told to ponder on the same move the
+        // user has played. We should continue searching but switch from pondering to
+        // normal search. In case Threads.stopOnPonderhit is set we are waiting for
+        // 'ponderhit' to stop the search, for instance if max search depth is reached.
+        if (    token == "quit"
+                ||  token == "stop"
+#ifdef Add_Features
+                ||  token == "q"
+                ||  token == "?"
+#endif
+            )
+            Threads.stop = true;
 
       // The GUI sends 'ponderhit' to tell us the user has played the expected move.
       // So 'ponderhit' will be sent if we were told to ponder on the same move the
@@ -263,21 +335,47 @@ void UCI::loop(int argc, char* argv[]) {
                     << "\n"       << Options
                     << "\nuciok"  << sync_endl;
 
-      else if (token == "setoption")  setoption(is);
-      else if (token == "go")         go(pos, is, states);
-      else if (token == "position")   position(pos, is, states);
-      else if (token == "ucinewgame") Search::clear();
-      else if (token == "isready")    sync_cout << "readyok" << sync_endl;
+        else if (token == "setoption")  setoption(is);
+        else if (token == "go")         go(pos, is, states);
+#ifdef Add_Features
+        else if (token == "b")     bench(pos, is, states);
+        else if (token == "so")         setoption(is);
+        else if (token == "set")        set(is);
+        else if (token == "s")          set(is);
 
-      // Additional custom non-UCI commands, mainly for debugging
-      else if (token == "flip")  pos.flip();
-      else if (token == "bench") bench(pos, is, states);
-      else if (token == "d")     sync_cout << pos << sync_endl;
-      else if (token == "eval")  sync_cout << Eval::trace(pos) << sync_endl;
-      else
-          sync_cout << "Unknown command: " << cmd << sync_endl;
+        else if (token == "g")          go(pos, is, states);
+        else if (token == "q")          cmd = "quit";
+        else if (token == "position")
+        {
+            position(pos, is, states);
+            if (Options["Clear_Search"])
+                Search::clear();
+        }
+        else if (token == "p")
+        {
+            position(pos, is, states);
+            if (Options["Clear_Search"])
+                Search::clear();
+        }
+#else
+        else if (token == "position")   position(pos, is, states);
+#endif
+        else if (token == "ucinewgame") Search::clear();
+        else if (token == "isready")    sync_cout << "readyok" << sync_endl;
 
-  } while (token != "quit" && argc == 1); // Command line args are one-shot
+        // Additional custom non-UCI commands, mainly for debugging
+        else if (token == "flip")  pos.flip();
+        else if (token == "bench") bench(pos, is, states);
+        else if (token == "d")     sync_cout << pos << sync_endl;
+        else if (token == "eval")  sync_cout << Eval::trace(pos) << sync_endl;
+        else
+            sync_cout << "Unknown command: " << cmd << sync_endl;
+#ifdef Add_Features
+    } while (token != "quit" && token != "q" && argc == 1); // Command line args are one-shot
+#else
+    }
+    while (token != "quit" && argc == 1); // Command line args are one-shot
+#endif
 }
 
 
@@ -294,10 +392,16 @@ string UCI::value(Value v) {
 
   stringstream ss;
 
-  if (abs(v) < VALUE_MATE - MAX_PLY)
-      ss << "cp " << v * 70 / PawnValueEg;
-  else
-      ss << "mate " << (v > 0 ? VALUE_MATE - v + 1 : -VALUE_MATE - v) / 2;
+    if (abs(v) < VALUE_MATE - MAX_PLY)
+#ifdef Maverick
+	ss << "cp " << (v * 841 / QueenValueEg >  990 ? (v * 849 / QueenValueEg) + 27
+			: v * 841 / QueenValueEg < -990 ? (v * 849 / QueenValueEg) - 27
+			: v * 841 / QueenValueEg);
+#else
+        ss << "cp " << v * 100 / PawnValueEg;
+#endif
+    else
+        ss << "mate " << (v > 0 ? VALUE_MATE - v + 1 : -VALUE_MATE - v) / 2;
 
   return ss.str();
 }

@@ -57,7 +57,18 @@ namespace {
 
 /// Version number. If Version is left empty, then compile date in the format
 /// DD-MM-YY and show in engine_info.
+#ifndef Maverick
+#define Stockfish
+#endif
+
+#if(defined Maverick && defined Add_Features)
 const string Version = "";
+#endif
+
+#if(defined Stockfish && defined Add_Features)
+const string Version = "";
+
+#endif
 
 /// Our fancy logging facility. The trick here is to replace cin.rdbuf() and
 /// cout.rdbuf() with two Tie objects that tie cin and cout to a file stream. We
@@ -118,26 +129,35 @@ public:
 } // namespace
 
 /// engine_info() returns the full name of the current Honey version. This
-/// will be either "Honey <Tag> DD-MM-YY" (where DD-MM-YY is the date when
+/// will be either "Honey <Tag> MM-DD-YY" (where MM-DD-YY is the date when
 /// the program was compiled) or "Honey <Version>", depending on whether
 /// Version is empty.
 
 const string engine_info(bool to_uci) {
 
-  const string months("Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec");
-  string month, day, year;
-  stringstream ss, date(__DATE__); // From compiler, format is "Sep 21 2008"
-
-  ss << "Honey " << Version << setfill('0');
+    const string months("Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec");
+    string month, day, year;
+    stringstream ss, date(__DATE__); // From compiler, format is "Sep 21 2008"
+#ifdef Maverick
+    ss << "Honey " << Version << setfill('0');
+#else
+    ss << "Stockfish " << Version << setfill('0');
+#endif
 
   if (Version.empty())
   {
         date >> month >> day >> year;
 		ss << setw(2) << (1 + months.find(month) / 4) <<setw(2) << day << year.substr(2) << "";
-  }
-
-  ss << (to_uci  ? "\nid author ": " by ")
-     << "M. Byrne and scores of others...";
+    }
+#ifdef Maverick
+    ss	<< (to_uci  ? "\nid author ": " by ")
+            << "M. Byrne and scores of others...";
+#else
+//     ss << (Is64Bit ? " 64" : "") //most 95% of systems are 64 bit
+//     << (HasPext ? " BMI2" : (HasPopCnt ? " POPCNT" : "")) // may direupt some GUIs
+	   ss << (to_uci  ? "\nid author ": " by ")
+       << "T. Romstad, M. Costalba, J. Kiiski, G. Linscott";
+#endif
 
   return ss.str();
 }

@@ -26,12 +26,14 @@
 
 #include <sstream>
 #include "misc.h"
+#ifdef Add_Features
+#include "polybook.h"
+#endif
 #include "search.h"
 #include "thread.h"
 #include "tt.h"
 #include "uci.h"
 #include "syzygy/tbprobe.h"
-#include "polybook.h"
 
 using std::string;
 
@@ -41,20 +43,33 @@ namespace UCI {
 
 /// 'On change' actions, triggered by an option's value change
 void on_clear_hash(const Option&) { Search::clear(); }
-void on_hash_size(const Option& o) { TT.resize(o); EXP.resize(0); EXPresize(); }
+
 void on_logger(const Option& o) { start_logger(o); }
 void on_threads(const Option& o) { Threads.set(o); }
 void on_tb_path(const Option& o) { Tablebases::init(o); }
+#ifdef Add_Features
+void on_hash_size(const Option& o) { TT.resize(o); EXP.resize(0); EXPresize(); }
+#else
+void on_hash_size(const Option& o) { TT.resize(o); }
+#endif
+#ifdef Add_Features
 void on_HashFile(const Option& o) { TT.set_hash_file_name(o); }
 void SaveHashtoFile(const Option&) { TT.save(); }
 void LoadHashfromFile(const Option&) { TT.load(); }
 void LoadEpdToHash(const Option&) { TT.load_epd_to_hash(); }
+
 void on_book_file1(const Option& o) { polybook1.init(o); }
 void on_book_file2(const Option& o) { polybook2.init(o); }
+void on_book_file3(const Option& o) { polybook3.init(o); }
+
 void on_best_book_move1(const Option& o) { polybook1.set_best_book_move(o); }
 void on_best_book_move2(const Option& o) { polybook2.set_best_book_move(o); }
+void on_best_book_move3(const Option& o) { polybook3.set_best_book_move(o); }
+
 void on_book_depth1(const Option& o) { polybook1.set_book_depth(o); }
 void on_book_depth2(const Option& o) { polybook2.set_book_depth(o); }
+void on_book_depth3(const Option& o) { polybook3.set_book_depth(o); }
+#endif
 
 /// Our case insensitive less() function as required by UCI protocol
 bool CaseInsensitiveLess::operator() (const string& s1, const string& s2) const {
@@ -68,48 +83,117 @@ bool CaseInsensitiveLess::operator() (const string& s1, const string& s2) const 
 
 void init(OptionsMap& o) {
 
-  // at most 2^32 clusters.
-  constexpr int MaxHashMB = Is64Bit ? 131072 : 2048;
+    // at most 2^32 clusters.
+    constexpr int MaxHashMB = Is64Bit ? 131072 : 2048;
+	
+    o["Debug Log File"]       << Option("<empty>", on_logger);
+    o["Clear_Hash"]            << Option(on_clear_hash);
 
-  unsigned n = std::thread::hardware_concurrency();
-  if (!n) n = 1;
+#ifdef Maverick
 
-  o["Use Book1"] << Option(false);
-  o["BestBook1Move"] << Option(false, on_best_book_move1);
-  o["BookFile1"] << Option("book1.bin", on_book_file1);
-  o["BookDepth1"] << Option(100, 1, 120, on_book_depth1);
-  o["Use Book2"] << Option(false);
-  o["BestBook2Move"] << Option(false, on_best_book_move2);
-  o["BookFile2"] << Option("book2.bin", on_book_file2);
-  o["BookDepth2"] << Option(100, 1, 120, on_book_depth2);
-  o["Debug Log File"]        << Option("", on_logger);
-  o["Contempt"]              << Option(24, -100, 100);
-  o["Analysis Contempt"]     << Option("Both var Off var White var Black var Both", "Both");
-  o["Threads"]               << Option(n, unsigned(1), unsigned(512), on_threads);
-  o["Hash"]                  << Option(16, 1, MaxHashMB, on_hash_size);
-  o["Clear_Hash"]            << Option(on_clear_hash);
-  o["Ponder"]                << Option(false);
-  o["MultiPV"]               << Option(1, 1, 500);
-  o["Skill Level"]           << Option(20, 0, 20);
-  o["Move Overhead"]         << Option(100, 0, 5000);
-  o["Minimum Thinking Time"] << Option(20, 0, 5000);
-  o["Slow Mover"]            << Option(84, 10, 1000);
-  o["nodestime"]             << Option(0, 0, 10000);
-  o["UCI_Chess960"]          << Option(false);
-  o["Dynamic Strategy"]      << Option(true);
-  o["NeverClearHash"]        << Option(false);
-  o["HashFile"]              << Option("hash.hsh", on_HashFile);
-  o["SaveHashtoFile"]        << Option(SaveHashtoFile);
-  o["LoadHashfromFile"]      << Option(LoadHashfromFile);
-  o["LoadEpdToHash"]         << Option(LoadEpdToHash);
-  o["UCI_AnalyseMode"]       << Option(false);
-  o["MCTS"]                  << Option(false);
-  o["SyzygyPath"]            << Option("<empty>", on_tb_path);
-  o["SyzygyProbeDepth"]      << Option(1, 1, 100);
-  o["Syzygy50MoveRule"]      << Option(true);
-  o["SyzygyProbeLimit"]      << Option(7, 0, 7);
-  o["ICCF Analyzes"]         << Option(0, 0,  8);
-  o["NullMove"]              << Option(true);
+    o["W_Contempt"] 	      << Option(  22, -150, 150);
+    o["B_Contempt"] 	      << Option(   2, -150, 150);
+
+#else
+    o["Contempt"]             << Option(24, -100, 100);
+#endif
+#ifdef Add_Features
+    o["Analysis Contempt"]    << Option("var Off var White var Black var Both ", "Off");
+#else
+    o["Analysis Contempt"]    << Option("Both var Off var White var Black var Both", "Both");
+#endif
+#ifdef Add_Features
+    o["Use_Book_1"] 	        << Option(false);
+    o["Book_File_1"] 	        << Option("var None var Cerebellum var Champions "
+                                          "var Alekhine var Anand var Botvinnik "
+                                          "var Capablanca var Carlsen var Fischer "
+                                          "var Karpov var Kasparov var Kortschnoi "
+                                          "var Kramink var Lasker var Petrosian "
+                                          "var Tal ","Carlsen", on_book_file1);
+    o["Best_Move_1"] 	        << Option(false, on_best_book_move1);
+    o["Book_Depth_1"] 	        << Option(127, 1, 127, on_book_depth1);
+    o["Use_Book_2"] 	        << Option(false);
+    o["Book_File_2"] 	        << Option("Champions", on_book_file2);
+    o["Best_Move_2"] 	        << Option(false, on_best_book_move2);
+    o["Book_Depth_2"] 	        << Option(127, 1, 127, on_book_depth2);
+    o["Use_Book_3"] 	        << Option(false);
+    o["Book_File_3"]            << Option("Cerebellum", on_book_file3);
+    o["Best_Move_3"]            << Option(true, on_best_book_move3);
+    o["Book_Depth_3"]           << Option(127, 1, 127, on_book_depth3);
+
+#endif
+    o["Skill Level"]            << Option(20, 0, 20);
+    o["Move Overhead"]          << Option(30, 0, 5000);
+    o["Minimum Thinking Time"]  << Option(20, 0, 5000);
+
+
+
+
+
+
+    o["Threads"]                << Option(1, 1, 512, on_threads);
+    o["Hash"]                   << Option(16, 1, MaxHashMB, on_hash_size);
+    o["Ponder"]                 << Option(false);
+#ifdef Add_Features
+    o["Clean Search"]           << Option(false);
+    o["7 Man Probing"]          << Option(false);
+    o["BruteForce"] 	        << Option(false);
+    o["Dynamic_Contempt"]       << Option(true);
+    o["FastPlay"]               << Option(false);
+    o["Minimal_Output"]         << Option(false);
+    o["No_Null_Moves"]          << Option(false);
+    o["UCI_LimitStrength"]      << Option(false);
+    o["Levels"]                 << Option("World_Champion var World_Champion var Super_GM "
+                                          "var GM  var Deep_Thought var SIM var Cray_Blitz "
+                                          "var IM var Master var Expert var Class_A "
+                                          "var Class_B var Class_C var Class_D var Boris "
+                                          "var Novice var None ", "World_Champion");
+    o["UCI_Elo"]                << Option(1300, 1300, 2850);
+#endif
+#ifdef Maverick
+    o["DC_Slider"]              << Option(65, -180, 180);
+    o["MultiPV"]                << Option(1, 1, 256);
+
+#else
+    o["DC_Slider"]              << Option(0, -180, 180);
+    o["MultiPV"]                << Option(1, 1, 500);
+#endif
+#ifdef Pi
+    o["Bench_KNPS"]             << Option (200, 100, 1000);//used for UCI Play By Elo
+#else
+    o["Bench_KNPS"]             << Option (1500, 500, 5000);//used for UCI Play By Elo
+#endif
+#ifdef Add_Features
+    o["Jekyll_&_Hyde"]          << Option(0, 0, 15);
+    o["Tactical"]               << Option(0, 0,  8);
+    o["Variety"]                << Option(0, 0, 15);
+#endif
+
+#ifdef Add_Features
+    o["Slow Mover"]              << Option(100, 10, 1000);
+#else
+    o["Slow Mover"]              << Option(84, 10, 1000);
+#endif
+
+    o["nodestime"]               << Option(0, 0, 10000);
+    o["UCI_Chess960"]            << Option(false);
+#ifdef Add_Features
+    o["Dynamic Strategy"]        << Option(true);
+    o["NeverClearHash"]          << Option(false);
+    o["HashFile"]                << Option("hash.hsh", on_HashFile);
+    o["SaveHashtoFile"]          << Option(SaveHashtoFile);
+    o["LoadHashfromFile"]        << Option(LoadHashfromFile);
+    o["LoadEpdToHash"]           << Option(LoadEpdToHash);
+    o["MCTS"]                    << Option(false);
+    o["NullMove"]                << Option(true);
+#endif
+    o["UCI_AnalyseMode"]         << Option(false);
+    o["SyzygyPath"]              << Option("<empty>", on_tb_path);
+    o["SyzygyProbeDepth"]        << Option(1, 1, 100);
+    o["Syzygy50MoveRule"]        << Option(true);
+    o["SyzygyProbeLimit"]        << Option(7, 0, 7);
+
+
 }
 
 
@@ -158,19 +242,21 @@ Option::Option(const char* v, const char* cur, OnChange f) : type("combo"), min(
 { defaultValue = v; currentValue = cur; }
 
 Option::operator double() const {
-  assert(type == "check" || type == "spin");
+  //assert(type == "check" || type == "spin");  //macOS clang 6.0 error
   return (type == "spin" ? stof(currentValue) : currentValue == "true");
 }
 
 Option::operator std::string() const {
-  assert(type == "string");
+  //assert(type == "string");  //macOS clang 6.0 error
   return currentValue;
 }
 
 bool Option::operator==(const char* s) const {
-  assert(type == "combo");
-  return   !CaseInsensitiveLess()(currentValue, s)
-        && !CaseInsensitiveLess()(s, currentValue);
+
+  //assert(type == "combo");  //macOS clang 6.0 error
+  return    !CaseInsensitiveLess()(currentValue, s)
+         && !CaseInsensitiveLess()(s, currentValue);
+
 }
 
 

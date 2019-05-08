@@ -145,7 +145,6 @@ enum CastlingRight {
   WHITE_CASTLING = WHITE_OO | WHITE_OOO,
   BLACK_CASTLING = BLACK_OO | BLACK_OOO,
   ANY_CASTLING   = WHITE_CASTLING | BLACK_CASTLING,
-
   CASTLING_RIGHT_NB = 16
 };
 
@@ -180,13 +179,35 @@ enum Value : int {
   VALUE_MATE_IN_MAX_PLY  =  VALUE_MATE - 2 * MAX_PLY,
   VALUE_MATED_IN_MAX_PLY = -VALUE_MATE + 2 * MAX_PLY,
 
-  PawnValueMg   = 128,   PawnValueEg   = 213,
-  KnightValueMg = 782,   KnightValueEg = 865,
-  BishopValueMg = 830,   BishopValueEg = 918,
-  RookValueMg   = 1289,  RookValueEg   = 1378,
-  QueenValueMg  = 2529,  QueenValueEg  = 2687,
+#ifdef Maverick  // Ed Schröder
+#define PVM 100/100
+#define PVE 100/100
+#define NVM 100/100
+#define NVE 100/100
+#define BVM 100/100
+#define BVE 100/100  //try 101
+#define RVM 100/100
+#define RVE 100/100
+#define QVM 100/100  //try 102
+#define QVE 100/100  //try 101
 
-  MidgameLimit  = 15258, EndgameLimit  = 3915
+    PawnValueMg   = 128*PVM,   PawnValueEg   = 213*PVE,
+    KnightValueMg = 782*NVM,   KnightValueEg = 865*NVE,
+    BishopValueMg = 830*BVM,   BishopValueEg = 918*BVE,
+    RookValueMg   = 1289*RVM,  RookValueEg   = 1378*RVE,
+    QueenValueMg  = 2529*QVM,  QueenValueEg  = 2687*QVE,
+	
+    MidgameLimit  = 15258, EndgameLimit  = 3915
+#else
+	PawnValueMg   = 128,   PawnValueEg   = 213,
+	KnightValueMg = 782,   KnightValueEg = 865,
+	BishopValueMg = 830,   BishopValueEg = 918,
+	RookValueMg   = 1289,  RookValueEg   = 1378,
+	QueenValueMg  = 2529,  QueenValueEg  = 2687,
+	
+    MidgameLimit  = 15258, EndgameLimit  = 3915
+#endif
+
 };
 
 enum PieceType {

@@ -28,9 +28,10 @@
 
 #include "bitboard.h"
 #include "types.h"
-
+#ifdef Add_Features
 extern void kelly(bool start);
 extern void files(int x, Key FileKey);
+#endif
 
 /// StateInfo struct stores information needed to restore a Position object to
 /// its previous state when we retract a move. Whenever a move is made on the

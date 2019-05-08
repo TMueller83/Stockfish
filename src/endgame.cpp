@@ -44,14 +44,25 @@ namespace {
   // Table used to drive the king towards a corner square of the
   // right color in KBN vs K endgames.
   constexpr int PushToCorners[SQUARE_NB] = {
-     6400, 6080, 5760, 5440, 5120, 4800, 4480, 4160,
-     6080, 5760, 5440, 5120, 4800, 4480, 4160, 4480,
-     5760, 5440, 4960, 4480, 4480, 4000, 4480, 4800,
-     5440, 5120, 4480, 3840, 3520, 4480, 4800, 5120,
-     5120, 4800, 4480, 3520, 3840, 4480, 5120, 5440,
-     4800, 4480, 4000, 4480, 4480, 4960, 5440, 5760,
-     4480, 4160, 4480, 4800, 5120, 5440, 5760, 6080,
-     4160, 4480, 4800, 5120, 5440, 5760, 6080, 6400
+#ifdef Maverick  //MichaelB7
+	  6600, 6280, 5860, 5540, 5170, 4850, 4530, 4160,
+	  6280, 5760, 5490, 5120, 4800, 4280, 4160, 4530,
+	  5860, 5490, 4960, 4680, 4280, 4000, 4480, 4850,
+	  5540, 5120, 4680, 3840, 3520, 4480, 4800, 5170,
+	  5170, 4800, 4480, 3520, 3840, 4680, 5120, 5540,
+	  4850, 4480, 4000, 4280, 4680, 4960, 5490, 5860,
+	  4530, 4160, 4280, 4800, 5120, 5490, 5760, 6280,
+	  4160, 4530, 4850, 5170, 5540, 5860, 6280, 6600
+#else
+	  6400, 6080, 5760, 5440, 5120, 4800, 4480, 4160,
+	  6080, 5760, 5440, 5120, 4800, 4480, 4160, 4480,
+	  5760, 5440, 4960, 4480, 4480, 4000, 4480, 4800,
+	  5440, 5120, 4480, 3840, 3520, 4480, 4800, 5120,
+	  5120, 4800, 4480, 3520, 3840, 4480, 5120, 5440,
+	  4800, 4480, 4000, 4480, 4480, 4960, 5440, 5760,
+	  4480, 4160, 4480, 4800, 5120, 5440, 5760, 6080,
+	  4160, 4480, 4800, 5120, 5440, 5760, 6080, 6400
+#endif
   };
 
   // Tables used to drive a piece towards or away from another piece
@@ -281,7 +292,6 @@ Value Endgame<KQKR>::operator()(const Position& pos) const {
   return strongSide == pos.side_to_move() ? result : -result;
 }
 
-
 /// KNN vs KP. Simply push the opposing king to the corner
 template<>
 Value Endgame<KNNKP>::operator()(const Position& pos) const {
@@ -295,7 +305,6 @@ Value Endgame<KNNKP>::operator()(const Position& pos) const {
 
   return strongSide == pos.side_to_move() ? result : -result;
 }
-
 
 /// Some cases of trivial draws
 template<> Value Endgame<KNNK>::operator()(const Position&) const { return VALUE_DRAW; }

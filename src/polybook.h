@@ -90,5 +90,7 @@ private:
 
 extern PolyBook polybook1;
 extern PolyBook polybook2;
+extern PolyBook polybook3;
+
 
 #endif // #ifndef POLYBOOK_H_INCLUDED

@@ -27,8 +27,9 @@
 #include "tt.h"
 #include "uci.h"
 #include "syzygy/tbprobe.h"
+#ifdef Add_Features
 #include "polybook.h"
-
+#endif
 namespace PSQT {
   void init();
 }
@@ -43,9 +44,15 @@ int main(int argc, char* argv[]) {
   Position::init();
   Bitbases::init();
   Search::init();
+
+#ifdef Maverick
+   //Eval::init();   //  Replace Mobility table with log equations (with rook mg exception). #1784
+   polybook1.init(Options["Book_File_1"]);  // book idea from Marco Zerbanti
+   polybook2.init(Options["Book_File_2"]);
+   polybook3.init(Options["Book_File_3"]);
+#endif
+
   Threads.set(Options["Threads"]);
-  polybook1.init(Options["BookFile1"]);
-  polybook2.init(Options["BookFile2"]);
   Search::clear(); // After threads are up
 
   UCI::loop(argc, argv);

@@ -28,6 +28,7 @@
 
 PolyBook polybook1;  // global PolyBook1
 PolyBook polybook2;  // global PolyBook2
+PolyBook polybook3;  // global PolyBook3
 
 using namespace std;
 
@@ -302,7 +303,8 @@ const union {
         0x003A93D8B2806962ULL, 0x1C99DED33CB890A1ULL, 0xCF3145DE0ADD4289ULL,
         0xD0E4427A5514FB72ULL, 0x77C621CC9FB3A483ULL, 0x67A34DAC4356550BULL,
         0xF8D626AAAF278509ULL
-    } };
+    }
+};
 
 
 PolyBook::PolyBook()
@@ -319,7 +321,7 @@ PolyBook::PolyBook()
     last_anz_pieces = 0;
     akt_anz_pieces = 0;
     search_counter = 0;
-       
+
     do_search = true;
     enabled = false;
 }
@@ -397,7 +399,7 @@ Move PolyBook::probe(Position& pos)
     Move m1 = MOVE_NONE;
 
     if (!enabled) return m1;
-    if (!check_do_search(pos)) return m1;   
+    if (!check_do_search(pos)) return m1;
 
     if (book_depth_count >= max_book_depth)
         return m1;
@@ -428,12 +430,12 @@ Move PolyBook::probe(Position& pos)
         idx1 = index_best;
     else
         idx1 = index_rand;
-   
+
     m1 = pg_move_to_sf_move(pos, polyhash[idx1].move);
 
     if (!pos.is_draw(64)) return m1;
     if (n == 1) return m1;
-                
+
     // special case draw position and 2 moves available
 
     if (!check_draw(m1, pos))
@@ -441,12 +443,12 @@ Move PolyBook::probe(Position& pos)
 
     int idx2 = index_first;
     if (idx1 == idx2)
-        idx2 = index_first + 1;   
+        idx2 = index_first + 1;
     Move  m2 = pg_move_to_sf_move(pos, polyhash[idx2].move);
-    
+
     if (!check_draw(m2, pos))
         return m2;
-        
+
     return MOVE_NONE;
 }
 
@@ -489,7 +491,7 @@ Key PolyBook::polyglot_key(const Position & pos)
 // move is a promotion we have to convert to our representation, in all the
 // other cases we can directly compare with a Move after having masked out
 // the special Move's flags (bit 14-15) that are not supported by PolyGlot.
-// 
+//
 // SF:
 // bit  0- 5: destination square (from 0 to 63)
 // bit  6-11: origin square (from 0 to 63)
@@ -498,11 +500,11 @@ Key PolyBook::polyglot_key(const Position & pos)
 Move PolyBook::pg_move_to_sf_move(const Position & pos, unsigned short pg_move)
 {
     Move move = Move(pg_move);
-      
+
     int pt = (move >> 12) & 7;
     if (pt)
         return make<PROMOTION>(from_sq(move), to_sq(move), PieceType(pt + 1));
-  
+
     // Add 'special move' flags and verify it is legal
     for (const auto& m : MoveList<LEGAL>(pos))
     {
@@ -616,7 +618,7 @@ bool PolyBook::check_do_search(const Position & pos)
     if (akt_position == last_position) pos_changed = true;
     if (akt_anz_pieces > last_anz_pieces) pos_changed = true;
     if (akt_anz_pieces < last_anz_pieces - 2) pos_changed = true;
-    if (pos.key() == 0xB4D30CD15A43432D) pos_changed = true;    
+    if (pos.key() == 0xB4D30CD15A43432D) pos_changed = true;
 
     // reset do_search and book depth counter if
     // postion changed more than one move can do or in initial position

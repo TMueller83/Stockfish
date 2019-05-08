@@ -48,13 +48,21 @@ struct TTEntry {
 
 private:
   friend class TranspositionTable;
-
+#ifdef Maverick
+  uint_fast16_t key16;
+  uint_fast16_t move16;
+  int_fast16_t  value16;
+  int_fast16_t  eval16;
+  uint_fast8_t  genBound8;
+  int_fast8_t depth8;
+#else
   uint16_t key16;
   uint16_t move16;
   int16_t  value16;
   int16_t  eval16;
   uint8_t  genBound8;
   int8_t   depth8;
+#endif
 };
 
 

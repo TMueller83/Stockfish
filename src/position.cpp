@@ -1192,17 +1192,23 @@ bool Position::has_game_cycle(int ply) const {
       if (   (j = H1(moveKey), cuckoo[j] == moveKey)
           || (j = H2(moveKey), cuckoo[j] == moveKey))
       {
+#ifdef Maverick  //simplification, Rocky640
+		  Square s1 = from_sq(cuckooMove[j]);
+		  Square s2 = to_sq(cuckooMove[j]);
+#else
           Move move = cuckooMove[j];
           Square s1 = from_sq(move);
           Square s2 = to_sq(move);
-
+#endif
           if (!(between_bb(s1, s2) & pieces()))
           {
+#ifdef Maverick // not used, Vondele
+#else
               // In the cuckoo table, both moves Rc1c5 and Rc5c1 are stored in the same
               // location. We select the legal one by reversing the move variable if necessary.
               if (empty(s1))
                   move = make_move(s2, s1);
-
+#endif
               if (ply > i)
                   return true;
 
