@@ -1,3 +1,6 @@
+### ==========================================================================
+### Copyright Notice and License Information
+### ==========================================================================
 # Honey, a UCI chess playing engine derived from Stockfish and SugaR
 # Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
 # Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad
@@ -22,24 +25,98 @@
 ### ==========================================================================
 
 ### Executable name
-ifeq ($(COMP),mingw)
-EXE = Honey.exe
-else
-EXE = Honey
+### Honey bench nodes ----> 4766632 > based on commits up to 5/03/2019
+### stockfish bench nodes -> 3644175 > based on commits up to 5/03/2019
+
+####  Always leave the three lines below as is (any subsequent defines will override)
+DATE=$(shell date +"%m%d%y")
+FEATURE1=
+
+### TEST versions, enter yes and labels below to build named test exe's
+TEST = no
+TESTv1 = 
+TESTv2 =
+
+### Release versions , enter yes and release version below foor releases
+RELEASE = no
+RELVERSION = no
+
+### Uncomment the line below for Honey, comment out for Stockfish
+	VERSION=maverick
+
+### Uncomment for use with Raspberry Pi -  a slower NPS UCI option setting used in Play
+### by Elo and personalities
+###	RASPBERRY=Pi
+
+### Features include : Cerebellum book functionality, play by Elo (UCI limit strength), keyboard shortcuts and a few other items. Comment out to eliminate
+	FEATURE1=add_features
+
+### should be no reason to change anything below here!
+### Only Honey with feature 1 will be publicly distributed at this time
+
+ifeq ($(FEATURE1),add_features)
+	CXXFLAGS += -DAdd_Features
+	FILES = with_c_book
+	SUFFIX1 =
+endif
+
+###  to reduce NPS setting using "setoption" command, to enable more similiar play when
+###  playimg at reduced strength on hardware
+ifeq ($(RASPBERRY),Pi)
+CXXFLAGS += -DPi
+endif
+
+ifeq ($(VERSION),maverick)
+	CXXFLAGS += -DMaverick
+	ifeq ($(RELEASE),no)
+		ifeq ($(TEST),no)
+			ifeq ($(COMP),mingw)
+				EXE = Honey-dev-$(DATE).exe
+			else
+				EXE = Honey-dev-$(DATE)
+			endif
+		endif
+		ifeq ($(TEST),yes)
+			EXE = Honey-$(TESTv1)$(TESTv2)
+		endif
+	endif
+	ifeq ($(RELEASE),yes)
+		ifeq ($(COMP),mingw)
+			EXE = Honey-$(RELVERSION).exe
+		else
+			EXE = Honey-$(RELVERSION)
+		endif
+	endif
+endif
+
+### Note:  For building cur-dev stockfish with the features added.
+ifneq ($(VERSION),maverick)
+	ifeq ($(COMP),mingw)
+		EXE = stockfish-$(DATE).exe
+	else
+		EXE = stockfish-$(DATE)
+	endif
 endif
 
 ### Installation dir definitions
-PREFIX = /usr/local
+PREFIX = /opt/local
+#PREFIX = /usr/local
 BINDIR = $(PREFIX)/bin
 
 ### Built-in benchmark for pgo-builds
-PGOBENCH = ./$(EXE) bench
+PGOBENCH = ./$(EXE) bench 16 1 10
+PGOBENCH2 = ./$(EXE) bench 16 2 8
 
 ### Object files
-OBJS = benchmark.o bitbase.o bitboard.o endgame.o evaluate.o main.o \
+ifeq ($(FILES),with_c_book)
+	OBJS = benchmark.o bitbase.o bitboard.o endgame.o evaluate.o main.o \
 	material.o misc.o movegen.o movepick.o pawns.o position.o psqt.o \
 	search.o thread.o timeman.o tt.o uci.o ucioption.o polybook.o syzygy/tbprobe.o
-
+else
+	OBJS = benchmark.o bitbase.o bitboard.o endgame.o evaluate.o main.o \
+		material.o misc.o movegen.o movepick.o pawns.o position.o psqt.o \
+		search.o thread.o timeman.o tt.o uci.o ucioption.o syzygy/tbprobe.o
+endif
 ### Establish the operating system name
 KERNEL = $(shell uname -s)
 ifeq ($(KERNEL),Linux)
@@ -78,8 +155,14 @@ prefetch = no
 popcnt = no
 sse = no
 pext = no
+native = yes
 
 ### 2.2 Architecture specific
+
+### native
+ifeq ($(native),yes)
+CXXFLAGS += -march=native
+endif
 
 ifeq ($(ARCH),general-32)
 	arch = any
@@ -159,6 +242,7 @@ ifeq ($(COMP),gcc)
 	CXXFLAGS += -pedantic -Wextra -Wshadow
 
 	ifeq ($(ARCH),armv7)
+	CXXFLAGS += -mcpu=cortex-a53 -mfloat-abi=hard -mfpu=neon-fp-armv8 -mneon-for-64bits -mtune=cortex-a53
 		ifeq ($(OS),Android)
 			CXXFLAGS += -m$(bits)
 			LDFLAGS += -m$(bits)
@@ -171,6 +255,9 @@ ifeq ($(COMP),gcc)
 	ifneq ($(KERNEL),Darwin)
 	   LDFLAGS += -Wl,--no-as-needed
 	endif
+
+	gccversion=$(shell gcc --version)
+	gccmasqueraded=$(findstring clang,$(gccversion))
 endif
 
 ifeq ($(COMP),mingw)
@@ -240,8 +327,8 @@ endif
 endif
 
 ifeq ($(KERNEL),Darwin)
-	CXXFLAGS += -arch $(arch) -mmacosx-version-min=10.9
-	LDFLAGS += -arch $(arch) -mmacosx-version-min=10.9
+	CXXFLAGS += -arch $(arch) -mmacosx-version-min=10.14
+	LDFLAGS += -arch $(arch) -mmacosx-version-min=10.14
 endif
 
 ### Travis CI script uses COMPILER to overwrite CXX
@@ -269,7 +356,7 @@ endif
 ifeq ($(debug),no)
 	CXXFLAGS += -DNDEBUG
 else
-	CXXFLAGS += -g
+	CXXFLAGS += -g -Wall -Wextra
 endif
 
 ### 3.2.2 Debugging with undefined behavior sanitizers
@@ -333,15 +420,24 @@ endif
 ### needs access to the optimization flags.
 ifeq ($(optimize),yes)
 ifeq ($(debug), no)
-	ifeq ($(comp),$(filter $(comp),gcc clang))
+	ifeq ($(comp),clang)
 		CXXFLAGS += -flto
 		LDFLAGS += $(CXXFLAGS)
+	endif
+
+	ifeq ($(comp),gcc)
+		CXXFLAGS += -flto 
+	ifeq ($(gccmasqueraded),)
+		LDFLAGS += $(CXXFLAGS) -flto=jobserver
+	else
+		LDFLAGS += $(CXXFLAGS)
+	endif
 	endif
 
 	ifeq ($(comp),mingw)
 	ifeq ($(KERNEL),Linux)
 		CXXFLAGS += -flto
-		LDFLAGS += $(CXXFLAGS)
+		LDFLAGS += $(CXXFLAGS) -flto=jobserver
 	endif
 	endif
 endif
@@ -362,8 +458,12 @@ endif
 help:
 	@echo ""
 	@echo "To compile Honey, type: "
+	@echo "'make <target> ARCH=arch [COMP=compiler] [COMPCXX=cxx]'"
+	@echo "<target> would be 'build' or 'profile-build'"
 	@echo ""
-	@echo "make target ARCH=arch [COMP=compiler] [COMPCXX=cxx]"
+	@echo "To compile stockfish, uncomment this line in the makefile: "
+	@echo "'### VERSION=maverick' by remvoing the 3 #(pound signs)"
+	@echo "then type: 'make <target> ARCH=<arch> [COMP=compiler] [COMPCXX=cxx]'"
 	@echo ""
 	@echo "Supported targets:"
 	@echo ""
@@ -411,6 +511,9 @@ help:
 
 build: config-sanity
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) all
+	strip $(EXE)
+	cp $(EXE) /Users/michaelbyrne/cluster.mfb
+	rm -f *.o syzygy/*.o
 
 profile-build: config-sanity objclean profileclean
 	@echo ""
@@ -419,6 +522,7 @@ profile-build: config-sanity objclean profileclean
 	@echo ""
 	@echo "Step 2/4. Running benchmark for pgo-build ..."
 	$(PGOBENCH) > /dev/null
+	$(PGOBENCH2) > /dev/null
 	@echo ""
 	@echo "Step 3/4. Building optimized executable ..."
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) objclean
@@ -426,6 +530,11 @@ profile-build: config-sanity objclean profileclean
 	@echo ""
 	@echo "Step 4/4. Deleting profile data ..."
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) profileclean
+	strip $(EXE)
+	cp $(EXE) /Users/michaelbyrne/cluster.mfb
+	rm -f *.o syzygy/*.o llvm-profdata
+#	touch * syzygy/*
+#	cp $(EXE) /opt/picochess/engines/armv7l
 
 strip:
 	strip $(EXE)
@@ -502,21 +611,21 @@ clang-profile-make:
 	all
 
 clang-profile-use:
-	llvm-profdata merge -output=stockfish.profdata *.profraw
+	llvm-profdata-mp-7.0 merge -output=stockfish.profdata *.profraw
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
-	EXTRACXXFLAGS='-fprofile-instr-use=stockfish.profdata' \
+	EXTRACXXFLAGS='-fprofile-instr-use=stockfish.profdata -Wno-profile-instr-out-of-date' \
 	EXTRALDFLAGS='-fprofile-use ' \
 	all
 
 gcc-profile-make:
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
-	EXTRACXXFLAGS='-fprofile-generate' \
+	EXTRACXXFLAGS='-fprofile-generate -fprofile-correction' \
 	EXTRALDFLAGS='-lgcov' \
 	all
 
 gcc-profile-use:
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
-	EXTRACXXFLAGS='-fprofile-use -fno-peel-loops -fno-tracer' \
+	EXTRACXXFLAGS='-fprofile-use -fprofile-correction -fno-peel-loops -fno-tracer -Os' \
 	EXTRALDFLAGS='-lgcov' \
 	all
 
