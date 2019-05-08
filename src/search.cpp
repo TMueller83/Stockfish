@@ -67,6 +67,9 @@ namespace Tablebases {
   bool RootInTB;
   bool UseRule50;
   Depth ProbeDepth;
+#ifdef Add_Features
+  bool SevenManProbe;
+#endif
 }
 
 namespace TB = Tablebases;
@@ -86,12 +89,21 @@ namespace {
     return Value((175 - 50 * improving) * d / ONE_PLY);
   }
 
-  // Reductions lookup table, initialized at startup
-  int Reductions[MAX_MOVES]; // [depth or moveNumber]
-
+#ifdef Maverick
+    // Reductions lookup table, initialized at startup
+	int Reductions[2][32][80];  // [improving][depth][moveNumber]
+#else
+	// Reductions lookup table, initialized at startup
+	int Reductions[MAX_MOVES]; // [depth or moveNumber]
+#endif
+#ifdef Maverick // MichaelB7
+	template <bool PvNode> Depth reduction(bool i, Depth d, int mn) {
+		return (Reductions[i][std::min(d / ONE_PLY, 31)][mn] - PvNode ) * ONE_PLY;
+#else
   template <bool PvNode> Depth reduction(bool i, Depth d, int mn) {
     int r = Reductions[d / ONE_PLY] * Reductions[mn] / 1024;
     return ((r + 512) / 1024 + (!i && r > 1024) - PvNode) * ONE_PLY;
+#endif
   }
 
   constexpr int futility_move_count(bool improving, int depth) {
@@ -120,10 +132,10 @@ namespace {
     int level;
     Move best = MOVE_NONE;
   };
-  
-  bool doNull;
-
-  int tactical;
+#ifdef Add_Features
+bool  bruteForce, cleanSearch, minOutput, limitStrength, noNULL, doNull;
+int   aggressiveness, attack, jekyll, tactical, uci_elo, variety;
+#endif
 
   template <NodeType NT>
   Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, bool cutNode);
@@ -170,9 +182,25 @@ namespace {
 /// Search::init() is called at startup to initialize various lookup tables
 
 void Search::init() {
-
+	
+#ifdef Maverick   // MichaelB7
+	for (int imp = 0; imp <= 1; ++imp)
+		for (int d = 1; d < 32; ++d)
+			for (int mc = 1; mc < 80; ++mc) // record in a "real" game is 79 moves,
+				// in a search of one million games, found one posiiton with 78 possible moves.
+				// more weight on depth for LMR reductions than move count
+				// (from Crafty) MichaelB7
+				{
+					int red = int(log( d * 1.87 ) * log( mc * .95 )) / 2;
+					Reductions[imp][d][mc] = red;
+					// Increase reduction for non-PV nodes when eval is not improving
+					if (!imp && red > 1)
+						Reductions[imp][d][mc]++;
+				}
+#else
   for (int i = 1; i < MAX_MOVES; ++i)
       Reductions[i] = int(1024 * std::log(i) / std::sqrt(1.95));
+#endif
 }
 
 

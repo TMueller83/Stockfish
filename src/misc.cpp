@@ -49,6 +49,7 @@ typedef bool(*fun3_t)(HANDLE, CONST GROUP_AFFINITY*, PGROUP_AFFINITY);
 
 #include "misc.h"
 #include "thread.h"
+#include "uci.h"
 
 using namespace std;
 
@@ -56,7 +57,7 @@ namespace {
 
 /// Version number. If Version is left empty, then compile date in the format
 /// DD-MM-YY and show in engine_info.
-const string Version = "1.0";
+const string Version = "";
 
 /// Our fancy logging facility. The trick here is to replace cin.rdbuf() and
 /// cout.rdbuf() with two Tie objects that tie cin and cout to a file stream. We
@@ -131,12 +132,12 @@ const string engine_info(bool to_uci) {
 
   if (Version.empty())
   {
-      date >> month >> day >> year;
-      ss << setw(2) << day << setw(2) << (1 + months.find(month) / 4) << year.substr(2);
+        date >> month >> day >> year;
+		ss << setw(2) << (1 + months.find(month) / 4) <<setw(2) << day << year.substr(2) << "";
   }
 
   ss << (to_uci  ? "\nid author ": " by ")
-     << "M. Byrne and scores of others";
+     << "M. Byrne and scores of others...";
 
   return ss.str();
 }
