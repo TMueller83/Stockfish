@@ -185,11 +185,11 @@ enum Value : int {
 #define NVM 100/100
 #define NVE 100/100
 #define BVM 100/100
-#define BVE 100/100  //try 101
+#define BVE 101/100
 #define RVM 100/100
 #define RVE 100/100
-#define QVM 100/100  //try 102
-#define QVE 100/100  //try 101
+#define QVM 102/100  
+#define QVE 101/100
 
     PawnValueMg   = 128*PVM,   PawnValueEg   = 213*PVE,
     KnightValueMg = 782*NVM,   KnightValueEg = 865*NVE,

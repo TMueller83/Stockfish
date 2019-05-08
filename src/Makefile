@@ -36,7 +36,7 @@ FEATURE1=
 ### TEST versions, enter yes and labels below to build named test exe's
 TEST = no
 TESTv1 = $(DATE2)
-TESTv2 = a
+TESTv2 = 
 ifeq ($(TEST),yes)
 	CXXFLAGS += -DTest
 endif
