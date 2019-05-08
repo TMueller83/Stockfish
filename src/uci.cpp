@@ -47,11 +47,13 @@ namespace {
   // The function sets up the position described in the given FEN string ("fen")
   // or the starting position ("startpos") and then makes the moves given in the
   // following move list ("moves").
+#ifdef Maverick
   bool startposition = false;
   Key FileKey = 0;
+#endif
 
   void position(Position& pos, istringstream& is, StateListPtr& states) {
-#ifdef Add_Features
+#ifdef Maverick
     Move m;
     string token, fen;
 	string Newfen;
@@ -95,7 +97,7 @@ namespace {
 
     states = StateListPtr(new std::deque<StateInfo>(1)); // Drop old and create a new one
     pos.set(fen, Options["UCI_Chess960"], &states->back(), Threads.main());
-#ifdef Add_Features
+#ifdef Maverick
 	int movesplayed = 0;
 	int OPmoves = 0;
 
@@ -114,7 +116,7 @@ namespace {
     while (is >> token && (m = UCI::to_move(pos, token)) != MOVE_NONE)
     {
         states->emplace_back();
-#ifdef Add_Features
+#ifdef Maverick
 		if (!FileKey)
 		{
 			if ((movesplayed == 2 || movesplayed == 4 || movesplayed == 6 || movesplayed == 8 || movesplayed == 10 || movesplayed == 12 || movesplayed == 14 || movesplayed == 16) && Newfen == StartFEN)
@@ -132,7 +134,7 @@ namespace {
 		}
 #endif
         pos.do_move(m, states->back());
-#ifdef Add_Features
+#ifdef  Maverick
 		movesplayed++;
 #endif
     }

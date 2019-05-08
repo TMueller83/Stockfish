@@ -25,7 +25,7 @@
 ### ==========================================================================
 
 ### Executable name
-### Honey bench nodes ----> 4766632 > based on commits up to 5/03/2019
+### Honey bench nodes -----> 4174059 > based on commits up to 5/08/2019
 ### stockfish bench nodes -> 3644175 > based on commits up to 5/03/2019
 
 ####  Always leave the three lines below as is (any subsequent defines will override)
@@ -46,7 +46,7 @@ RELEASE = no
 RELVERSION = no
 
 ### Uncomment the line below for Honey, comment out for Stockfish
-	VERSION=maverick
+###	VERSION=maverick
 
 ### Uncomment for use with Raspberry Pi -  a slower NPS UCI option setting used in Play
 ### by Elo and personalities

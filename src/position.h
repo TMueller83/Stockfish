@@ -28,7 +28,7 @@
 
 #include "bitboard.h"
 #include "types.h"
-#ifdef Add_Features
+#ifdef Maverick
 extern void kelly(bool start);
 extern void files(int x, Key FileKey);
 #endif
@@ -119,15 +119,18 @@ public:
   template<PieceType> Bitboard attacks_from(Square s, Color c) const;
   Bitboard slider_blockers(Bitboard sliders, Square s, Bitboard& pinners) const;
 
-  // Properties of moves
-  bool legal(Move m) const;
-  bool pseudo_legal(const Move m) const;
-  bool capture(Move m) const;
-  bool capture_or_promotion(Move m) const;
-  bool gives_check(Move m) const;
-  bool advanced_pawn_push(Move m) const;
-  Piece moved_piece(Move m) const;
-  Piece captured_piece() const;
+    // Properties of moves
+    bool legal(Move m) const;
+    bool pseudo_legal(const Move m) const;
+    bool capture(Move m) const;
+    bool capture_or_promotion(Move m) const;
+    bool gives_check(Move m) const;
+    bool advanced_pawn_push(Move m) const;
+#ifdef Maverick
+    bool promotion_pawn_push(Move m) const;
+#endif
+    Piece moved_piece(Move m) const;
+    Piece captured_piece() const;
 
   // Piece specific
   bool pawn_passed(Color c, Square s) const;
@@ -326,6 +329,12 @@ inline bool Position::advanced_pawn_push(Move m) const {
   return   type_of(moved_piece(m)) == PAWN
         && relative_rank(sideToMove, to_sq(m)) > RANK_5;
 }
+#ifdef Maverick //MichaelB7
+inline bool Position::promotion_pawn_push(Move m) const {
+    return   type_of(moved_piece(m)) == PAWN
+             && relative_rank(sideToMove, from_sq(m)) > RANK_5;
+}
+#endif
 
 inline int Position::pawns_on_same_color_squares(Color c, Square s) const {
   return popcount(pieces(c, PAWN) & ((DarkSquares & s) ? DarkSquares : ~DarkSquares));

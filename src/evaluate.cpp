@@ -31,7 +31,7 @@
 #include "pawns.h"
 #include "thread.h"
 #include "uci.h"
-
+#ifdef Maverick
 extern int Options_Junior_Depth;
 extern bool Options_Junior_Mobility;
 extern bool Options_Junior_King;
@@ -40,6 +40,7 @@ extern bool Options_Junior_Passed;
 extern bool Options_Junior_Space;
 extern bool Options_Junior_Initiative;
 extern bool Options_Dynamic_Strategy;
+#endif
 
 namespace Trace {
 
@@ -301,8 +302,11 @@ namespace {
         attackedBy2[Us] |= attackedBy[Us][ALL_PIECES] & b;
         attackedBy[Us][Pt] |= b;
         attackedBy[Us][ALL_PIECES] |= b;
-
+#ifdef Mavrick
         if (b & kingRing[Them] & ~pawn_double_attacks_bb<Them>(pos.pieces(Them, PAWN)))
+#else
+        if (b & kingRing[Them])
+#endif
         {
             kingAttackersCount[Us]++;
             kingAttackersWeight[Us] += KingAttackWeights[Pt];
@@ -839,7 +843,7 @@ namespace {
             + pieces<WHITE, BISHOP>() - pieces<BLACK, BISHOP>()
             + pieces<WHITE, ROOK  >() - pieces<BLACK, ROOK  >()
             + pieces<WHITE, QUEEN >() - pieces<BLACK, QUEEN >();
-
+#ifdef Maverick
 	Value v_Dynamic_test = v;
 	
 	constexpr double DYNAMIC_ADVANTAGE_PAWNS_COUNT = 1.0;
@@ -900,6 +904,18 @@ namespace {
 	{
 		score += initiative(eg_value(score));
 	}
+#else
+    score += mobility[WHITE] - mobility[BLACK];
+
+    score +=  king<   WHITE>() - king<   BLACK>()
+            + threats<WHITE>() - threats<BLACK>()
+            + passed< WHITE>() - passed< BLACK>()
+            + space<  WHITE>() - space<  BLACK>();
+#endif
+#ifdef Maverick
+#else
+    score += initiative(eg_value(score));
+#endif
 
     // Interpolate between a middlegame and a (scaled by 'sf') endgame score
     ScaleFactor sf = scale_factor(eg_value(score));

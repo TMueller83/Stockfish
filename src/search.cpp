@@ -44,10 +44,12 @@
 #include "syzygy/tbprobe.h"
 
 #ifdef Add_Features
+#include <unistd.h> //for sleep //MichaelB7
+#include <random> // ELO MichaelB7
 #include "polybook.h" // Cerebellum
 #endif
 
-#ifdef Add_Features
+#ifdef Maverick
 int Options_Junior_Depth;  //from SugaR
 bool Options_Junior_Mobility;
 bool Options_Junior_King;
@@ -70,7 +72,7 @@ bool SE;
 namespace Search {
 
   LimitsType Limits;
-#ifdef Add_Features
+#ifdef Maverick
   bool mcts; //From SugaR
 #endif
 }
@@ -107,8 +109,8 @@ namespace {
     // Reductions lookup table, initialized at startup
 	int Reductions[2][32][80];  // [improving][depth][moveNumber]
 #else
-	// Reductions lookup table, initialized at startup
-	int Reductions[MAX_MOVES]; // [depth or moveNumber]
+  // Reductions lookup table, initialized at startup
+  int Reductions[MAX_MOVES]; // [depth or moveNumber]
 #endif
 #ifdef Maverick // MichaelB7
 	template <bool PvNode> Depth reduction(bool i, Depth d, int mn) {
@@ -147,7 +149,7 @@ namespace {
     Move best = MOVE_NONE;
   };
 #ifdef Add_Features
-bool  bruteForce, cleanSearch, minOutput, limitStrength, noNULL, doNull;  // pick noNull or doNull
+bool  bruteForce, cleanSearch, minOutput, limitStrength, noNULL;
 int   aggressiveness, attack, jekyll, tactical, uci_elo, variety;
 #endif
 
@@ -221,9 +223,10 @@ void Search::init() {
 /// Search::clear() resets search state to its initial value
 
 void Search::clear() {
-
+#ifdef Add_Features
   if (Options["NeverClearHash"])
 	return;
+#endif
 
   Threads.main()->wait_for_search_finished();
 
@@ -271,8 +274,6 @@ void MainThread::search() {
 
 #ifdef Maverick
     // Read search options
-    doNull                       = Options["NullMove"];
-    tactical                     = Options["ICCF Analyzes"];
     Options_Junior_Depth         = 127;
     Options_Junior_Mobility      = true;
     Options_Junior_King          = true;
@@ -531,7 +532,7 @@ void Thread::search() {
   TB::SevenManProbe = Options["7 Man Probing"];
 
 #endif
-	
+
   std::memset(ss-7, 0, 10 * sizeof(Stack));
   for (int i = 7; i > 0; i--)
 
@@ -552,8 +553,6 @@ ss->pv = pv;
 
   size_t multiPV = Options["MultiPV"];
   Skill skill(Options["Skill Level"]);
-
-  if (tactical) multiPV = size_t(pow(2, tactical));
 
 #ifdef Add_Features
     if (tactical) multiPV = pow(2, tactical);
@@ -802,13 +801,12 @@ ss->pv = pv;
               // keep pondering until the GUI sends "ponderhit" or "stop".
               if (mainThread->ponder)
                   mainThread->stopOnPonderhit = true;
-
               else
                   Threads.stop = true;
           }
       }
 #ifdef Maverick
-	  if (mainThread && !Threads.stop && mcts)
+	if (mainThread && !Threads.stop && mcts)
 {
 	playout(lastBestMove, ss, bestValue);
 }
@@ -900,10 +898,22 @@ namespace {
     StateInfo st;
     TTEntry* tte;
     Key posKey;
+#ifdef Maverick
     Move ttMove, move, excludedMove, bestMove,expttMove=MOVE_NONE;
+#else
+	Move ttMove, move, excludedMove, bestMove;
+#endif
     Depth extension, newDepth;
+#ifdef Maverick
     Value bestValue, value, ttValue, eval, maxValue, expttValue=VALUE_NONE;
+#else
+	  Value bestValue, value, ttValue, eval, maxValue;
+#endif
+#ifdef Maverick
     bool ttHit, ttPv, inCheck, givesCheck, improving, expttHit=false;
+#else
+    bool ttHit, ttPv, inCheck, givesCheck, improving;
+#endif
     bool captureOrPromotion, doFullDepthSearch, moveCountPruning, ttCapture;
     Piece movedPiece;
     int moveCount, captureCount, quietCount;
@@ -1152,7 +1162,13 @@ namespace {
     }
 
     // Step 6. Static evaluation of the position
+
+#ifdef Maverick
+    if (inCheck || (PvNode && depth < 3 * ONE_PLY))
+#else
     if (inCheck)
+#endif
+
     {
         ss->staticEval = eval = VALUE_NONE;
         improving = false;
@@ -1183,17 +1199,17 @@ namespace {
 		else
 		{
 #endif
-			if ((ss - 1)->currentMove != MOVE_NULL)
-			{
-				 int bonus = -(ss-1)->statScore / 512;
+        if ((ss-1)->currentMove != MOVE_NULL)
+        {
+            int bonus = -(ss-1)->statScore / 512;
 
-				 ss->staticEval = eval = evaluate(pos) + bonus;
-			}
-			else{
-			    ss->staticEval = eval  = -(ss - 1)->staticEval + 2 * Eval::Tempo;
-			}
-			tte->save(posKey, VALUE_NONE, ttPv, BOUND_NONE, DEPTH_NONE, MOVE_NONE, eval);
-		}
+            ss->staticEval = eval = evaluate(pos) + bonus;
+        }
+        else
+            ss->staticEval = eval = -(ss-1)->staticEval + 2 * Eval::Tempo;
+
+        tte->save(posKey, VALUE_NONE, ttPv, BOUND_NONE, DEPTH_NONE, MOVE_NONE, eval);
+    }
 #ifdef Maverick
 	}
 #endif
@@ -1235,6 +1251,7 @@ namespace {
     {
         assert(eval - beta >= 0);
 
+        // Null move dynamic reduction based on depth and value
         Depth R = ((823 + 67 * depth / ONE_PLY) / 256 + std::min(int(eval - beta) / 200, 3)) * ONE_PLY;
 
         ss->currentMove = MOVE_NULL;
@@ -1243,7 +1260,6 @@ namespace {
         pos.do_null_move(st);
 
         Value nullValue = -search<NonPV>(pos, ss+1, -beta, -beta+1, depth-R, !cutNode);
-
         pos.undo_null_move();
 
         if (nullValue >= beta)
@@ -1344,7 +1360,6 @@ moves_loop: // When in check, search starts from here
 #endif
     value = bestValue; // Workaround a bogus 'uninitialized' warning under gcc
     moveCountPruning = false;
-
     ttCapture = ttMove && pos.capture_or_promotion(ttMove);
 
     // Step 12. Loop through all pseudo-legal moves until no moves remain
@@ -1366,7 +1381,11 @@ moves_loop: // When in check, search starts from here
 
       ss->moveCount = ++moveCount;
 
+#ifdef Add_Features
+      if (!minOutput && rootNode && thisThread == Threads.main() && Time.elapsed() > 3000)
+#else
       if (rootNode && thisThread == Threads.main() && Time.elapsed() > 3000)
+#endif
           sync_cout << "info depth " << depth / ONE_PLY
                     << " currmove " << UCI::move(move, pos.is_chess960())
                     << " currmovenumber " << moveCount + thisThread->pvIdx << sync_endl;
@@ -1423,9 +1442,22 @@ moves_loop: // When in check, search starts from here
       }
 
       // Check extension (~2 Elo)
+#ifdef Maverick
+      else if (    givesCheck)
+		  extension = ONE_PLY;
+
+     // MichaelB7 Passed pawn extension
+     else if ( move == ss->killers[0]
+			  && (pos.promotion_pawn_push(move)
+				  || (pos.advanced_pawn_push(move)
+				  && pos.pawn_passed(us, to_sq(move)))))
+		  extension = ONE_PLY;
+		  
+#else
       else if (    givesCheck
                && (pos.blockers_for_king(~us) & from_sq(move) || pos.see_ge(move)))
           extension = ONE_PLY;
+#endif
 
       // Castling extension
       else if (type_of(move) == CASTLING)
@@ -1437,13 +1469,23 @@ moves_loop: // When in check, search starts from here
                && depth < 3 * ONE_PLY
                && ss->ply < 3 * thisThread->rootDepth / ONE_PLY) // To avoid too deep searches
           extension = ONE_PLY;
-
+#ifndef Maverick
       // Passed pawn extension
       else if (   move == ss->killers[0]
                && pos.advanced_pawn_push(move)
                && pos.pawn_passed(us, to_sq(move)))
           extension = ONE_PLY;
+#endif
 
+#ifdef Maverick //Moez Jellouli endgame extension
+	  else if (pos.non_pawn_material() == 0
+               &&  abs(ss->staticEval) <= Value(160)
+               &&  abs(ss->staticEval) >= Value(10)
+               &&  pos.rule50_count() <= 10
+               &&  depth >= 4 * ONE_PLY
+               &&  (PvNode || (!PvNode && improving)))	// Endgame extension
+		  extension = ONE_PLY;
+#endif
       // Calculate new depth for this move
       newDepth = depth - ONE_PLY + extension;
 
@@ -1493,7 +1535,7 @@ moves_loop: // When in check, search starts from here
           }
           else if (!pos.see_ge(move, -PawnValueEg * (depth / ONE_PLY))) // (~20 Elo)
                   continue;
-		   }
+      }
 
       // Speculative prefetch as early as possible
       prefetch(TT.first_entry(pos.key_after(move)));
@@ -1693,15 +1735,10 @@ moves_loop: // When in check, search starts from here
 
         update_capture_stats(pos, bestMove, capturesSearched, captureCount, stat_bonus(depth + ONE_PLY));
 
-        // Extra penalty for a quiet TT move in previous ply when it gets refuted
-        if ((ss-1)->moveCount == 1 && !pos.captured_piece())
-            update_continuation_histories(ss-1, pos.piece_on(prevSq), prevSq, -stat_bonus(depth + ONE_PLY));
-
-        // Extra penalty for killer move in previous ply when it gets refuted
-        else if (  (ss-1)->killers[0]
-                && (ss-1)->currentMove == (ss-1)->killers[0]
-                && !pos.captured_piece())
-            update_continuation_histories(ss-1, pos.piece_on(prevSq), prevSq, -stat_bonus(depth));
+        // Extra penalty for a quiet TT or main killer move in previous ply when it gets refuted
+        if (   ((ss-1)->moveCount == 1 || ((ss-1)->currentMove == (ss-1)->killers[0]))
+            && !pos.captured_piece())
+                update_continuation_histories(ss-1, pos.piece_on(prevSq), prevSq, -stat_bonus(depth + ONE_PLY));
 
     }
     // Bonus for prior countermove that caused the fail low
@@ -1923,8 +1960,6 @@ moves_loop: // When in check, search starts from here
       assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 
       // Check for a new best move
-
-		
       if (value > bestValue)
       {
           bestValue = value;
