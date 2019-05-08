@@ -30,12 +30,16 @@
 
 ####  Always leave the three lines below as is (any subsequent defines will override)
 DATE=$(shell date +"%m%d%y")
+DATE2=$(shell date +"%m%d")
 FEATURE1=
 
 ### TEST versions, enter yes and labels below to build named test exe's
 TEST = no
-TESTv1 = 
-TESTv2 =
+TESTv1 = $(DATE2)
+TESTv2 = a
+ifeq ($(TEST),yes)
+	CXXFLAGS += -DTest
+endif
 
 ### Release versions , enter yes and release version below foor releases
 RELEASE = no
@@ -77,7 +81,7 @@ ifeq ($(VERSION),maverick)
 			endif
 		endif
 		ifeq ($(TEST),yes)
-			EXE = Honey-$(TESTv1)$(TESTv2)
+			EXE = Honey-$(TESTv1)-$(TESTv2)
 		endif
 	endif
 	ifeq ($(RELEASE),yes)

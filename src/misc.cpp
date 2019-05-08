@@ -60,8 +60,8 @@ namespace {
 #ifndef Maverick
 #define Stockfish
 #endif
-
-#if(defined Maverick && defined Add_Features)
+	
+#if(defined Maverick && defined Add_Features )
 const string Version = "";
 #endif
 
@@ -136,6 +136,7 @@ public:
 const string engine_info(bool to_uci) {
 
     const string months("Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec");
+
     string month, day, year;
     stringstream ss, date(__DATE__); // From compiler, format is "Sep 21 2008"
 #ifdef Maverick
@@ -143,12 +144,20 @@ const string engine_info(bool to_uci) {
 #else
     ss << "Stockfish " << Version << setfill('0');
 #endif
-
+#ifdef Test
+	if (Version.empty())
+	{
+		date >> month >> day;
+		ss << setw(2) << (1 + months.find(month) / 4) <<setw(2) << day  << "-a";
+	}
+	
+#else
   if (Version.empty())
   {
         date >> month >> day >> year;
 		ss << setw(2) << (1 + months.find(month) / 4) <<setw(2) << day << year.substr(2) << "";
     }
+#endif
 #ifdef Maverick
     ss	<< (to_uci  ? "\nid author ": " by ")
             << "M. Byrne and scores of others...";
