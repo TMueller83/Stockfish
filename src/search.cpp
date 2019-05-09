@@ -1163,11 +1163,11 @@ namespace {
 
     // Step 6. Static evaluation of the position
 
-#ifdef Maverick
+/*#ifdef Maverick
     if (inCheck || (PvNode && depth < 3 * ONE_PLY))
-#else
+#else*/
     if (inCheck)
-#endif
+//#endif
 
     {
         ss->staticEval = eval = VALUE_NONE;
@@ -1469,7 +1469,8 @@ moves_loop: // When in check, search starts from here
                && depth < 3 * ONE_PLY
                && ss->ply < 3 * thisThread->rootDepth / ONE_PLY) // To avoid too deep searches
           extension = ONE_PLY;
-#ifndef Maverick
+#ifdef Maverick
+#else
       // Passed pawn extension
       else if (   move == ss->killers[0]
                && pos.advanced_pawn_push(move)
@@ -1502,6 +1503,9 @@ moves_loop: // When in check, search starts from here
 
           if (   !captureOrPromotion
               && !givesCheck
+#ifdef Maverick  //MichaelB7
+			  && !extension
+#endif
               && !pos.advanced_pawn_push(move))
           {
               // Move count based pruning (~30 Elo)
@@ -1735,10 +1739,10 @@ moves_loop: // When in check, search starts from here
 
         update_capture_stats(pos, bestMove, capturesSearched, captureCount, stat_bonus(depth + ONE_PLY));
 
-        // Extra penalty for a quiet TT or main killer move in previous ply when it gets refuted
-        if (   ((ss-1)->moveCount == 1 || ((ss-1)->currentMove == (ss-1)->killers[0]))
-            && !pos.captured_piece())
-                update_continuation_histories(ss-1, pos.piece_on(prevSq), prevSq, -stat_bonus(depth + ONE_PLY));
+		// Extra penalty for a quiet TT or main killer move in previous ply when it gets refuted
+		if (   ((ss-1)->moveCount == 1 || ((ss-1)->currentMove == (ss-1)->killers[0]))
+			&& !pos.captured_piece())
+			update_continuation_histories(ss-1, pos.piece_on(prevSq), prevSq, -stat_bonus(depth + ONE_PLY));
 
     }
     // Bonus for prior countermove that caused the fail low
