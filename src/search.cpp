@@ -1404,16 +1404,19 @@ moves_loop: // When in check, search starts from here
       // then that move is singular and should be extended. To verify this we do
       // a reduced search on all the other moves but the ttMove and if the
       // result is lower than ttValue minus a margin then we will extend the ttMove.
-#ifdef Maverick	  
-	  if (mcts && minSons == 1 && move == expttMove
+#ifdef Maverick	   //SugaR
+	  if (mcts && minSons == 1 && move == expttMove //SugaR
 		  && pos.legal(move) && visits > 6
 		  )
 	  {
 		  SE = true;
 	  }
 #endif
-
+#ifdef Maverick //MichaelB7
+      if (    depth  > 4 * ONE_PLY
+#else
       if (    depth >= 8 * ONE_PLY
+#endif
           &&  move == ttMove
           && !rootNode
           && !excludedMove // Avoid recursive singular search
