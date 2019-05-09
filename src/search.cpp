@@ -1429,7 +1429,7 @@ moves_loop: // When in check, search starts from here
 #else
         if (    depth >= 3 * ONE_PLY
 #endif
-          &&  moveCount > 1
+          &&  moveCount > 1 + 3 * rootNode
           && (  !captureOrPromotion
               || moveCountPruning
               || ss->staticEval + PieceValue[EG][pos.captured_piece()] <= alpha))
