@@ -25,8 +25,8 @@
 ### ==========================================================================
 
 ### Executable name
-### Honey bench nodes -----> 3652690 > based on commits up to 5/09/2019
-### stockfish bench nodes -> 3184182 > based on commits up to 5/09/2019
+### Honey bench nodes -----> 4834074 > based on commits up to 5/09/2019
+### stockfish bench nodes -> 3687854 > based on commits up to 5/09/2019
 
 ####  Always leave the three lines below as is (any subsequent defines will override)
 DATE=$(shell date +"%m%d%y")
@@ -36,7 +36,7 @@ FEATURE1=
 ### TEST versions, enter yes and labels below to build named test exe's
 TEST = no
 TESTv1 = $(DATE2)
-TESTv2 = 
+TESTv2 =
 ifeq ($(TEST),yes)
 	CXXFLAGS += -DTest
 endif

@@ -113,12 +113,12 @@ namespace {
   int Reductions[MAX_MOVES]; // [depth or moveNumber]
 #endif
 #ifdef Maverick // MichaelB7
-	template <bool PvNode> Depth reduction(bool i, Depth d, int mn) {
-		return (Reductions[i][std::min(d / ONE_PLY, 31)][mn] - PvNode ) * ONE_PLY;
+	Depth reduction(bool i, Depth d, int mn) {
+		return (Reductions[i][std::min(d / ONE_PLY, 31)][mn]) * ONE_PLY;
 #else
-  template <bool PvNode> Depth reduction(bool i, Depth d, int mn) {
+  Depth reduction(bool i, Depth d, int mn) {
     int r = Reductions[d / ONE_PLY] * Reductions[mn] / 1024;
-    return ((r + 512) / 1024 + (!i && r > 1024) - PvNode) * ONE_PLY;
+    return ((r + 512) / 1024 + (!i && r > 1024)) * ONE_PLY;
 #endif
   }
 
@@ -1613,7 +1613,7 @@ moves_loop: // When in check, search starts from here
 			  
 		 
               // Reduced depth of the next LMR search
-              int lmrDepth = std::max(newDepth - reduction<PvNode>(improving, depth, moveCount), DEPTH_ZERO);
+              int lmrDepth = std::max(newDepth - reduction(improving, depth, moveCount), DEPTH_ZERO);
               lmrDepth /= ONE_PLY;
 
               // Countermoves based pruning (~20 Elo)
@@ -1676,11 +1676,11 @@ moves_loop: // When in check, search starts from here
               || moveCountPruning
               || ss->staticEval + PieceValue[EG][pos.captured_piece()] <= alpha))
       {
-          Depth r = reduction<PvNode>(improving, depth, moveCount);
+          Depth r = reduction(improving, depth, moveCount);
 
           // Decrease reduction if position is or has been on the PV
           if (ttPv)
-              r -= ONE_PLY;
+              r -= 2 * ONE_PLY;
 
           // Decrease reduction if opponent's move count is high (~10 Elo)
           if ((ss-1)->moveCount > 15)
