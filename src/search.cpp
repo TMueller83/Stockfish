@@ -992,12 +992,12 @@ namespace {
         &&  eval >= beta
         &&  ss->staticEval >= beta - 36 * depth / ONE_PLY + 225
         && !excludedMove
-#ifdef Maverick
-        && thisThread->selDepth + 3 > thisThread->rootDepth / ONE_PLY  //idea from corchess by Ivan Ivec (modfied here)
-        &&  pos.non_pawn_material(us) > BishopValueMg  //corchess by Ivan Ivec
-#else
+//#ifdef Maverick
+        //&& thisThread->selDepth + 3 > thisThread->rootDepth / ONE_PLY  //idea from corchess by Ivan Ivec (modfied here)
+        //&&  pos.non_pawn_material(us) > BishopValueMg  //corchess by Ivan Ivec
+//#else
         &&  pos.non_pawn_material(us)
-#endif
+//#endif
         && (ss->ply >= thisThread->nmpMinPly || us != thisThread->nmpColor)
 )
     {
@@ -1249,14 +1249,7 @@ moves_loop: // When in check, search starts from here
           &&  tte->depth() >= depth - 3 * ONE_PLY
           &&  pos.legal(move))
       {
-#ifdef Maverick  //70 - 4 * d by NKONSTANTAKIS & Stéphane Nicolet
-          int d = depth / ONE_PLY;
-          int margin = 2 * d + std::max(0, (70 - 4 * d)) * ttPv;
-          Value singularBeta = std::max(ttValue - margin, -VALUE_MATE + 1);
-#else
           Value singularBeta = ttValue - 2 * depth / ONE_PLY;
-
-#endif
 
           Depth halfDepth = depth / (2 * ONE_PLY) * ONE_PLY; // ONE_PLY invariant
           ss->excludedMove = move;
