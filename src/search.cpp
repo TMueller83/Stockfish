@@ -1599,7 +1599,11 @@ moves_loop: // When in check, search starts from here
               else if (    type_of(move) == NORMAL
                        && !pos.see_ge(make_move(to_sq(move), from_sq(move))))
                   r -= 2 * ONE_PLY;
-
+#ifdef Maverick  //  miguel-l/Stockfish/tree/d2a6f..d10ad7
+			  else if (type_of(movedPiece) == PAWN
+					   && relative_rank(us, rank_of(from_sq(move))) > RANK_5)  // changed Rank by Michael B7
+				  r -= ONE_PLY;
+#endif
               ss->statScore =  thisThread->mainHistory[us][from_to(move)]
                              + (*contHist[0])[movedPiece][to_sq(move)]
                              + (*contHist[1])[movedPiece][to_sq(move)]
