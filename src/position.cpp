@@ -717,6 +717,39 @@ bool Position::gives_check(Move m) const {
       return false;
   }
 }
+#ifdef Maverick //Gunther Demetz zugzwangSolver
+void Position::removePawn(Square s, StateInfo& newSt) {
+    assert(&newSt != st);
+    assert(type_of(piece_on(s)) == PAWN);
+
+    std::memcpy(&newSt, st, offsetof(StateInfo, key));
+    newSt.previous = st;
+    st = &newSt;
+
+    Key k = st->previous->key;
+    Piece pc = piece_on(s);
+    st->pawnKey ^= Zobrist::psq[pc][s];
+
+    k ^= Zobrist::psq[pc][s];
+
+    remove_piece(pc, s);
+
+    st->epSquare= SQ_NONE;
+    board[s] = NO_PIECE;
+    st->checkersBB = attackers_to(square<KING>(sideToMove)) & pieces(~sideToMove);
+    set_check_info(st);
+
+    st->materialKey ^= Zobrist::psq[pc][pieceCount[pc]];
+    st->capturedPiece = NO_PIECE;
+    st->key = k;
+}
+
+void Position::undo_removePawn(Square s, Color c) {
+    st = st->previous;
+    Piece pc = make_piece(c, PAWN);
+    put_piece(pc, s);
+}
+#endif
 
 
 /// Position::do_move() makes a move, and saves all information necessary

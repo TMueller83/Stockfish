@@ -554,6 +554,10 @@ ss->pv = pv;
   size_t multiPV = Options["MultiPV"];
   Skill skill(Options["Skill Level"]);
 
+#ifdef Maverick //zugzwangMates
+  zugzwangMates=0;
+#endif
+
 #ifdef Add_Features
     if (tactical) multiPV = pow(2, tactical);
 	if (aggressiveness) attack = aggressiveness;
@@ -707,8 +711,8 @@ ss->pv = pv;
 
 #ifdef Maverick //  Gunther Demetz zugzwangSolver
                   beta = std::min(bestValue + delta2, VALUE_INFINITE);  //corchess by Ivan Ivec
-                  //if (zugzwangMates > 5)
-                  //    zugzwangMates-=100;
+                  if (zugzwangMates > 5)
+                      zugzwangMates-=100;
 #else
                   beta = std::min(bestValue + delta, VALUE_INFINITE);
 #endif
@@ -1272,7 +1276,80 @@ namespace {
                 return nullValue;
 
             assert(!thisThread->nmpMinPly); // Recursive verification is not allowed
+			
+#ifdef Maverick //Gunther Demetz zugzwangSolver
+		    if  ( depth % 2 == 1 ){
+				thisThread->nmpColor = us;
+				Pawns::Entry* pe;
+				if (  !inCheck
+					&& thisThread->zugzwangMates < 1000000
+                    && (pe = Pawns::probe(pos)) != nullptr
+                    && popcount(pe->passedPawns[us])
+                    && popcount(pe->passedPawns[us]) <= 2
+                    && popcount(pos.pieces(us)) <= 7
+                    && popcount(pos.pieces())   <= 12
+                    && MoveList<LEGAL, KING>(pos).size() < 1)
+				{
+					bool oneOpponentPasser = popcount(pe->passedPawns[~us]) == 1 &&
+						!(pos.pieces() & forward_file_bb(~us, lsb(pe->passedPawns[~us])));
+					Bitboard passed = pe->passedPawns[us] & ~pos.blockers_for_king(us) &  ~pos.blockers_for_king(~us);
+					while (passed)
+					{
+						Square s = pop_lsb(&passed);
+						Square promo = make_square(file_of(s), us == WHITE ? RANK_8 : RANK_1);
+						if ((pos.pieces() & between_bb(promo, s)) || promo == pos.square<KING>(us)) // king can't move
+							continue; // passer blocked
+						Move directPromotion = make_move(s, promo);
+						bool killPromo =  (pos.pieces(~us) & promo) || !pos.see_ge(directPromotion); // opponent controls promotion-square
+						if (!killPromo && !oneOpponentPasser)
+							continue;
+						
+						StateInfo s1,s2,s3;
+						Square p2, p3 = SQ_NONE;
+						if (oneOpponentPasser && !killPromo)
+						{
+							Rank r1 = relative_rank(~us, rank_of(lsb(pe->passedPawns[~us])));
+							Rank r2 = relative_rank( us, rank_of(s));
+							if (r2 > r1)
+								continue; // if our passed is more advanced we will promote earlier and probably defend with success
+							if (pawn_attack_span(us, s) & pos.pieces(~us, PAWN))
+							{   // pseudo passed pawn: will be passed after levers
+								p2 = lsb(pawn_attack_span(us, s) & pos.pieces(~us, PAWN));
+								Bitboard removeLevers = forward_file_bb(~us, p2) & pos.pieces( us, PAWN);
+								if (removeLevers)
+								{
+									p3 = lsb(removeLevers);
+									pos.removePawn(p2, s2);
+									pos.removePawn(p3, s3);
+								}
+							}
+						}
 
+						thisThread->nmpMinPly = MAX_PLY;
+						pos.removePawn(s, s1);
+						Move pv1[MAX_PLY+1];
+						(ss)->pv = pv1;
+						(ss)->pv[0] = MOVE_NONE;
+						Depth nd = (oneOpponentPasser && !killPromo) ? depth - R - 2 * ONE_PLY : depth - 4 * ONE_PLY;
+						Value v = search<PV>(pos, ss, mated_in(0), VALUE_MATED_IN_MAX_PLY, nd, false);
+						
+						pos.undo_removePawn(s, us);
+						if (p3 != SQ_NONE) // reput the lever pawns
+							pos.undo_removePawn(p3, us), pos.undo_removePawn(p2, ~us);
+						if (v > mated_in(0) && v < VALUE_MATED_IN_MAX_PLY)
+
+						{
+                        //sync_cout << pos << "info mate " << UCI::value(v) << " detected with depth " << nd << " !  at score " << thisThread->rootMoves[0].score << sync_endl;
+							thisThread->zugzwangMates++;
+							thisThread->nmpMinPly = 0;
+                        // Early return here with a low value, this will spotlight this promising variation
+							return Value(thisThread->rootMoves[0].score * (thisThread->rootPos.side_to_move() != us ? 1 : -1) - 80);
+						}
+					} // end processing of passed pawns
+				}
+			}
+#endif
+			
             // Do verification search at high depths, with null move pruning disabled
             // for us, until ply exceeds nmpMinPly.
             thisThread->nmpMinPly = ss->ply + 3 * (depth-R) / (4 * ONE_PLY);
@@ -1679,6 +1756,11 @@ moves_loop: // When in check, search starts from here
               // the best move changes frequently, we allocate some more time.
               if (moveCount > 1)
                   ++thisThread->bestMoveChanges;
+#ifdef Maverick //zugzwangMates
+                if (moveCount == 1 && thisThread->zugzwangMates > 100 && static_cast<MainThread*>(thisThread)->bestMoveChanges < 2)
+                    thisThread->zugzwangMates = 1000000; // give up
+#endif
+
           }
           else
               // All other moves but the PV are set to the lowest value: this
@@ -1704,7 +1786,39 @@ moves_loop: // When in check, search starts from here
               {
                   assert(value >= beta); // Fail high
                   ss->statScore = 0;
-                  break;
+
+#ifdef Maverick// Gunther Demetz
+                    if ( !PvNode
+                            && depth % 2 == 1
+                            && !inCheck
+                            && thisThread->zugzwangMates < 20
+                            && make_move(to_sq((ss-2)->currentMove), from_sq((ss-2)->currentMove)) == move
+                            && alpha > VALUE_MATED_IN_MAX_PLY
+                            && MoveList<LEGAL, KING>(pos).size() == 0)
+                    {
+                        int matecount=0;
+                        Move m;
+                        while ((m = mp.next_move(false)) != MOVE_NONE)
+                        {
+                            if (pos.moved_piece(m) != movedPiece || !pos.legal(m))
+                                continue;
+                            StateInfo s;
+                            pos.do_move(m, s);
+                            Value v = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, ONE_PLY, true);
+                            pos.undo_move(m);
+                            if (v < VALUE_MATED_IN_MAX_PLY) // movedPiece must babysit a square and is bouncing
+                                matecount++;
+                            if (matecount > 2)
+                            {
+                                thisThread->zugzwangMates++;
+                                return Value(thisThread->rootMoves[0].score * (thisThread->rootPos.side_to_move() != us ? 1 : -1) - 80);
+                            }
+                        }
+                    }
+#endif
+				   break;
+
+				  
               }
           }
       }

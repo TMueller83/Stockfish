@@ -64,7 +64,14 @@ public:
   Material::Table materialTable;
   Endgames endgames;
   size_t pvIdx, pvLast;
-  int selDepth, nmpMinPly;
+
+#ifdef Maverick //  Gunther Demetz zugzwangSolver
+    int selDepth, nmpMinPly, zugzwangMates;
+    int64_t visits, allScores; //  joergoster and Stefano80 monteCarloJ_03
+#else
+    int selDepth, nmpMinPly;
+#endif
+
   Color nmpColor;
   std::atomic<uint64_t> nodes, tbHits, bestMoveChanges;
 
