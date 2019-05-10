@@ -1617,8 +1617,13 @@ moves_loop: // When in check, search starts from here
               if (!pos.see_ge(move, Value(-29 * lmrDepth * lmrDepth)))
                   continue;
           }
-          else if (!pos.see_ge(move, -PawnValueEg * (depth / ONE_PLY))) // (~20 Elo)
+#ifdef Maverick
+          else if (!inCheck && !pos.see_ge(move, -PawnValueEg * (depth / ONE_PLY))) // (~20 Elo)
                   continue;
+#else
+          else if (!pos.see_ge(move, -PawnValueEg * (depth / ONE_PLY))) // (~20 Elo)
+		  continue;
+#endif
       }
 
       // Speculative prefetch as early as possible
