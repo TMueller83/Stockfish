@@ -87,9 +87,9 @@ namespace {
 	template <bool PvNode> Depth reduction(bool i, Depth d, int mn) {
 		return (Reductions[i][std::min(d / ONE_PLY, 31)][mn] - PvNode ) * ONE_PLY;
 #else
-  template <bool PvNode> Depth reduction(bool i, Depth d, int mn) {
+  Depth reduction(bool i, Depth d, int mn) {
     int r = Reductions[d / ONE_PLY] * Reductions[mn] / 1024;
-    return ((r + 512) / 1024 + (!i && r > 1024) - PvNode) * ONE_PLY;
+    return ((r + 512) / 1024 + (!i && r > 1024)) * ONE_PLY;
 #endif
   }
 		
@@ -1372,7 +1372,11 @@ moves_loop: // When in check, search starts from here
                   continue;
 
               // Reduced depth of the next LMR search
-              int lmrDepth = std::max(newDepth - reduction<PvNode>(improving, depth, moveCount), DEPTH_ZERO);
+#ifdef Maverick
+			  int lmrDepth = std::max(newDepth - reduction<PvNode>(improving, depth, moveCount), DEPTH_ZERO);
+#else
+              int lmrDepth = std::max(newDepth - reduction(improving, depth, moveCount), DEPTH_ZERO);
+#endif
               lmrDepth /= ONE_PLY;
 
               // Countermoves based pruning (~20 Elo)
@@ -1434,12 +1438,18 @@ moves_loop: // When in check, search starts from here
               || moveCountPruning
               || ss->staticEval + PieceValue[EG][pos.captured_piece()] <= alpha))
       {
-          Depth r = reduction<PvNode>(improving, depth, moveCount);
-
+#ifdef Maverick
+		  Depth r = reduction<PvNode>(improving, depth, moveCount);
+#else
+          Depth r = reduction(improving, depth, moveCount);
+#endif
           // Decrease reduction if position is or has been on the PV
           if (ttPv)
-              r -= ONE_PLY;
-
+#ifdef Maverick
+			  r -= ONE_PLY;
+#else
+              r -= 2 * ONE_PLY;
+#endif
           // Decrease reduction if opponent's move count is high (~10 Elo)
           if ((ss-1)->moveCount > 15)
               r -= ONE_PLY;
