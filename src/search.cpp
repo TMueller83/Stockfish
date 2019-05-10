@@ -1401,8 +1401,23 @@ namespace {
                 pos.undo_move(move);
 
                 if (value >= raisedBeta)
+
+#ifdef Maverick  //  Moez Jellouli -> Save_probcut #e05dc73
+                {
+                    if (!excludedMove)
+					{
+                        tte->save(posKey, value_to_tt(value, ss->ply), ttPv,
+                        BOUND_LOWER, depth - 4 * ONE_PLY, move, ss->staticEval);
+					
+                        thisThread->visits++;
+                        thisThread->allScores += (ss->ply % 2 == 0) ? value : -value;
+					}
                     return value;
-            }
+                }
+#else
+                    return value;
+#endif
+        }
     }
 
     // Step 11. Internal iterative deepening (~2 Elo)

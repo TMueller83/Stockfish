@@ -66,10 +66,10 @@ public:
   size_t pvIdx, pvLast;
 
 #ifdef Maverick //  Gunther Demetz zugzwangSolver
-    int selDepth, nmpMinPly, zugzwangMates;
-    int64_t visits, allScores; //  joergoster and Stefano80 monteCarloJ_03
+  int selDepth, nmpMinPly, zugzwangMates;
+  int64_t visits, allScores; //  Moez Jellouli -> Save_probcut #e05dc73
 #else
-    int selDepth, nmpMinPly;
+  int selDepth, nmpMinPly;   
 #endif
 
   Color nmpColor;
