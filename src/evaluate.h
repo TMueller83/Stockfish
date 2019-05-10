@@ -34,6 +34,10 @@ constexpr Value Tempo = Value(28); // Must be visible to search
 std::string trace(const Position& pos);
 
 Value evaluate(const Position& pos);
+
+#ifdef Maverick  // Replace Mobility table with log equations (with rook mg exception). #1784
+void init();
+#endif
 }
 
 #endif // #ifndef EVALUATE_H_INCLUDED
