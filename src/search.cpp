@@ -50,13 +50,13 @@
 #endif
 
 #ifdef Maverick
-int Options_Junior_Depth;  //from SugaR
-bool Options_Junior_Mobility;
-bool Options_Junior_King;
-bool Options_Junior_Threats;
-bool Options_Junior_Passed;
-bool Options_Junior_Space;
-bool Options_Junior_Initiative;
+int Options_Depth;  //from SugaR
+bool Options_Mobility;
+bool Options_King;
+bool Options_Threats;
+bool Options_Passed;
+bool Options_Space;
+bool Options_Initiative;
 bool Options_Dynamic_Strategy;
 
 bool useExp = true;
@@ -274,13 +274,13 @@ void MainThread::search() {
 
 #ifdef Maverick
     // Read search options
-    Options_Junior_Depth         = 127;
-    Options_Junior_Mobility      = true;
-    Options_Junior_King          = true;
-    Options_Junior_Threats       = true;
-    Options_Junior_Passed        = true;
-    Options_Junior_Space         = true;
-    Options_Junior_Initiative    = true;
+    Options_Depth         = 127;
+    Options_Mobility      = true;
+    Options_King          = true;
+    Options_Threats       = true;
+    Options_Passed        = true;
+    Options_Space         = true;
+    Options_Initiative    = true;
     Options_Dynamic_Strategy     = Options["Dynamic Strategy"];
 
  
@@ -590,7 +590,7 @@ ss->pv = pv;
   // Iterative deepening loop until requested to stop or the target depth is reached
   while (   (rootDepth += ONE_PLY) < DEPTH_MAX
 #ifdef Maverick
-         && rootDepth <= Options_Junior_Depth
+         && rootDepth <= Options_Depth
 #endif
          && !Threads.stop
          && !(Limits.depth && mainThread && rootDepth / ONE_PLY > Limits.depth))

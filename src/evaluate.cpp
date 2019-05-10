@@ -32,13 +32,13 @@
 #include "thread.h"
 #include "uci.h"
 #ifdef Maverick
-extern int Options_Junior_Depth;
-extern bool Options_Junior_Mobility;
-extern bool Options_Junior_King;
-extern bool Options_Junior_Threats;
-extern bool Options_Junior_Passed;
-extern bool Options_Junior_Space;
-extern bool Options_Junior_Initiative;
+extern int Options_Depth;
+extern bool Options_Mobility;
+extern bool Options_King;
+extern bool Options_Threats;
+extern bool Options_Passed;
+extern bool Options_Space;
+extern bool Options_Initiative;
 extern bool Options_Dynamic_Strategy;
 #endif
 
@@ -980,31 +980,31 @@ constexpr Score Outpost            = S(  9,  3);
 		}
 	}
 
-	if (Options_Junior_Mobility)
+	if (Options_Mobility)
 	{
 		score += mobility[WHITE] - mobility[BLACK];
 	}
-	if (Options_Junior_King)
+	if (Options_King)
 	{
 		Score default_king = king<   WHITE>() - king<   BLACK>();
 		Score score_king = Score(int(double(default_king) * king_Dynamic_scale));
 		score += score_king;
 	}
-	if (Options_Junior_Threats)
+	if (Options_Threats)
 	{
 		score += threats<WHITE>() - threats<BLACK>();
 	}
-	if (Options_Junior_Passed)
+	if (Options_Passed)
 	{
 		Score default_passed = passed< WHITE>() - passed< BLACK>();
 		Score score_passed = Score(int(double(default_passed) * passed_Dynamic_scale));
 		score += score_passed;
 	}
-	if (Options_Junior_Space)
+	if (Options_Space)
 	{
 		score += space<  WHITE>() - space<  BLACK>();
 	}
-	if (Options_Junior_Initiative)
+	if (Options_Initiative)
 	{
 		score += initiative(eg_value(score));
 	}
