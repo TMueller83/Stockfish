@@ -1628,9 +1628,15 @@ moves_loop: // When in check, search starts from here
                   && ss->staticEval + 256 + 200 * lmrDepth <= alpha)
                   continue;
 
+#ifdef Maverick
+              // Prune moves with negative SEE (~10 Elo)
+              if (!inCheck && !pos.see_ge(move, Value(-29 * lmrDepth * lmrDepth)))
+                  continue;
+#else
               // Prune moves with negative SEE (~10 Elo)
               if (!pos.see_ge(move, Value(-29 * lmrDepth * lmrDepth)))
                   continue;
+#endif
           }
 #ifdef Maverick
           else if (!inCheck && !pos.see_ge(move, -PawnValueEg * (depth / ONE_PLY))) // (~20 Elo)
