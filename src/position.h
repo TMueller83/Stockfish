@@ -28,7 +28,7 @@
 
 #include "bitboard.h"
 #include "types.h"
-#ifdef Maverick
+#ifdef Sullivan
 extern void kelly(bool start);
 extern void files(int x, Key FileKey);
 #endif
@@ -126,7 +126,7 @@ public:
     bool capture_or_promotion(Move m) const;
     bool gives_check(Move m) const;
     bool advanced_pawn_push(Move m) const;
-#ifdef Maverick
+#ifdef Sullivan
     bool promotion_pawn_push(Move m) const;
 #endif
     Piece moved_piece(Move m) const;
@@ -140,7 +140,7 @@ public:
   // Doing and undoing moves
   void do_move(Move m, StateInfo& newSt);
   void do_move(Move m, StateInfo& newSt, bool givesCheck);
-#ifdef Maverick //Gunther Demetz zugzwangSolver
+#ifdef Sullivan //Gunther Demetz zugzwangSolver
   void removePawn(Square s, StateInfo& newSt);
   void undo_removePawn(Square s, Color c);
 #endif
@@ -333,7 +333,7 @@ inline bool Position::advanced_pawn_push(Move m) const {
   return   type_of(moved_piece(m)) == PAWN
         && relative_rank(sideToMove, to_sq(m)) > RANK_5;
 }
-#ifdef Maverick //MichaelB7
+#ifdef Sullivan //MichaelB7
 inline bool Position::promotion_pawn_push(Move m) const {
     return   type_of(moved_piece(m)) == PAWN
              && relative_rank(sideToMove, from_sq(m)) > RANK_5;

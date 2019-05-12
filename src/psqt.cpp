@@ -78,7 +78,7 @@ constexpr Score Bonus[][RANK_NB][int(FILE_NB) / 2] = {
    { S(-5,-50), S( 6,-27), S(10,-24), S( 8, -8) },
    { S(-2,-75), S(-2,-52), S( 1,-43), S(-2,-36) }
   },
-#ifndef Maverick
+#ifndef Sullivan
   { // King
    { S(272,  0), S(325, 41), S(273, 80), S(190, 93) },
    { S(277, 57), S(305, 98), S(241,138), S(183,131) },
@@ -105,7 +105,7 @@ constexpr Score PBonus[RANK_NB][FILE_NB] =
    { S( -6, 25), S( -8,17), S(  5,19), S( 11,29), S(-14, 29), S(  0,  8), S(-12, 4), S(-14, 12) },
    { S(-10, -1), S(  6,-6), S( -5,18), S(-11,22), S( -2, 22), S(-14, 17), S( 12, 2), S( -1,  9) }
   };
-#ifdef Maverick
+#ifdef Sullivan
 constexpr Score KBonus[RANK_NB][FILE_NB] =  //8x8 PSQT for Kings. #1802  Jared Kish
   { // King
    { S(269, -4), S(350, 33), S(283, 70), S(201, 92), S(184, 66), S(261, 79), S(326, 39), S(273,  2) },
@@ -139,7 +139,7 @@ void init() {
       for (Square s = SQ_A1; s <= SQ_H8; ++s)
       {
           File f = std::min(file_of(s), ~file_of(s));
-#ifdef Maverick
+#ifdef Sullivan
 		  psq[ pc][ s] = score + (type_of(pc) == PAWN ? PBonus[rank_of(s)][file_of(s)]
 					: type_of(pc) == KING ? KBonus[rank_of(s)][file_of(s)]
 					: Bonus[pc][rank_of(s)][f]);

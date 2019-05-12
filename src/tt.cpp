@@ -79,7 +79,7 @@ void TTEntry::save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev) 
       || d / ONE_PLY > depth8 - 4
       || b == BOUND_EXACT)
   {
-#ifdef Maverick
+#ifdef Sullivan
       key16     = (uint_fast16_t)(k >> 48);
       value16   = (int_fast16_t)v;
       eval16    = (int_fast16_t)ev;

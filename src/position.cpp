@@ -717,7 +717,7 @@ bool Position::gives_check(Move m) const {
       return false;
   }
 }
-#ifdef Maverick //Gunther Demetz zugzwangSolver
+#ifdef Sullivan //Gunther Demetz zugzwangSolver
 void Position::removePawn(Square s, StateInfo& newSt) {
     assert(&newSt != st);
     assert(type_of(piece_on(s)) == PAWN);
@@ -1225,7 +1225,7 @@ bool Position::has_game_cycle(int ply) const {
       if (   (j = H1(moveKey), cuckoo[j] == moveKey)
           || (j = H2(moveKey), cuckoo[j] == moveKey))
       {
-#ifdef Maverick  //simplification, Rocky640
+#ifdef Sullivan  //simplification, Rocky640
 		  Square s1 = from_sq(cuckooMove[j]);
 		  Square s2 = to_sq(cuckooMove[j]);
 #else
@@ -1235,7 +1235,7 @@ bool Position::has_game_cycle(int ply) const {
 #endif
           if (!(between_bb(s1, s2) & pieces()))
           {
-#ifdef Maverick // not used, Vondele
+#ifdef Sullivan // not used, Vondele
 #else
               // In the cuckoo table, both moves Rc1c5 and Rc5c1 are stored in the same
               // location. We select the legal one by reversing the move variable if necessary.

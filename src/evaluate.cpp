@@ -31,15 +31,15 @@
 #include "pawns.h"
 #include "thread.h"
 #include "uci.h"
-#ifdef Maverick
-extern int Options_Depth;
-extern bool Options_Mobility;
-extern bool Options_King;
-extern bool Options_Threats;
-extern bool Options_Passed;
-extern bool Options_Space;
-extern bool Options_Initiative;
-extern bool Options_Dynamic_Strategy;
+
+#ifdef Sullivan  //from SugaR by Marco Zerbinati
+bool o_Initiative = true;
+bool o_Dynamic_Strategy = true;
+extern bool o_Mobility;
+extern bool o_King;
+extern bool o_Threats;
+extern bool o_Passed;
+extern bool o_Space;
 #endif
 
 namespace Trace {
@@ -82,7 +82,7 @@ namespace Trace {
 }
 
 using namespace Trace;
-#ifdef Maverick  //  Replace Mobility table with log equations (with rook mg exception). #1784
+#ifdef Sullivan  //  Replace Mobility table with log equations (with rook mg exception). #1784
 namespace Eval {
 #else
 namespace {
@@ -96,7 +96,7 @@ namespace {
   constexpr int KingAttackWeights[PIECE_TYPE_NB] = { 0, 0, 77, 55, 44, 10 };
 
   // Penalties for enemy's safe checks
-#ifdef Maverick  // Michael Chaly /Enemy queen safe checks tweak
+#ifdef Sullivan  // Michael Chaly /Enemy queen safe checks tweak
   constexpr int QueenSafeCheck  = 480;
   constexpr int QueenSafeCheck2 = 150;
 #else
@@ -110,7 +110,7 @@ namespace {
 
   // MobilityBonus[PieceType-2][attacked] contains bonuses for middle and end game,
   // indexed by piece type and number of attacked squares in the mobility area.
-#ifdef Maverick
+#ifdef Sullivan
 Score MobilityBonus[][32] = {
 #else
 constexpr Score MobilityBonus[][32] = {
@@ -155,7 +155,7 @@ constexpr Score MobilityBonus[][32] = {
     S( -1,  7), S( 0,  9), S(-9, -8), S(-30,-14),
     S(-30,-14), S(-9, -8), S( 0,  9), S( -1,  7)
 };
-#ifdef Maverick
+#ifdef Sullivan
 // Combo #1867 Jonathan D
 // Assorted bonuses and penalties
 constexpr Score BishopPawns        = S(  3,  7);
@@ -319,7 +319,7 @@ constexpr Score Outpost            = S(  9,  3);
 
     constexpr Color     Them = (Us == WHITE ? BLACK : WHITE);
     constexpr Direction Down = (Us == WHITE ? SOUTH : NORTH);
-#ifdef Maverick
+#ifdef Sullivan
 	//Exclude doubly protected by pawns squares when calculating attackers on king ring #1843 Michael Chaly
 	constexpr Direction DownRight = (Us == WHITE ? SOUTH_EAST : NORTH_WEST);
 	constexpr Direction DownLeft = (Us == WHITE ? SOUTH_WEST : NORTH_EAST);
@@ -346,7 +346,7 @@ constexpr Score Outpost            = S(  9,  3);
         attackedBy2[Us] |= attackedBy[Us][ALL_PIECES] & b;
         attackedBy[Us][Pt] |= b;
         attackedBy[Us][ALL_PIECES] |= b;
-#ifdef Maverick //Exclude doubly protected by pawns squares when calculating attackers on king ring #1843 Michael Chaly
+#ifdef Sullivan //Exclude doubly protected by pawns squares when calculating attackers on king ring #1843 Michael Chaly
 		if (b & kingRing[Them] & ~(shift<DownRight>(pos.pieces(Them,PAWN)) & shift<DownLeft>(pos.pieces(Them,PAWN))))
 #else
 		if (b & kingRing[Them])
@@ -393,7 +393,7 @@ constexpr Score Outpost            = S(  9,  3);
                 if (more_than_one(attacks_bb<BISHOP>(s, pos.pieces(PAWN)) & Center))
                     score += LongDiagonalBishop;
             }
-#ifdef Maverick //  by miguel-l
+#ifdef Sullivan //  by miguel-l
             else if (Pt == KNIGHT)
             {
                 Bitboard CenterSquares = CenterFiles & (Rank3BB | Rank4BB | Rank5BB | Rank6BB);
@@ -432,8 +432,8 @@ constexpr Score Outpost            = S(  9,  3);
             {
                 File kf = file_of(pos.square<KING>(Us));
                 if ((kf < FILE_E) == (file_of(s) < kf))
-#ifdef Maverick  //Simplify TrappedRook to a single penalty (no longer based on mobility). #1958
-					score -= (TrappedRook - make_score(mob * 22, 0)) * (1 + !pos.castling_rights(Us));
+#ifdef Sullivan  //Simplify TrappedRook to a single penalty (no longer based on mobility). #1958
+                    score -= (TrappedRook - make_score(mob * 22, 0)) * (1 + !pos.castling_rights(Us));
 #else
                     score -= TrappedRook * (1 + !pos.castling_rights(Us));
 #endif
@@ -443,15 +443,15 @@ constexpr Score Outpost            = S(  9,  3);
         if (Pt == QUEEN)
         {
             // Penalty if any relative pin or discovered attack against the queen
-#ifdef Maverick  // Günther Demetz weakQueen2 e62bdb0
-			Bitboard queenPinners, blocker = pos.slider_blockers(pos.pieces(Them, ROOK, BISHOP), s, queenPinners);
-				if (blocker)
-				{
-					score -= WeakQueen;
-					score -= WeakQueen * 5;
-					if (!(blocker & pos.pieces(PAWN)) || file_of(lsb(blocker)) != file_of(s))
-						score -= WeakQueen * 2; // even more penalty when blocker is'nt pawn on the same file
-				}
+#ifdef Sullivan  // Günther Demetz weakQueen2 e62bdb0
+             Bitboard queenPinners, blocker = pos.slider_blockers(pos.pieces(Them, ROOK, BISHOP), s, queenPinners);
+             if (blocker)
+             {
+                score -= WeakQueen;
+                score -= WeakQueen * 5;
+                if (!(blocker & pos.pieces(PAWN)) || file_of(lsb(blocker)) != file_of(s))
+                    score -= WeakQueen * 2; // even more penalty when blocker is'nt pawn on the same file
+              }
 #else
             Bitboard queenPinners;
             if (pos.slider_blockers(pos.pieces(Them, ROOK, BISHOP), s, queenPinners))
@@ -511,7 +511,7 @@ constexpr Score Outpost            = S(  9,  3);
                  & ~rookChecks;
 
     if (queenChecks)
-#ifdef Maverick   // Michael Chaly /Enemy queen safe checks tweak
+#ifdef Sullivan  // Michael Chaly /Enemy queen safe checks tweak
         kingDanger += QueenSafeCheck + QueenSafeCheck2 * popcount((b1 | b2) & attackedBy[Them][QUEEN] & safe & ~attackedBy[Us][QUEEN]);
 #else
         kingDanger += QueenSafeCheck;
@@ -564,7 +564,7 @@ constexpr Score Outpost            = S(  9,  3);
                  - 873 * !pos.count<QUEEN>(Them)
                  -   6 * mg_value(score) / 8
                  +       mg_value(mobility[Them] - mobility[Us])
-#ifdef Maverick  // Vizvezdenec, 31m059  & SFisGOD
+#ifdef Sullivan  // Vizvezdenec, 31m059  & SFisGOD
                  +   3 * kingFlankAttacks * kingFlankAttacks / 8
                  -   6; // tweaked by MichaelB7
 #else
@@ -573,12 +573,12 @@ constexpr Score Outpost            = S(  9,  3);
 #endif
 
     // Transform the kingDanger units into a Score, and subtract it from the evaluation
-#ifdef Maverick //tweaked by MichelB7
+#ifdef Sullivan //by MichelB7
     if (abs(kingDanger) > 50 )
-		score -= make_score(9 * kingDanger * kingDanger / 32768 , kingDanger / 16);//tweak Michael B7
+        score -= make_score(9 * kingDanger * kingDanger / 32768 , kingDanger / 16);// byMichael B7
 #else
-	if (kingDanger > 100)
-		score -= make_score(kingDanger * kingDanger / 4096, kingDanger / 16);
+    if (kingDanger > 100)
+        score -= make_score(kingDanger * kingDanger / 4096, kingDanger / 16);
 #endif
 
     // Penalty when our king is on a pawnless flank
@@ -641,11 +641,11 @@ constexpr Score Outpost            = S(  9,  3);
         {
             Square s = pop_lsb(&b);
             score += ThreatByRook[type_of(pos.piece_on(s))];
-#ifndef Maverick
+#ifndef Sullivan
             if (type_of(pos.piece_on(s)) != PAWN)
             	score += ThreatByRank * (int)relative_rank(Them, s);
 #endif		
-#ifdef Maverick //  31m059 threat_strongqueen
+#ifdef Sullivan //  31m059 threat_strongqueen
             if (type_of(pos.piece_on(s)) == QUEEN)
             	score += ThreatByRook[QUEEN]/2;
             else if (type_of(pos.piece_on(s)) != PAWN)
@@ -677,7 +677,7 @@ constexpr Score Outpost            = S(  9,  3);
     b |= shift<Up>(b & TRank3BB) & ~pos.pieces();
 
     // Keep only the squares which are relatively safe
-#ifdef Maverick  //Michael Chally 1/19 342ffe3
+#ifdef Sullivan  //Michael Chally 1/19 342ffe3
     b &= ~pawn_attacks_bb<Them>(pos.pieces(Them,PAWN) & ~pos.blockers_for_king(Them)) & safe;
 #else
     b &= ~attackedBy[Them][PAWN] & safe;
@@ -864,9 +864,9 @@ constexpr Score Outpost            = S(  9,  3);
                     +  9 * outflanking
                     + 18 * pawnsOnBothFlanks
                     + 49 * !pos.non_pawn_material()
-#ifdef Maverick  //  from snicolet
-                    -   pos.rule50_count()
-                    -121 ;
+#ifdef Sullivan  //  from snicolet
+					- pos.rule50_count()
+                    - 121 ;
 #else
                     -103 ;
 #endif
@@ -947,64 +947,63 @@ constexpr Score Outpost            = S(  9,  3);
             + pieces<WHITE, BISHOP>() - pieces<BLACK, BISHOP>()
             + pieces<WHITE, ROOK  >() - pieces<BLACK, ROOK  >()
             + pieces<WHITE, QUEEN >() - pieces<BLACK, QUEEN >();
-#ifdef Maverick
-	Value v_Dynamic_test = v;
-	
-	constexpr double DYNAMIC_ADVANTAGE_PAWNS_COUNT = 1.0;
-	constexpr Value DYNAMIC_ADVANTAGE_VALUE = Value(int(DYNAMIC_ADVANTAGE_PAWNS_COUNT * double(PawnValueMg + PawnValueEg) / 2.0));
-	constexpr double Dynamic_Scale_Factor_Default = 1.0;
+#ifdef Sullivan  //from SugaR by Marco Zerbinati
 
-	double king_Dynamic_scale = Dynamic_Scale_Factor_Default;
-	double passed_Dynamic_scale = Dynamic_Scale_Factor_Default;
-												 
-												  
+  Value v_Dynamic_test = v;
+  
+  constexpr double d_Advant_Pawns_Count = 1.0;
+  constexpr Value d_Advant_Value = Value(int(d_Advant_Pawns_Count * double(PawnValueMg + PawnValueEg) / 2.0));
+  constexpr double Dynamic_Scale_Factor_Default = 1.0;
+  
+  double king_Dynamic_scale = Dynamic_Scale_Factor_Default;
+  double passed_Dynamic_scale = Dynamic_Scale_Factor_Default;
 
-	if (Options_Dynamic_Strategy)
-	{
-		{
-			constexpr double Dynamic_Winning_Scale_Factor_Default = 0.05;
+  if (o_Dynamic_Strategy)
+  {
+	  {
+		  constexpr double Dynamic_Winning_Scale_Factor_Default = 0.05;
+		  
+		  constexpr double Alpha = 0.5;
+		  const double Beta = abs(Dynamic_Winning_Scale_Factor_Default * 2 / (MidgameLimit + EndgameLimit));
+		  
+		  const double Dynamic_Scale_Factor_Bonus = (-abs(v_Dynamic_test / d_Advant_Value) + Alpha);
+		  
+		  if (abs(v_Dynamic_test) >= double(PawnValueMg + PawnValueEg) / 2.0)
+		  {
+			  king_Dynamic_scale = Dynamic_Scale_Factor_Default - Dynamic_Scale_Factor_Bonus * Beta;
+		  }
+		  else
+		  {
+			  passed_Dynamic_scale = Dynamic_Scale_Factor_Default + Dynamic_Scale_Factor_Bonus * Beta;
+		  }
+	  }
+  }
 
-			constexpr double Alpha = 0.5;
-			const double Beta = abs(Dynamic_Winning_Scale_Factor_Default * 2 / (MidgameLimit + EndgameLimit));
-
-			const double Dynamic_Scale_Factor_Bonus = (-abs(v_Dynamic_test / DYNAMIC_ADVANTAGE_VALUE) + Alpha);
-
-			if (abs(v_Dynamic_test) >= double(PawnValueMg + PawnValueEg) / 2.0)
-			{
-				king_Dynamic_scale = Dynamic_Scale_Factor_Default - Dynamic_Scale_Factor_Bonus * Beta;
-			}
-			else
-			{
-				passed_Dynamic_scale = Dynamic_Scale_Factor_Default + Dynamic_Scale_Factor_Bonus * Beta;
-			}
-		}
-	}
-
-	if (Options_Mobility)
+	if (o_Mobility)
 	{
 		score += mobility[WHITE] - mobility[BLACK];
 	}
-	if (Options_King)
+	if (o_King)
 	{
 		Score default_king = king<   WHITE>() - king<   BLACK>();
 		Score score_king = Score(int(double(default_king) * king_Dynamic_scale));
 		score += score_king;
 	}
-	if (Options_Threats)
+	if (o_Threats)
 	{
 		score += threats<WHITE>() - threats<BLACK>();
 	}
-	if (Options_Passed)
+	if (o_Passed)
 	{
 		Score default_passed = passed< WHITE>() - passed< BLACK>();
 		Score score_passed = Score(int(double(default_passed) * passed_Dynamic_scale));
 		score += score_passed;
 	}
-	if (Options_Space)
+	if (o_Space)
 	{
 		score += space<  WHITE>() - space<  BLACK>();
 	}
-	if (Options_Initiative)
+	if (o_Initiative)
 	{
 		score += initiative(eg_value(score));
 	}
@@ -1016,10 +1015,7 @@ constexpr Score Outpost            = S(  9,  3);
             + passed< WHITE>() - passed< BLACK>()
             + space<  WHITE>() - space<  BLACK>();
 #endif
-#ifdef Maverick
-#else
     score += initiative(eg_value(score));
-#endif
 
     // Interpolate between a middlegame and a (scaled by 'sf') endgame score
     ScaleFactor sf = scale_factor(eg_value(score));
@@ -1041,7 +1037,7 @@ constexpr Score Outpost            = S(  9,  3);
     return  (pos.side_to_move() == WHITE ? v : -v) // Side to move point of view
             + Eval::Tempo;
 }
-#ifdef Maverick  //  Replace Mobility table with log equations (with rook mg exception). #1784
+#ifdef Sullivan  //  Replace Mobility table with log equations (with rook mg exception). #1784
 
 /// Eval::init() initializes some tables needed by evaluation. A formula reduces
 /// independent parameters and allows easier tuning.

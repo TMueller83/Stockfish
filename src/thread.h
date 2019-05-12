@@ -53,7 +53,7 @@ public:
   virtual ~Thread();
   virtual void search();
   void clear();
-#ifdef Maverick
+#ifdef Sullivan
   virtual Value playout(Move, Search::Stack*, Value);
 #endif
   void idle_loop();
@@ -65,7 +65,7 @@ public:
   Endgames endgames;
   size_t pvIdx, pvLast;
 
-#ifdef Maverick //  Gunther Demetz zugzwangSolver
+#ifdef Sullivan //  Gunther Demetz zugzwangSolver
   int selDepth, nmpMinPly, zugzwangMates;
   int64_t visits, allScores; //  Moez Jellouli -> Save_probcut #e05dc73
 #else

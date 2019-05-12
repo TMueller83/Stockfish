@@ -35,7 +35,7 @@ std::string trace(const Position& pos);
 
 Value evaluate(const Position& pos);
 
-#ifdef Maverick  // Replace Mobility table with log equations (with rook mg exception). #1784
+#ifdef Sullivan  // Replace Mobility table with log equations (with rook mg exception). #1784
 void init();
 #endif
 }

@@ -23,7 +23,7 @@
 #include "bitboard.h"
 #include "position.h"
 #include "search.h"
-#ifdef Maverick  //  Replace Mobility table with log equations (with rook mg exception). #1784
+#ifdef Sullivan  //  Replace Mobility table with log equations (with rook mg exception). #1784
 #include "evaluate.h"
 #endif
 #include "thread.h"
@@ -48,7 +48,7 @@ int main(int argc, char* argv[]) {
   Bitbases::init();
   Search::init();
 
-#ifdef Maverick
+#ifdef Add_Featuers
    Eval::init();   //  Replace Mobility table with log equations (with rook mg exception). #1784
    polybook1.init(Options["Book_File_1"]);  // mulitple book idea from Marco Zerbanti
    polybook2.init(Options["Book_File_2"]);

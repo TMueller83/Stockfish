@@ -49,15 +49,13 @@
 #include "polybook.h" // Cerebellum
 #endif
 
-#ifdef Maverick
-int Options_Depth;  //from SugaR
-bool Options_Mobility;
-bool Options_King;
-bool Options_Threats;
-bool Options_Passed;
-bool Options_Space;
-bool Options_Initiative;
-bool Options_Dynamic_Strategy;
+#ifdef Sullivan  //from SugaR by Marco Zerbinati
+int o_Depth = 127;
+bool o_Mobility = true;
+bool o_King = true;
+bool o_Threats = true;
+bool o_Passed = true;
+bool o_Space= true;
 
 bool useExp = true;
 bool expHits;
@@ -72,8 +70,8 @@ bool SE;
 namespace Search {
 
   LimitsType Limits;
-#ifdef Maverick
-  bool mcts; //From SugaR
+#ifdef Sullivan
+  bool mcts; // from SugaR by Marco Zerbinati
 #endif
 }
 
@@ -105,17 +103,18 @@ namespace {
     return Value((175 - 50 * improving) * d / ONE_PLY);
   }
 
-#ifdef Maverick
+#ifdef Sullivan  //MichaelB7
     // Reductions lookup table, initialized at startup
 	int Reductions[2][32][80];  // [improving][depth][moveNumber]
 #else
   // Reductions lookup table, initialized at startup
   int Reductions[MAX_MOVES]; // [depth or moveNumber]
 #endif
-#ifdef Maverick // MichaelB7
-	Depth reduction(bool i, Depth d, int mn) {
-		return (Reductions[i][std::min(d / ONE_PLY, 31)][mn]) * ONE_PLY;
-#else
+
+#ifdef Sullivan // MichaelB7
+  Depth reduction(bool i, Depth d, int mn) {
+    return (Reductions[i][std::min(d / ONE_PLY, 31)][mn]) * ONE_PLY;
+#else		
   Depth reduction(bool i, Depth d, int mn) {
     int r = Reductions[d / ONE_PLY] * Reductions[mn] / 1024;
     return ((r + 512) / 1024 + (!i && r > 1024)) * ONE_PLY;
@@ -199,20 +198,17 @@ int   aggressiveness, attack, jekyll, tactical, uci_elo, variety;
 
 void Search::init() {
 	
-#ifdef Maverick   // MichaelB7
-	for (int imp = 0; imp <= 1; ++imp)
-		for (int d = 1; d < 32; ++d)
-			for (int mc = 1; mc < 80; ++mc) // record in a "real" game is 79 moves,
-				// in a search of one million games, found one posiiton with 78 possible moves.
-				// more weight on depth for LMR reductions than move count
-				// (from Crafty) MichaelB7
-				{
-					int red = int(log( d * 1.87 ) * log( mc * .95 )) / 2;
-					Reductions[imp][d][mc] = red;
-					// Increase reduction for non-PV nodes when eval is not improving
-					if (!imp && red > 1)
-						Reductions[imp][d][mc]++;
-				}
+#ifdef Sullivan  // MichaelB7
+  for (int imp = 0; imp <= 1; ++imp)
+    for (int d = 1; d < 32; ++d)
+      for (int mc = 1; mc < 80; ++mc) // MichaelB7 - record in a "real" game is 79 moves,
+      // in a search of one million games, found one posiiton with 78 possible moves.
+      {
+        int red = int(log( d * 1.87 ) * log( mc *.95 )) >> 1;
+        Reductions[imp][d][mc] = red;
+        // Increase reduction for non-PV nodes when eval is not improving
+          if (!imp && red > 1)
+              Reductions[imp][d][mc]++;			}
 #else
   for (int i = 1; i < MAX_MOVES; ++i)
       Reductions[i] = int(1024 * std::log(i) / std::sqrt(1.95));
@@ -272,17 +268,13 @@ void MainThread::search() {
   TT.new_search();
 #endif
 
-#ifdef Maverick
-    // Read search options
-    Options_Depth         = 127;
-    Options_Mobility      = true;
-    Options_King          = true;
-    Options_Threats       = true;
-    Options_Passed        = true;
-    Options_Space         = true;
-    Options_Initiative    = true;
-    Options_Dynamic_Strategy     = Options["Dynamic Strategy"];
-
+#ifdef Sullivan //from SugaR by Marco Zerbinati
+    o_Depth         = 127;
+    o_Mobility      = true;
+    o_King          = true;
+    o_Threats       = true;
+    o_Passed        = true;
+    o_Space         = true;
  
   mcts=Options["MCTS"];
   int piecesCnt=0;
@@ -445,7 +437,7 @@ void MainThread::search() {
 
   previousScore = bestThread->rootMoves[0].score;
 
-#ifdef Maverick
+#ifdef Sullivan  //from SugaR by Marco Zerbinati
   if(mcts){
 	  if ((((Movesplayed <= 40) || (piecesCnt <= 6)) && (bestThread->completedDepth > 4 * ONE_PLY)))
 	  {
@@ -517,7 +509,7 @@ void Thread::search() {
   // The latter is needed for statScores and killer initialization.
   Stack stack[MAX_PLY+10], *ss = stack+7;
   Move  pv[MAX_PLY+1];
-#ifdef Maverick
+#ifdef Sullivan  //from corchess by Ivan Ivec
   Value bestValue, alpha, beta, delta1, delta2;
 #else
   Value bestValue, alpha, beta, delta;
@@ -543,8 +535,8 @@ ss->pv = pv;
   if (cleanSearch)
 	  Search::clear();
 #endif
-#ifdef Maverick
-  bestValue = delta1 = delta2 = alpha = -VALUE_INFINITE; //corchess by Ivan Ivec
+#ifdef Sullivan  //corchess by Ivan Ivec
+  bestValue = delta1 = delta2 = alpha = -VALUE_INFINITE;
 #else
   bestValue = delta = alpha = -VALUE_INFINITE;
 #endif
@@ -554,7 +546,7 @@ ss->pv = pv;
   size_t multiPV = Options["MultiPV"];
   Skill skill(Options["Skill Level"]);
 
-#ifdef Maverick //zugzwangMates
+#ifdef Sullivan //zugzwangMates by Gunther Dementz
   zugzwangMates=0;
 #endif
 
@@ -568,7 +560,7 @@ ss->pv = pv;
       multiPV = std::max(multiPV, (size_t)4);
 
   multiPV = std::min(multiPV, rootMoves.size());
-#ifdef Maverick
+#ifdef Sullivan  //MichaelB7
   int w_ct = int(Options["W_Contempt"]) * PawnValueEg / 100; // From centipawns
   int b_ct = int(Options["B_Contempt"]) * PawnValueEg / 100; // From centipawns
   int ct = (us == WHITE ) ? w_ct : b_ct ;
@@ -589,8 +581,9 @@ ss->pv = pv;
 
   // Iterative deepening loop until requested to stop or the target depth is reached
   while (   (rootDepth += ONE_PLY) < DEPTH_MAX
-#ifdef Maverick
-         && rootDepth <= Options_Depth
+
+#ifdef Sullivan  // from SugaR by Marco Zerbinati
+         && rootDepth <= o_Depth
 #endif
          && !Threads.stop
          && !(Limits.depth && mainThread && rootDepth / ONE_PLY > Limits.depth))
@@ -607,9 +600,8 @@ ss->pv = pv;
       size_t pvFirst = 0;
       pvLast = 0;
 
-#if Maverick  //Vondele - Fix issues from using adjustedDepth too broadly #1792
+#if Sullivan  //Vondele - Fix issues from using adjustedDepth too broadly #1792
       Depth adjustedDepth = rootDepth;
-
 #endif
 
       // MultiPV loop. We perform a full root search for each PV line
@@ -625,7 +617,7 @@ ss->pv = pv;
 
           // Reset UCI info selDepth for each depth and each PV line
           selDepth = 0;
-#ifdef Maverick
+#ifdef Sullivan  //corchess by Ivan Ivec
           // Reset aspiration window starting size
           if (rootDepth >= 5 * ONE_PLY)
           {
@@ -657,7 +649,7 @@ ss->pv = pv;
           while (true)
           {
 
-#ifdef Maverick
+#ifdef Sullivan  //Vondele - Fix issues from using adjustedDepth too broadly #1792
 		adjustedDepth = std::max(ONE_PLY, rootDepth - failedHighCnt * ONE_PLY);
 #else
               Depth adjustedDepth = std::max(ONE_PLY, rootDepth - failedHighCnt * ONE_PLY);
@@ -695,7 +687,7 @@ ss->pv = pv;
               if (bestValue <= alpha)
               {
                   beta = (alpha + beta) / 2;
-#ifdef Maverick
+#ifdef Sullivan  //corchess by Ivan Ivec
                   alpha = std::max(bestValue - delta1, -VALUE_INFINITE); //corchess by Ivan Ivec
 #else
                   alpha = std::max(bestValue - delta, -VALUE_INFINITE);
@@ -709,7 +701,7 @@ ss->pv = pv;
               else if (bestValue >= beta)
               {
 
-#ifdef Maverick //  Gunther Demetz zugzwangSolver
+#ifdef Sullivan //  Gunther Demetz zugzwangSolver
                   beta = std::min(bestValue + delta2, VALUE_INFINITE);  //corchess by Ivan Ivec
                   if (zugzwangMates > 5)
                       zugzwangMates-=100;
@@ -723,7 +715,7 @@ ss->pv = pv;
               else
                   break;
 
-#ifdef Maverick //corchess by Ivan Ivec
+#ifdef Sullivan //corchess by Ivan Ivec
               delta1 += delta1 / 4 + 5;
               delta2 += delta2 / 4 + 5;
 #else
@@ -742,14 +734,14 @@ ss->pv = pv;
       }
 
         if (!Threads.stop)
-#ifdef Maverick
+#ifdef Sullivan  //Vondele - Fix issues from using adjustedDepth too broadly #1792
 		completedDepth = adjustedDepth;
 #else
           completedDepth = rootDepth;
 #endif
       if (rootMoves[0].pv[0] != lastBestMove) {
          lastBestMove = rootMoves[0].pv[0];
-#ifdef Maverick
+#ifdef Sullivan  //Vondele - Fix issues from using adjustedDepth too broadly #1792
 		lastBestMoveDepth = adjustedDepth;
 #else
          lastBestMoveDepth = rootDepth;
@@ -809,7 +801,7 @@ ss->pv = pv;
                   Threads.stop = true;
           }
       }
-#ifdef Maverick
+#ifdef Sullivan  // from SugaR by Marco Zerbinati
 	if (mainThread && !Threads.stop && mcts)
 {
 	playout(lastBestMove, ss, bestValue);
@@ -827,7 +819,7 @@ ss->pv = pv;
       std::swap(rootMoves[0], *std::find(rootMoves.begin(), rootMoves.end(),
                 skill.best ? skill.best : skill.pick_best(multiPV)));
 }
-#ifdef Maverick
+#ifdef Sullivan  // from SugaR by Marco Zerbinati
 // Playout a game, in the hope of meaningfully filling the TT beyond the horizon
 Value Thread::playout(Move playMove, Stack* ss, Value playoutValue) {
     StateInfo st;
@@ -902,18 +894,18 @@ namespace {
     StateInfo st;
     TTEntry* tte;
     Key posKey;
-#ifdef Maverick
+#ifdef Sullivan  // from SugaR by Marco Zerbinati
     Move ttMove, move, excludedMove, bestMove,expttMove=MOVE_NONE;
 #else
 	Move ttMove, move, excludedMove, bestMove;
 #endif
     Depth extension, newDepth;
-#ifdef Maverick
+#ifdef Sullivan  // from SugaR by Marco Zerbinati
     Value bestValue, value, ttValue, eval, maxValue, expttValue=VALUE_NONE;
 #else
 	  Value bestValue, value, ttValue, eval, maxValue;
 #endif
-#ifdef Maverick
+#ifdef Sullivan  // from SugaR by Marco Zerbinati
     bool ttHit, ttPv, inCheck, givesCheck, improving, expttHit=false;
 #else
     bool ttHit, ttPv, inCheck, givesCheck, improving;
@@ -1017,7 +1009,7 @@ namespace {
         }
         return ttValue;
     }
-#ifdef Maverick //SugaR
+#ifdef Sullivan // from SugaR by Marco Zerbinati
 	bool updated = false;
 	int visits = 0;
 	int minSons = 0;
@@ -1116,7 +1108,7 @@ namespace {
         int piecesCount = pos.count<ALL_PIECES>();
 
         if (    piecesCount <= TB::Cardinality
-#if defined (Add_Features) || (Maverick) //MB less probing with 7 MAN EGTB
+#if defined (Add_Features) || (Sullivan) //MB less probing with 7 MAN EGTB
 		&&  (piecesCount < TB::Cardinality
 		|| (depth >= TB::ProbeDepth && (TB::Cardinality < 7 || TB::SevenManProbe)))
 #else
@@ -1166,12 +1158,7 @@ namespace {
     }
 
     // Step 6. Static evaluation of the position
-
-/*#ifdef Maverick
-    if (inCheck || (PvNode && depth < 3 * ONE_PLY))
-#else*/
     if (inCheck)
-//#endif
 
     {
         ss->staticEval = eval = VALUE_NONE;
@@ -1192,7 +1179,7 @@ namespace {
     }
     else
     {
-#ifdef Maverick
+#ifdef Sullivan  // from SugaR by Marco Zerbinati
 		if (!ttHit && expttHit && updated && mcts)
 		{
 			// Never assume anything on values stored in TT
@@ -1214,7 +1201,7 @@ namespace {
 
         tte->save(posKey, VALUE_NONE, ttPv, BOUND_NONE, DEPTH_NONE, MOVE_NONE, eval);
     }
-#ifdef Maverick
+#ifdef Sullivan
 	}
 #endif
     // Step 7. Razoring (~2 Elo)
@@ -1277,7 +1264,7 @@ namespace {
 
             assert(!thisThread->nmpMinPly); // Recursive verification is not allowed
 			
-#ifdef Maverick //Gunther Demetz zugzwangSolver
+#ifdef Sullivan //Gunther Demetz zugzwangSolver
 		    if  ( depth % 2 == 1 ){
 				thisThread->nmpColor = us;
 				Pawns::Entry* pe;
@@ -1349,7 +1336,6 @@ namespace {
 				}
 			}
 #endif
-			
             // Do verification search at high depths, with null move pruning disabled
             // for us, until ply exceeds nmpMinPly.
             thisThread->nmpMinPly = ss->ply + 3 * (depth-R) / (4 * ONE_PLY);
@@ -1402,7 +1388,7 @@ namespace {
 
                 if (value >= raisedBeta)
 
-#ifdef Maverick  //  Moez Jellouli -> Save_probcut #e05dc73
+#ifdef Sullivan  //  Moez Jellouli -> Save_probcut #e05dc73
                 {
                     if (!excludedMove)
 					{
@@ -1444,7 +1430,7 @@ moves_loop: // When in check, search starts from here
                                       countermove,
                                       ss->killers);
 
-#ifdef Maverick
+#ifdef Sullivan  // from SugaR by Marco Zerbinati
 	if(mcts)
 	{
 		SE = false; 
@@ -1496,7 +1482,7 @@ moves_loop: // When in check, search starts from here
       // then that move is singular and should be extended. To verify this we do
       // a reduced search on all the other moves but the ttMove and if the
       // result is lower than ttValue minus a margin then we will extend the ttMove.
-#ifdef Maverick	   //SugaR
+#ifdef Sullivan	   // from SugaR by Marco Zerbinati
 	  if (mcts && minSons == 1 && move == expttMove //SugaR
 		  && pos.legal(move) && visits > 6
 		  )
@@ -1504,7 +1490,7 @@ moves_loop: // When in check, search starts from here
 		  SE = true;
 	  }
 #endif
-#ifdef Maverick //MichaelB7
+#ifdef Sullivan //MichaelB7
       if (    depth  > 4 * ONE_PLY
 #else
       if (    depth >= 8 * ONE_PLY
@@ -1537,8 +1523,8 @@ moves_loop: // When in check, search starts from here
       }
 
       // Check extension (~2 Elo)
-#ifdef Maverick
-      else if (    givesCheck)
+#ifdef Sullivan
+      else if (    givesCheck)  //MichaelB7
 		  extension = ONE_PLY;
 
      // MichaelB7 Passed pawn extension
@@ -1564,7 +1550,7 @@ moves_loop: // When in check, search starts from here
                && depth < 3 * ONE_PLY
                && ss->ply < 3 * thisThread->rootDepth / ONE_PLY) // To avoid too deep searches
           extension = ONE_PLY;
-#ifdef Maverick
+#ifdef Sullivan  //see above for Passed pawn extension
 #else
       // Passed pawn extension
       else if (   move == ss->killers[0]
@@ -1573,7 +1559,7 @@ moves_loop: // When in check, search starts from here
           extension = ONE_PLY;
 #endif
 
-#ifdef Maverick //Moez Jellouli endgame extension
+#ifdef Sullivan //Moez Jellouli endgame extension
 	  else if (pos.non_pawn_material() == 0
                &&  abs(ss->staticEval) <= Value(160)
                &&  abs(ss->staticEval) >= Value(10)
@@ -1598,7 +1584,7 @@ moves_loop: // When in check, search starts from here
 
           if (   !captureOrPromotion
               && !givesCheck
-#ifdef Maverick  //MichaelB7
+#ifdef Sullivan  //MichaelB7
 			  && !extension
 #endif
               && !pos.advanced_pawn_push(move))
@@ -1606,7 +1592,7 @@ moves_loop: // When in check, search starts from here
               // Move count based pruning (~30 Elo)
               if (moveCountPruning)
                   continue;
-#ifdef Maverick
+#ifdef Sullivan  // from SugaR by Marco Zerbinati
 			  if (mcts && SE && moveCount > 3)
 				  continue;
 #endif
@@ -1614,6 +1600,7 @@ moves_loop: // When in check, search starts from here
 		 
               // Reduced depth of the next LMR search
               int lmrDepth = std::max(newDepth - reduction(improving, depth, moveCount), DEPTH_ZERO);
+
               lmrDepth /= ONE_PLY;
 
               // Countermoves based pruning (~20 Elo)
@@ -1628,7 +1615,7 @@ moves_loop: // When in check, search starts from here
                   && ss->staticEval + 256 + 200 * lmrDepth <= alpha)
                   continue;
 
-#ifdef Maverick
+#ifdef Sullivan  // Not sure , mighht be Gunther Dementz
               // Prune moves with negative SEE (~10 Elo)
               if (!inCheck && !pos.see_ge(move, Value(-29 * lmrDepth * lmrDepth)))
                   continue;
@@ -1638,7 +1625,7 @@ moves_loop: // When in check, search starts from here
                   continue;
 #endif
           }
-#ifdef Maverick
+#ifdef Sullivan  // idea from above
           else if (!inCheck && !pos.see_ge(move, -PawnValueEg * (depth / ONE_PLY))) // (~20 Elo)
                   continue;
 #else
@@ -1702,7 +1689,7 @@ moves_loop: // When in check, search starts from here
               else if (    type_of(move) == NORMAL
                        && !pos.see_ge(make_move(to_sq(move), from_sq(move))))
                   r -= 2 * ONE_PLY;
-#ifdef Maverick  //  miguel-l/Stockfish/tree/d2a6f..d10ad7
+#ifdef Sullivan  //  miguel-l/Stockfish/tree/d2a6f..d10ad7
 			  else if (type_of(movedPiece) == PAWN
 					   && relative_rank(us, rank_of(from_sq(move))) > RANK_5)  // changed Rank by Michael B7
 				  r -= ONE_PLY;
@@ -1782,7 +1769,7 @@ moves_loop: // When in check, search starts from here
               // the best move changes frequently, we allocate some more time.
               if (moveCount > 1)
                   ++thisThread->bestMoveChanges;
-#ifdef Maverick //zugzwangMates
+#ifdef Sullivan //zugzwangMates Gunther Dementz
                 if (moveCount == 1 && thisThread->zugzwangMates > 100 && static_cast<MainThread*>(thisThread)->bestMoveChanges < 2)
                     thisThread->zugzwangMates = 1000000; // give up
 #endif
@@ -1813,7 +1800,7 @@ moves_loop: // When in check, search starts from here
                   assert(value >= beta); // Fail high
                   ss->statScore = 0;
 
-#ifdef Maverick// Gunther Demetz
+#ifdef Sullivan// Gunther Demetz
                     if ( !PvNode
                             && depth % 2 == 1
                             && !inCheck
@@ -2087,7 +2074,7 @@ moves_loop: // When in check, search starts from here
 
       // Don't search moves with negative SEE values
       if (  (!inCheck || evasionPrunable)
-#ifdef Maverick // Günther Demetz - Avoid pruning disocver checks with negative SEE value
+#ifdef Sullivan // Günther Demetz - Avoid pruning disocver checks with negative SEE value
           && !(givesCheck && (pos.blockers_for_king(~pos.side_to_move()) & from_sq(move)))
 #endif
           && !pos.see_ge(move))
@@ -2455,7 +2442,7 @@ void Tablebases::rank_root_moves(Position& pos, Search::RootMoves& rootMoves) {
             m.tbRank = 0;
     }
 }
-#ifdef Maverick
+#ifdef Sullivan  //from SugaR by Marco Zerbinati from Kelly
 void kelly(bool start)
 {
 	startpoint = start;

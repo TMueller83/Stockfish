@@ -200,7 +200,7 @@ Value Entry::evaluate_shelter(const Position& pos, Square ksq) {
                                                         : UnblockedStorm[d][theirRank];
   }
 
-#ifdef Maverick //Pawn Majority inspired by S. Nicolet efforts.
+#ifdef Sullivan //Pawn Majority inspired by S. Nicolet efforts.
 	// A large enemy pawn majority in the king side is a big danger
 	Bitboard kf = KingFlank[file_of(ksq)];
 	int majorArray[2] {16, 28};

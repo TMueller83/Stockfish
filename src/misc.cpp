@@ -57,11 +57,11 @@ namespace {
 
 /// Version number. If Version is left empty, then compile date in the format
 /// DD-MM-YY and show in engine_info.
-#ifndef Maverick
+#ifndef Sullivan
 #define Stockfish
 #endif
 	
-#if (defined Maverick && defined Add_Features )
+#if (defined Sullivan && defined Add_Features )
 const string Version = "";
 #endif
 
@@ -139,12 +139,12 @@ const string engine_info(bool to_uci) {
 
     string month, day, year;
     stringstream ss, date(__DATE__); // From compiler, format is "Sep 21 2008"
-#ifdef Maverick
+#ifdef Sullivan
     ss << "Honey " << Version << setfill('0');
 #else
     ss << "Stockfish " << Version << setfill('0');
 #endif
-#if (defined Maverick && defined Test)
+#if (defined Sullivan && defined Test)
 	if (Version.empty())
 	{
 		date >> month >> day;
@@ -158,7 +158,7 @@ const string engine_info(bool to_uci) {
 		ss << setw(2) << (1 + months.find(month) / 4) <<setw(2) << day << year.substr(2) << "";
     }
 #endif
-#ifdef Maverick
+#ifdef Sullivan
     ss	<< (to_uci  ? "\nid author ": " by ")
             << "M. Byrne and scores of others...";
 #else

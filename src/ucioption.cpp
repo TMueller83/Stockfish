@@ -89,11 +89,9 @@ void init(OptionsMap& o) {
     o["Debug Log File"]       << Option("<empty>", on_logger);
     o["Clear_Hash"]            << Option(on_clear_hash);
 
-#ifdef Maverick
-
+#ifdef Sullivan
     o["W_Contempt"] 	      << Option(  22, -150, 150);
     o["B_Contempt"] 	      << Option(   2, -150, 150);
-
 #else
     o["Contempt"]             << Option(24, -100, 100);
 #endif
@@ -125,12 +123,6 @@ void init(OptionsMap& o) {
     o["Skill Level"]            << Option(20, 0, 20);
     o["Move Overhead"]          << Option(30, 0, 5000);
     o["Minimum Thinking Time"]  << Option(20, 0, 5000);
-
-
-
-
-
-
     o["Threads"]                << Option(1, 1, 512, on_threads);
     o["Hash"]                   << Option(16, 1, MaxHashMB, on_hash_size);
     o["Ponder"]                 << Option(false);
@@ -150,7 +142,7 @@ void init(OptionsMap& o) {
                                           "var Novice var None ", "World_Champion");
     o["UCI_Elo"]                << Option(1300, 1300, 2850);
 #endif
-#ifdef Maverick
+#ifdef Sullivan
     o["DC_Slider"]              << Option(65, -180, 180);
     o["MultiPV"]                << Option(1, 1, 256);
 
@@ -174,26 +166,21 @@ void init(OptionsMap& o) {
 #else
     o["Slow Mover"]              << Option(84, 10, 1000);
 #endif
-
     o["nodestime"]               << Option(0, 0, 10000);
     o["UCI_Chess960"]            << Option(false);
 #ifdef Add_Features
-    o["Dynamic Strategy"]        << Option(true);
     o["NeverClearHash"]          << Option(false);
     o["HashFile"]                << Option("hash.hsh", on_HashFile);
     o["SaveHashtoFile"]          << Option(SaveHashtoFile);
     o["LoadHashfromFile"]        << Option(LoadHashfromFile);
     o["LoadEpdToHash"]           << Option(LoadEpdToHash);
     o["MCTS"]                    << Option(false);
-    o["NullMove"]                << Option(true);
 #endif
     o["UCI_AnalyseMode"]         << Option(false);
     o["SyzygyPath"]              << Option("<empty>", on_tb_path);
     o["SyzygyProbeDepth"]        << Option(1, 1, 100);
     o["Syzygy50MoveRule"]        << Option(true);
     o["SyzygyProbeLimit"]        << Option(7, 0, 7);
-
-
 }
 
 

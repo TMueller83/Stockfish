@@ -44,7 +44,7 @@ namespace {
   // Table used to drive the king towards a corner square of the
   // right color in KBN vs K endgames.
   constexpr int PushToCorners[SQUARE_NB] = {
-#ifdef Maverick  //MichaelB7
+#ifdef Sullivan  //MichaelB7
 	  6600, 6280, 5860, 5540, 5170, 4850, 4530, 4160,
 	  6280, 5760, 5490, 5120, 4800, 4280, 4160, 4530,
 	  5860, 5490, 4960, 4680, 4280, 4000, 4480, 4850,

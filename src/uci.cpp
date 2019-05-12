@@ -47,13 +47,13 @@ namespace {
   // The function sets up the position described in the given FEN string ("fen")
   // or the starting position ("startpos") and then makes the moves given in the
   // following move list ("moves").
-#ifdef Maverick
+#ifdef Sullivan
   bool startposition = false;
   Key FileKey = 0;
 #endif
 
   void position(Position& pos, istringstream& is, StateListPtr& states) {
-#ifdef Maverick
+#ifdef Sullivan
     Move m;
     string token, fen;
 	string Newfen;
@@ -97,7 +97,7 @@ namespace {
 
     states = StateListPtr(new std::deque<StateInfo>(1)); // Drop old and create a new one
     pos.set(fen, Options["UCI_Chess960"], &states->back(), Threads.main());
-#ifdef Maverick
+#ifdef Sullivan
 	int movesplayed = 0;
 	int OPmoves = 0;
 
@@ -116,7 +116,7 @@ namespace {
     while (is >> token && (m = UCI::to_move(pos, token)) != MOVE_NONE)
     {
         states->emplace_back();
-#ifdef Maverick
+#ifdef Sullivan
 		if (!FileKey)
 		{
 			if ((movesplayed == 2 || movesplayed == 4 || movesplayed == 6 || movesplayed == 8 || movesplayed == 10 || movesplayed == 12 || movesplayed == 14 || movesplayed == 16) && Newfen == StartFEN)
@@ -134,7 +134,7 @@ namespace {
 		}
 #endif
         pos.do_move(m, states->back());
-#ifdef  Maverick
+#ifdef  Sullivan
 		movesplayed++;
 #endif
     }
@@ -395,7 +395,7 @@ string UCI::value(Value v) {
   stringstream ss;
 
     if (abs(v) < VALUE_MATE - MAX_PLY)
-#ifdef Maverick
+#ifdef Sullivan
 	ss << "cp " << (v * 841 / QueenValueEg >  990 ? (v * 849 / QueenValueEg) + 27
 			: v * 841 / QueenValueEg < -990 ? (v * 849 / QueenValueEg) - 27
 			: v * 841 / QueenValueEg);

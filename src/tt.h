@@ -48,7 +48,7 @@ struct TTEntry {
 
 private:
   friend class TranspositionTable;
-#ifdef Maverick
+#ifdef Sullivan
   uint_fast16_t key16;
   uint_fast16_t move16;
   int_fast16_t  value16;

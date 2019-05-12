@@ -25,7 +25,7 @@
 ### ==========================================================================
 
 ### Executable name
-### Honey bench nodes -----> 4834074 > based on commits up to 5/09/2019
+### Honey bench nodes -----> 4663976 > based on commits up to 5/12/2019
 ### stockfish bench nodes -> 3687854 > based on commits up to 5/09/2019
 
 ####  Always leave the three lines below as is (any subsequent defines will override)
@@ -46,7 +46,7 @@ RELEASE = no
 RELVERSION = no
 
 ### Uncomment the line below for Honey, comment out for Stockfish
-	VERSION=maverick
+	VERSION=sullivan
 
 ### Uncomment for use with Raspberry Pi -  a slower NPS UCI option setting used in Play
 ### by Elo and personalities
@@ -70,8 +70,8 @@ ifeq ($(RASPBERRY),Pi)
 CXXFLAGS += -DPi
 endif
 
-ifeq ($(VERSION),maverick)
-	CXXFLAGS += -DMaverick
+ifeq ($(VERSION),sullivan)
+	CXXFLAGS += -DSullivan
 	ifeq ($(RELEASE),no)
 		ifeq ($(TEST),no)
 			ifeq ($(COMP),mingw)
@@ -94,7 +94,7 @@ ifeq ($(VERSION),maverick)
 endif
 
 ### Note:  For building cur-dev stockfish with the features added.
-ifneq ($(VERSION),maverick)
+ifneq ($(VERSION),sullivan)
 	ifeq ($(COMP),mingw)
 		EXE = stockfish-$(DATE).exe
 	else
@@ -466,7 +466,7 @@ help:
 	@echo "<target> would be 'build' or 'profile-build'"
 	@echo ""
 	@echo "To compile stockfish, uncomment this line in the makefile: "
-	@echo "'### VERSION=maverick' by remvoing the 3 #(pound signs)"
+	@echo "'### VERSION=sullivan' by remvoing the 3 #(pound signs)"
 	@echo "then type: 'make <target> ARCH=<arch> [COMP=compiler] [COMPCXX=cxx]'"
 	@echo ""
 	@echo "Supported targets:"
