@@ -216,16 +216,16 @@ Value Entry::evaluate_shelter(const Position& pos, Square ksq) {
                                                         : UnblockedStorm[d][theirRank];
 #endif
   }
-
-#ifdef Sullivan //Pawn Majority inspired by S. Nicolet efforts.
-	// A large enemy pawn majority in the king side is a big danger
+	
+#ifdef Sullivan //Pawn Majority, inspired by S. Nicolet efforts.
+	// A large enemy pawn majority on the king side is dangerous
 	Bitboard kf = KingFlank[file_of(ksq)];
 	int majorArray[2] {16, 28};
 	int majority = std::min(popcount(theirPawns & kf) - popcount(ourPawns & kf),3);
 	if (majority > 1)
 		safetyMg -= majorArray[majority - 2];
-        //array elements 0 and 1 align to majority of 2 and 3 
-        //higher bonuses for a majority of 4 or more were regressive
+        //array elements 0 and 1 align to majority of 2 and 3 or higher
+        //higher penalties for an opponent majority of 4 or more were regressive, hence, the penalty is capped at a 3 pawn majority
 #endif
 	
 #ifdef Sullivan  //by xoto10 Add eg component to evaluate_shelter(), 82,82

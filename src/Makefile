@@ -42,11 +42,11 @@ ifeq ($(TEST),yes)
 endif
 
 ### Release versions , enter yes and release version below foor releases
-RELEASE = no
-RELVERSION = no
+RELEASE = yes
+RELVERSION = XPro
 
 ### Uncomment the line below for Honey, comment out for Stockfish
-	VERSION=sullivan
+###	VERSION=sullivan
 
 ### Uncomment for use with Raspberry Pi -  a slower NPS UCI option setting used in Play
 ### by Elo and personalities

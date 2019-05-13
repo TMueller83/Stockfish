@@ -62,7 +62,7 @@ namespace {
 #endif
 	
 #if (defined Sullivan && defined Add_Features )
-const string Version = "";
+const string Version = "XPro";
 #endif
 
 #if (defined Stockfish && defined Add_Features)
