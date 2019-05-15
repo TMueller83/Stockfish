@@ -30,6 +30,7 @@
 #include "thread.h"
 #include "tt.h"
 #include "uci.h"
+#include "endgame.h"
 #include "syzygy/tbprobe.h"
 #ifdef Add_Features
 #include "polybook.h"
@@ -57,6 +58,7 @@ int main(int argc, char* argv[]) {
    polybook3.init(Options["Book_File_3"]);
 #endif
 
+  Endgames::init();
   Threads.set(Options["Threads"]);
   Search::clear(); // After threads are up
 
