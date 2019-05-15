@@ -146,19 +146,19 @@ namespace {
 /// Search::init() is called at startup to initialize various lookup tables
 
 void Search::init() {
-
-  for (int imp = 0; imp <= 1; ++imp)
-      for (int d = 1; d < MAX_PLY; ++d)
-          for (int mc = 1; mc < 64; ++mc)
-          {
-              double r = 0.215 * d * (1.0 - exp(-8.0 / d)) * log(mc);
-
-              Reductions[imp][d][mc] = std::round(r);
-
-              // Increase reduction for non-PV nodes when eval is not improving
-              if (!imp && r > 1.0)
-                Reductions[imp][d][mc]++;
-          }
+	
+	for (int imp = 0; imp <= 1; ++imp)
+		for (int d = 1; d < MAX_PLY; ++d)
+			for (int mc = 1; mc < 64; ++mc)
+			{
+				double r = 0.215 * d * (1.0 - exp(-8.0 / d)) * log(mc);
+				
+				Reductions[imp][d][mc] = std::round(r);
+				
+				// Increase reduction for non-PV nodes when eval is not improving
+				if (!imp && r > 1.0)
+					Reductions[imp][d][mc]++;
+			}
 }
 
 
@@ -250,10 +250,8 @@ void MainThread::search() {
 
       // Vote according to score and depth
       for (Thread* th : Threads)
-      {
-          int64_t s = th->rootMoves[0].score - minScore + 1;
-          votes[th->rootMoves[0].pv[0]] += 200 + s * s * int(th->completedDepth);
-      }
+          votes[th->rootMoves[0].pv[0]] +=
+               (th->rootMoves[0].score - minScore + 14) * int(th->completedDepth);
 
       // Select best thread
       auto bestVote = votes[this->rootMoves[0].pv[0]];
@@ -416,16 +414,13 @@ void Thread::search() {
                   beta = (alpha + beta) / 2;
                   alpha = std::max(bestValue - delta1, -VALUE_INFINITE);
 
+                  failedHighCnt = 0;
                   if (mainThread)
-                  {
-                      failedHighCnt = 0;
                       mainThread->stopOnPonderhit = false;
-                  }
               }
               else if (bestValue >= beta)
               {
                   beta = std::min(bestValue + delta2, VALUE_INFINITE);
-                  if (mainThread)
                       ++failedHighCnt;
               }
               else
@@ -867,6 +862,7 @@ moves_loop: // When in check, search starts from here
     value = bestValue; // Workaround a bogus 'uninitialized' warning under gcc
     moveCountPruning = false;
     ttCapture = ttMove && pos.capture_or_promotion(ttMove);
+    int singularExtensionLMRmultiplier = 0;
 
     // Step 12. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -923,7 +919,12 @@ moves_loop: // When in check, search starts from here
           ss->excludedMove = MOVE_NONE;
 
           if (value < singularBeta)
+              {
               extension = ONE_PLY;
+              singularExtensionLMRmultiplier++;
+              if (value < singularBeta - std::min(3 * depth / ONE_PLY, 39))
+              	  singularExtensionLMRmultiplier++;
+              }
 
           // Multi-cut pruning
           // Our ttMove is assumed to fail high, and now we failed high also on a reduced
@@ -1033,6 +1034,8 @@ moves_loop: // When in check, search starts from here
           // Decrease reduction if opponent's move count is high (~10 Elo)
           if ((ss-1)->moveCount > 15)
               r -= ONE_PLY;
+          // Decrease reduction if move has been singularly extended
+          r -= singularExtensionLMRmultiplier * ONE_PLY;
 
           if (!captureOrPromotion)
           {
