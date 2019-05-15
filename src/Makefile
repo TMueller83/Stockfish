@@ -25,8 +25,8 @@
 ### ==========================================================================
 
 ### Executable name
-### Honey bench nodes -----> 4963708 > based on commits up to 5/12/2019
-### stockfish bench nodes -> 3687854 > based on commits up to 5/12/2019
+### Honey bench nodes -----> 2131038 > based on commits up to 5/15/2019
+### stockfish bench nodes -> 3824325 > based on commits up to 5/15/2019
 
 ####  Always leave the three lines below as is (any subsequent defines will override)
 DATE=$(shell date +"%m%d%y")
@@ -42,11 +42,11 @@ ifeq ($(TEST),yes)
 endif
 
 ### Release versions , enter yes and release version below foor releases
-RELEASE = yes
-RELVERSION = XPro
+RELEASE = no
+RELVERSION = 
 
 ### Uncomment the line below for Honey, comment out for Stockfish
-###	VERSION=sullivan
+	VERSION=sullivan
 
 ### Uncomment for use with Raspberry Pi -  a slower NPS UCI option setting used in Play
 ### by Elo and personalities
