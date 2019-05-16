@@ -41,28 +41,19 @@ struct TTEntry {
   Move  move()  const { return (Move )move16; }
   Value value() const { return (Value)value16; }
   Value eval()  const { return (Value)eval16; }
-  Depth depth() const { return (Depth)(depth8 * int(ONE_PLY)); }
+  Depth depth() const { return (Depth)(depth8 * int(ONE_PLY)) + DEPTH_NONE; }
   bool is_pv() const { return (bool)(genBound8 & 0x4); }
   Bound bound() const { return (Bound)(genBound8 & 0x3); }
   void save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev);
 
 private:
   friend class TranspositionTable;
-#ifdef Sullivan
-  uint_fast16_t key16;
-  uint_fast16_t move16;
-  int_fast16_t  value16;
-  int_fast16_t  eval16;
-  uint_fast8_t  genBound8;
-  int_fast8_t depth8;
-#else
   uint16_t key16;
   uint16_t move16;
   int16_t  value16;
   int16_t  eval16;
   uint8_t  genBound8;
-  int8_t   depth8;
-#endif
+  uint8_t  depth8;
 };
 
 

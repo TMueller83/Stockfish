@@ -29,6 +29,7 @@
 #include "thread.h"
 #include "tt.h"
 #include "uci.h"
+#include "endgame.h"
 #include "syzygy/tbprobe.h"
 #ifdef Add_Features
 #include "polybook.h"
@@ -47,13 +48,13 @@ int main(int argc, char* argv[]) {
   Position::init();
   Bitbases::init();
   Search::init();
-
 #ifdef Add_Featuers
    Eval::init();   //  Replace Mobility table with log equations (with rook mg exception). #1784
    polybook1.init(Options["Book_File_1"]);  // mulitple book idea from Marco Zerbanti
    polybook2.init(Options["Book_File_2"]);
    polybook3.init(Options["Book_File_3"]);
 #endif
+  Endgames::init();
 
   Threads.set(Options["Threads"]);
   Search::clear(); // After threads are up

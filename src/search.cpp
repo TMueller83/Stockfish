@@ -111,6 +111,7 @@ namespace {
   int Reductions[MAX_MOVES]; // [depth or moveNumber]
 #endif
 
+
 #ifdef Sullivan // MichaelB7
   Depth reduction(bool i, Depth d, int mn) {
     return (Reductions[i][std::min(d / ONE_PLY, 31)][mn]) * ONE_PLY;
@@ -211,8 +212,9 @@ void Search::init() {
               Reductions[imp][d][mc]++;			}
 #else
   for (int i = 1; i < MAX_MOVES; ++i)
-      Reductions[i] = int(1024 * std::log(i) / std::sqrt(1.95));
+     Reductions[i] = int(733.3 * std::log(i));
 #endif
+
 }
 
 
@@ -420,10 +422,8 @@ void MainThread::search() {
 
       // Vote according to score and depth
       for (Thread* th : Threads)
-      {
-          int64_t s = th->rootMoves[0].score - minScore + 1;
-          votes[th->rootMoves[0].pv[0]] += 200 + s * s * int(th->completedDepth);
-      }
+          votes[th->rootMoves[0].pv[0]] +=
+               (th->rootMoves[0].score - minScore + 14) * int(th->completedDepth);
 
       // Select best thread
       auto bestVote = votes[this->rootMoves[0].pv[0]];
@@ -692,11 +692,11 @@ ss->pv = pv;
 #else
                   alpha = std::max(bestValue - delta, -VALUE_INFINITE);
 #endif
+
+
+                  failedHighCnt = 0;
                   if (mainThread)
-                  {
-                      failedHighCnt = 0;
                       mainThread->stopOnPonderhit = false;
-                  }
               }
               else if (bestValue >= beta)
               {
@@ -707,10 +707,9 @@ ss->pv = pv;
                       zugzwangMates-=100;
 #else
                   beta = std::min(bestValue + delta, VALUE_INFINITE);
-#endif
 
-                  if (mainThread)
-                      ++failedHighCnt;
+#endif
+                  ++failedHighCnt;
               }
               else
                   break;
@@ -1439,6 +1438,7 @@ moves_loop: // When in check, search starts from here
     value = bestValue; // Workaround a bogus 'uninitialized' warning under gcc
     moveCountPruning = false;
     ttCapture = ttMove && pos.capture_or_promotion(ttMove);
+    int singularExtensionLMRmultiplier = 0;
 
     // Step 12. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -1511,7 +1511,12 @@ moves_loop: // When in check, search starts from here
           ss->excludedMove = MOVE_NONE;
 
           if (value < singularBeta)
+              {
               extension = ONE_PLY;
+              singularExtensionLMRmultiplier++;
+              if (value < singularBeta - std::min(3 * depth / ONE_PLY, 39))
+              	  singularExtensionLMRmultiplier++;
+              }
 
           // Multi-cut pruning
           // Our ttMove is assumed to fail high, and now we failed high also on a reduced
@@ -1600,7 +1605,6 @@ moves_loop: // When in check, search starts from here
 		 
               // Reduced depth of the next LMR search
               int lmrDepth = std::max(newDepth - reduction(improving, depth, moveCount), DEPTH_ZERO);
-
               lmrDepth /= ONE_PLY;
 
               // Countermoves based pruning (~20 Elo)
@@ -1672,6 +1676,8 @@ moves_loop: // When in check, search starts from here
           // Decrease reduction if opponent's move count is high (~10 Elo)
           if ((ss-1)->moveCount > 15)
               r -= ONE_PLY;
+          // Decrease reduction if move has been singularly extended
+          r -= singularExtensionLMRmultiplier * ONE_PLY;
 
           if (!captureOrPromotion)
           {

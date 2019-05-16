@@ -37,8 +37,11 @@ namespace {
   constexpr Score Isolated = S( 5, 15);
 
   // Connected pawn bonus
-  constexpr int Connected[RANK_NB] = { 0, 13, 17, 24, 59, 96, 171 };
-
+#ifdef Sullivan
+  constexpr int Connected[RANK_NB] = { 0, 5, 7, 9, 22, 36, 65 };
+#else
+  constexpr int Connected[RANK_NB] = { 0, 7, 8, 12, 29, 48, 86 };
+#endif
   // Strength of pawn shelter for our king by [distance from edge][rank].
   // RANK_1 = 0 is used for files where we have no pawn, or pawn is behind our king.
   constexpr Value ShelterStrength[int(FILE_NB) / 2][RANK_NB] = {
@@ -126,8 +129,9 @@ namespace {
         // Score this pawn
         if (support | phalanx)
         {
-            int v = (phalanx ? 3 : 2) * Connected[r];
-            v = 17 * popcount(support) + (v >> (opposed + 1));
+            int v =  Connected[r] * (phalanx ? 3 : 2) / (opposed ? 2 : 1)
+                   + 17 * popcount(support);
+
             score += make_score(v, v * (r - 2) / 4);
         }
         else if (!neighbours)
@@ -172,70 +176,92 @@ Entry* probe(const Position& pos) {
 /// penalty for a king, looking at the king file and the two closest files.
 
 template<Color Us>
-#ifdef Sullivan  //by xoto10 Add eg component to evaluate_shelter(), 82,82
-void Entry::evaluate_shelter(const Position& pos, Square ksq, Score& shelter) {
-#else
-Value Entry::evaluate_shelter(const Position& pos, Square ksq) {
-#endif
-
-  constexpr Color     Them = (Us == WHITE ? BLACK : WHITE);
-  constexpr Direction Down = (Us == WHITE ? SOUTH : NORTH);
-  constexpr Bitboard BlockSquares =  (Rank1BB | Rank2BB | Rank7BB | Rank8BB)
-                                   & (FileABB | FileHBB);
-
-  Bitboard b = pos.pieces(PAWN) & ~forward_ranks_bb(Them, ksq);
-  Bitboard ourPawns = b & pos.pieces(Us);
-  Bitboard theirPawns = b & pos.pieces(Them);
-
-#ifdef Sullivan  //by xoto10 Add eg component to evaluate_shelter(), 82,82
-  Value safetyMg = (shift<Down>(theirPawns) & BlockSquares & ksq) ? Value(374) : Value(5);
-  Value safetyEg = Value(0);
-#else
-  Value safety = (shift<Down>(theirPawns) & BlockSquares & ksq) ? Value(374) : Value(5);
-#endif
-
-  File center = clamp(file_of(ksq), FILE_B, FILE_G);
-  for (File f = File(center - 1); f <= File(center + 1); ++f)
-  {
-      b = ourPawns & file_bb(f);
-      Rank ourRank = b ? relative_rank(Us, backmost_sq(Us, b)) : RANK_1;
-
-      b = theirPawns & file_bb(f);
-      Rank theirRank = b ? relative_rank(Us, frontmost_sq(Them, b)) : RANK_1;
-
-      int d = std::min(f, ~f);
-#ifdef Sullivan  //by xoto10 Add eg component to evaluate_shelter(), 82,82
-      safetyMg += ShelterStrength[d][ourRank];
-      if (ourRank && (ourRank == theirRank - 1))
-          safetyMg -= 82 * (theirRank == RANK_3),   safetyEg -= 82 * (theirRank == RANK_3);
-      else
-          safetyMg -= UnblockedStorm[d][theirRank];
-#else
-      safety += ShelterStrength[d][ourRank];
-      safety -= (ourRank && (ourRank == theirRank - 1)) ? 66 * (theirRank == RANK_3)
-                                                        : UnblockedStorm[d][theirRank];
-#endif
-  }
-	
-#ifdef Sullivan //Pawn Majority, inspired by S. Nicolet efforts.
-	// A large enemy pawn majority on the king side is dangerous
-	Bitboard kf = KingFlank[file_of(ksq)];
-	int majorArray[2] {16, 28};
-	int majority = std::min(popcount(theirPawns & kf) - popcount(ourPawns & kf),3);
-	if (majority > 1)
-		safetyMg -= majorArray[majority - 2];
-        //array elements 0 and 1 align to majority of 2 and 3 or higher
-        //higher penalties for an opponent majority of 4 or more were regressive, hence, the penalty is capped at a 3 pawn majority
-#endif
 	
 #ifdef Sullivan  //by xoto10 Add eg component to evaluate_shelter(), 82,82
-  if (safetyMg > mg_value(shelter))
-      shelter = make_score(safetyMg, safetyEg);
-#else
-  return safety;
-#endif
-}
+	void Entry::evaluate_shelter(const Position& pos, Square ksq, Score& shelter) {
 
+			
+			constexpr Color     Them = (Us == WHITE ? BLACK : WHITE);
+			constexpr Direction Down = (Us == WHITE ? SOUTH : NORTH);
+			constexpr Bitboard BlockSquares =  (Rank1BB | Rank2BB | Rank7BB | Rank8BB)
+			& (FileABB | FileHBB);
+			
+			Bitboard b = pos.pieces(PAWN) & ~forward_ranks_bb(Them, ksq);
+			Bitboard ourPawns = b & pos.pieces(Us);
+			Bitboard theirPawns = b & pos.pieces(Them);
+		
+			Value safetyMg = (shift<Down>(theirPawns) & BlockSquares & ksq) ? Value(374) : Value(5);
+			Value safetyEg = Value(0);
+			
+			File center = clamp(file_of(ksq), FILE_B, FILE_G);
+			for (File f = File(center - 1); f <= File(center + 1); ++f)
+			{
+				b = ourPawns & file_bb(f);
+				Rank ourRank = b ? relative_rank(Us, backmost_sq(Us, b)) : RANK_1;
+				
+				b = theirPawns & file_bb(f);
+				Rank theirRank = b ? relative_rank(Us, frontmost_sq(Them, b)) : RANK_1;
+				
+				int d = std::min(f, ~f);
+				safetyMg += ShelterStrength[d][ourRank];
+				if (ourRank && (ourRank == theirRank - 1))
+					safetyMg -= 82 * (theirRank == RANK_3),   safetyEg -= 82 * (theirRank == RANK_3);
+				else
+					safetyMg -= UnblockedStorm[d][theirRank];
+			}
+		
+		    //Pawn Majority, inspired by S. Nicolet efforts.
+			// A large enemy pawn majority on the king side is dangerous
+			Bitboard kf = KingFlank[file_of(ksq)];
+			int majorArray[2] {16, 28};
+			int majority = std::min(popcount(theirPawns & kf) - popcount(ourPawns & kf),3);
+			if (majority > 1)
+				safetyMg -= majorArray[majority - 2];
+			//array elements 0 and 1 align to majority of 2 and 3 or higher
+			//higher penalties for an opponent majority of 4 or more were regressive, hence, the penalty is capped at a 3 pawn majority
+			
+            //by xoto10 Add eg component to evaluate_shelter(), 82,82
+			if (safetyMg > mg_value(shelter))
+				shelter = make_score(safetyMg, safetyEg);
+		}
+#else
+
+	void Entry::evaluate_shelter(const Position& pos, Square ksq, Score& shelter) {
+
+
+	  constexpr Color     Them = (Us == WHITE ? BLACK : WHITE);
+	  constexpr Direction Down = (Us == WHITE ? SOUTH : NORTH);
+	  constexpr Bitboard BlockSquares =  (Rank1BB | Rank2BB | Rank7BB | Rank8BB)
+									   & (FileABB | FileHBB);
+
+	  Bitboard b = pos.pieces(PAWN) & ~forward_ranks_bb(Them, ksq);
+	  Bitboard ourPawns = b & pos.pieces(Us);
+	  Bitboard theirPawns = b & pos.pieces(Them);
+	  Value bonus[] = { (shift<Down>(theirPawns) & BlockSquares & ksq) ? Value(374) : Value(5),
+						VALUE_ZERO };
+
+	  File center = clamp(file_of(ksq), FILE_B, FILE_G);
+	  for (File f = File(center - 1); f <= File(center + 1); ++f)
+	  {
+		  b = ourPawns & file_bb(f);
+		  Rank ourRank = b ? relative_rank(Us, backmost_sq(Us, b)) : RANK_1;
+
+		  b = theirPawns & file_bb(f);
+		  Rank theirRank = b ? relative_rank(Us, frontmost_sq(Them, b)) : RANK_1;
+
+		  int d = std::min(f, ~f);
+		  bonus[MG] += ShelterStrength[d][ourRank];
+
+		  if (ourRank && (ourRank == theirRank - 1))
+			  bonus[MG] -= 82 * (theirRank == RANK_3), bonus[EG] -= 82 * (theirRank == RANK_3);
+		  else
+			  bonus[MG] -= UnblockedStorm[d][theirRank];
+	  }
+
+	  if (bonus[MG] > mg_value(shelter))
+		  shelter = make_score(bonus[MG], bonus[EG]);
+	}
+#endif
 
 /// Entry::do_king_safety() calculates a bonus for king safety. It is called only
 /// when king square changes, which is about 20% of total king_safety() calls.
@@ -255,33 +281,18 @@ Score Entry::do_king_safety(const Position& pos) {
 
   else while (pawns)
       minPawnDist = std::min(minPawnDist, distance(ksq, pop_lsb(&pawns)));
-#ifdef Sullivan  //by xoto10 Add eg component to evaluate_shelter(), 82,82
-      Score shelter = make_score(-VALUE_INFINITE, Value(0));
-      evaluate_shelter<Us>(pos, ksq, shelter);
-#else
-      Value bonus = evaluate_shelter<Us>(pos, ksq);
-#endif
+
+  Score shelter = make_score(-VALUE_INFINITE, VALUE_ZERO);
+  evaluate_shelter<Us>(pos, ksq, shelter);
 
   // If we can castle use the bonus after the castling if it is bigger
   if (pos.can_castle(Us | KING_SIDE))
-#ifdef Sullivan  //by xoto10 Add eg component to evaluate_shelter(), 82,82
       evaluate_shelter<Us>(pos, relative_square(Us, SQ_G1), shelter);
-#else
-      bonus = std::max(bonus, evaluate_shelter<Us>(pos, relative_square(Us, SQ_G1)));
-#endif
 
   if (pos.can_castle(Us | QUEEN_SIDE))
-#ifdef Sullivan  //by xoto10 Add eg component to evaluate_shelter(), 82,82
       evaluate_shelter<Us>(pos, relative_square(Us, SQ_C1), shelter);
-#else
-	  bonus = std::max(bonus, evaluate_shelter<Us>(pos, relative_square(Us, SQ_C1)));
-#endif
 
-#ifdef Sullivan  //by xoto10 Add eg component to evaluate_shelter(), 82,82
-  return shelter - make_score(0, 16 * minPawnDist);
-#else
-  return make_score(bonus, -16 * minPawnDist);
-#endif
+  return shelter - make_score(VALUE_ZERO, 16 * minPawnDist);
 }
 
 // Explicit template instantiation

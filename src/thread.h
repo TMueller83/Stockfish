@@ -62,7 +62,6 @@ public:
 
   Pawns::Table pawnsTable;
   Material::Table materialTable;
-  Endgames endgames;
   size_t pvIdx, pvLast;
 
 #ifdef Sullivan //  Gunther Demetz zugzwangSolver

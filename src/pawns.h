@@ -50,11 +50,8 @@ struct Entry {
   Score do_king_safety(const Position& pos);
 
   template<Color Us>
-#ifdef Sullivan  //by xoto10 Add eg component to evaluate_shelter(), 82,82
+	
   void evaluate_shelter(const Position& pos, Square ksq, Score& shelter);
-#else
-  Value evaluate_shelter(const Position& pos, Square ksq);
-#endif
 
   Key key;
   Score scores[COLOR_NB];
