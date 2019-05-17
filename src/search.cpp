@@ -68,10 +68,10 @@ namespace {
   }
 
   // Reductions lookup tables, initialized at startup
-  int Reductions[2][MAX_PLY][64];  // [improving][depth][moveNumber]
+  int Reductions[2][128][64];  // [improving][depth][moveNumber]
 
   Depth reduction(bool i, Depth d, int mn) {
-    return Reductions[i][d / ONE_PLY][std::min(mn, 63)] * ONE_PLY;
+    return Reductions[i][std::min(d / ONE_PLY, 127)][std::min(mn, 63)] * ONE_PLY;
   }
     
   constexpr int futility_move_count(bool improving, int depth) {
@@ -146,19 +146,19 @@ namespace {
 /// Search::init() is called at startup to initialize various lookup tables
 
 void Search::init() {
-	
-	for (int imp = 0; imp <= 1; ++imp)
-		for (int d = 1; d < MAX_PLY; ++d)
-			for (int mc = 1; mc < 64; ++mc)
-			{
-				double r = 0.215 * d * (1.0 - exp(-8.0 / d)) * log(mc);
-				
-				Reductions[imp][d][mc] = std::round(r);
-				
-				// Increase reduction for non-PV nodes when eval is not improving
-				if (!imp && r > 1.0)
-					Reductions[imp][d][mc]++;
-			}
+
+  for (int imp = 0; imp <= 1; ++imp)
+      for (int d = 1; d < 128; ++d)
+          for (int mc = 1; mc < 64; ++mc)
+          {
+              double r = 0.215 * d * (1.0 - exp(-8.0 / d)) * log(mc);
+
+              Reductions[imp][d][mc] = std::round(r);
+
+              // Increase reduction for non-PV nodes when eval is not improving
+              if (!imp && r > 1.0)
+                Reductions[imp][d][mc]++;
+          }
 }
 
 
@@ -248,19 +248,19 @@ void MainThread::search() {
       for (Thread* th: Threads)
           minScore = std::min(minScore, th->rootMoves[0].score);
 
-      // Vote according to score and depth
+      // Vote according to score and depth, and select the best thread
+      int64_t bestVote = 0;
       for (Thread* th : Threads)
+      {
           votes[th->rootMoves[0].pv[0]] +=
                (th->rootMoves[0].score - minScore + 14) * int(th->completedDepth);
 
-      // Select best thread
-      auto bestVote = votes[this->rootMoves[0].pv[0]];
-      for (Thread* th : Threads)
           if (votes[th->rootMoves[0].pv[0]] > bestVote)
           {
               bestVote = votes[th->rootMoves[0].pv[0]];
               bestThread = th;
           }
+      }
   }
 
   previousScore = bestThread->rootMoves[0].score;
@@ -421,7 +421,7 @@ void Thread::search() {
               else if (bestValue >= beta)
               {
                   beta = std::min(bestValue + delta2, VALUE_INFINITE);
-                      ++failedHighCnt;
+                  ++failedHighCnt;
               }
               else
                   break;
