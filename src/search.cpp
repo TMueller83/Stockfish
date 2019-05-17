@@ -1114,8 +1114,11 @@ moves_loop: // When in check, search starts from here
     value = bestValue; // Workaround a bogus 'uninitialized' warning under gcc
     moveCountPruning = false;
     ttCapture = ttMove && pos.capture_or_promotion(ttMove);
+#ifdef Maverick  //Michael B7
+    bool singularExtensionLMR = false;
+#else
     int singularExtensionLMRmultiplier = 0;
-
+#endif
     // Step 12. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
     while ((move = mp.next_move(moveCountPruning)) != MOVE_NONE)
@@ -1179,7 +1182,13 @@ moves_loop: // When in check, search starts from here
           ss->excludedMove = move;
           value = search<NonPV>(pos, ss, singularBeta - 1, singularBeta, halfDepth, cutNode);
           ss->excludedMove = MOVE_NONE;
-
+#ifdef Maverick //MichaelB7
+		  if (value < singularBeta)
+		  {
+			  extension = ONE_PLY;
+			  singularExtensionLMR = true;
+		  }
+#else
           if (value < singularBeta)
               {
               extension = ONE_PLY;
@@ -1187,7 +1196,7 @@ moves_loop: // When in check, search starts from here
               if (value < singularBeta - std::min(3 * depth / ONE_PLY, 39))
               	  singularExtensionLMRmultiplier++;
               }
-
+#endif
           // Multi-cut pruning
           // Our ttMove is assumed to fail high, and now we failed high also on a reduced
           // search without the ttMove. So we assume this expected Cut-node is not singular,
@@ -1372,11 +1381,17 @@ moves_loop: // When in check, search starts from here
 #else
               r -= 2 * ONE_PLY;
 #endif
+#ifdef Maverick
+		  // Decrease reduction if opponent's move count is high OR if move created a singular extension(~10 Elo) //MichaelB7
+		  if ((ss-1)->moveCount > 15 || (singularExtensionLMR))
+		  r -= ONE_PLY;
+#else
           // Decrease reduction if opponent's move count is high (~10 Elo)
           if ((ss-1)->moveCount > 15)
               r -= ONE_PLY;
           // Decrease reduction if move has been singularly extended
           r -= singularExtensionLMRmultiplier * ONE_PLY;
+#endif
 
           if (!captureOrPromotion)
           {
