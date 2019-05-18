@@ -105,7 +105,7 @@ namespace {
 
 #ifdef Sullivan  //MichaelB7
     // Reductions lookup table, initialized at startup
-	int Reductions[2][32][80];  // [improving][depth][moveNumber]
+	int Reductions[2][64][80];  // [improving][depth][moveNumber]
 #else
   // Reductions lookup table, initialized at startup
   int Reductions[MAX_MOVES]; // [depth or moveNumber]
@@ -114,7 +114,7 @@ namespace {
 
 #ifdef Sullivan // MichaelB7
   Depth reduction(bool i, Depth d, int mn) {
-    return (Reductions[i][std::min(d / ONE_PLY, 31)][mn]) * ONE_PLY;
+    return (Reductions[i][std::min(d / ONE_PLY, 63)][mn]) * ONE_PLY;
 #else		
   Depth reduction(bool i, Depth d, int mn) {
     int r = Reductions[d / ONE_PLY] * Reductions[mn] / 1024;
@@ -201,7 +201,7 @@ void Search::init() {
 	
 #ifdef Sullivan  // MichaelB7
   for (int imp = 0; imp <= 1; ++imp)
-    for (int d = 1; d < 32; ++d)
+    for (int d = 1; d < 64; ++d)
       for (int mc = 1; mc < 80; ++mc) // MichaelB7 - record in a "real" game is 79 moves,
       // in a search of one million games, found one posiiton with 78 possible moves.
       {
