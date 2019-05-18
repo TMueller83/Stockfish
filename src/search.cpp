@@ -78,14 +78,14 @@ namespace {
 
 #ifdef Maverick
     // Reductions lookup table, initialized at startup
-	int Reductions[2][32][80];  // [improving][depth][moveNumber]
+	int Reductions[2][64][80];  // [improving][depth][moveNumber]
 #else
 	// Reductions lookup table, initialized at startup
 	int Reductions[MAX_MOVES]; // [depth or moveNumber]
 #endif
 #ifdef Maverick // MichaelB7
-	template <bool PvNode> Depth reduction(bool i, Depth d, int mn) {
-		return (Reductions[i][std::min(d / ONE_PLY, 31)][mn] - PvNode ) * ONE_PLY;
+  Depth reduction(bool i, Depth d, int mn) {
+    return (Reductions[i][std::min(d / ONE_PLY, 63)][mn]) * ONE_PLY;
 #else
   Depth reduction(bool i, Depth d, int mn) {
     int r = Reductions[d / ONE_PLY] * Reductions[mn];
@@ -170,20 +170,17 @@ int   aggressiveness, attack, jekyll, tactical, uci_elo, variety;
 
 void Search::init() {
 	
-#ifdef Maverick   // MichaelB7
-	for (int imp = 0; imp <= 1; ++imp)
-		for (int d = 1; d < 32; ++d)
-			for (int mc = 1; mc < 80; ++mc) // record in a "real" game is 79 moves,
-				// in a search of one million games, found one posiiton with 78 possible moves.
-				// more weight on depth for LMR reductions than move count
-				// (from Crafty) MichaelB7
-				{
-					int red = int(log( d * 1.87 ) * log( mc * .95 )) / 2;
-					Reductions[imp][d][mc] = red;
-					// Increase reduction for non-PV nodes when eval is not improving
-					if (!imp && red > 1)
-						Reductions[imp][d][mc]++;
-				}
+#ifdef Maverick  // MichaelB7
+  for (int imp = 0; imp <= 1; ++imp)
+    for (int d = 1; d < 64; ++d)
+      for (int mc = 1; mc < 80; ++mc) // MichaelB7 - record in a "real" game is 79 moves,
+      // in a search of one million games, found one posiiton with 78 possible moves.
+      {
+        int red = int(log( d * 1.87 ) * log( mc *.95 )) >> 1;
+        Reductions[imp][d][mc] = red;
+        // Increase reduction for non-PV nodes when eval is not improving
+          if (!imp && red > 1)
+              Reductions[imp][d][mc]++;			}
 #else
   for (int i = 1; i < MAX_MOVES; ++i)
      Reductions[i] = int(22.9 * std::log(i));
@@ -1304,7 +1301,7 @@ moves_loop: // When in check, search starts from here
 
               // Reduced depth of the next LMR search
 #ifdef Maverick
-			  int lmrDepth = std::max(newDepth - reduction<PvNode>(improving, depth, moveCount), DEPTH_ZERO);
+			  int lmrDepth = std::max(newDepth - reduction(improving, depth, moveCount), DEPTH_ZERO);
 #else
               int lmrDepth = std::max(newDepth - reduction(improving, depth, moveCount), DEPTH_ZERO);
 #endif
@@ -1370,7 +1367,7 @@ moves_loop: // When in check, search starts from here
               || ss->staticEval + PieceValue[EG][pos.captured_piece()] <= alpha))
       {
 #ifdef Maverick
-		  Depth r = reduction<PvNode>(improving, depth, moveCount);
+		  Depth r = reduction(improving, depth, moveCount);
 #else
           Depth r = reduction(improving, depth, moveCount);
 #endif
