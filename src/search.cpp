@@ -1236,6 +1236,9 @@ namespace {
         &&  eval >= beta
         &&  ss->staticEval >= beta - 36 * depth / ONE_PLY + 225
         && !excludedMove
+#ifdef Sullivan  //authored by Jörg Oster originally, in corchess by Ivan Ilvec
+        && thisThread->selDepth + 3 > thisThread->rootDepth / ONE_PLY
+#endif
         &&  pos.non_pawn_material(us)
         && (ss->ply >= thisThread->nmpMinPly || us != thisThread->nmpColor))
     {
