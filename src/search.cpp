@@ -912,6 +912,9 @@ namespace {
     bool captureOrPromotion, doFullDepthSearch, moveCountPruning, ttCapture;
     Piece movedPiece;
     int moveCount, captureCount, quietCount;
+#ifdef Sullivan // escape capture
+    Square escapeCaptureSq;
+#endif
 
     // Step 1. Initialize node
     Thread* thisThread = pos.this_thread();
@@ -1374,6 +1377,11 @@ moves_loop: // When in check, search starts from here
 #else
     int singularExtensionLMRmultiplier = 0;
 #endif
+
+#ifdef Sullivan // VoyagerOne escapre Capture
+     escapeCaptureSq = SQ_NONE;
+#endif
+
     // Step 12. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
     while ((move = mp.next_move(moveCountPruning)) != MOVE_NONE)
@@ -1637,9 +1645,18 @@ moves_loop: // When in check, search starts from here
               // Decrease reduction for moves that escape a capture. Filter out
               // castling moves, because they are coded as "king captures rook" and
               // hence break make_move(). (~5 Elo)
-              else if (    type_of(move) == NORMAL
+#ifdef Sullivan // VoyagerOne escape Capture
+              else if (escapeCaptureSq == from_sq(move) || (type_of(move) == NORMAL
+                                          && !pos.see_ge(make_move(to_sq(move), from_sq(move)))))
+              {
+                  escapeCaptureSq = from_sq(move);
+                  r -= 2 * ONE_PLY;
+              }
+#else
+              else if (type_of(move) == NORMAL
                        && !pos.see_ge(make_move(to_sq(move), from_sq(move))))
                   r -= 2 * ONE_PLY;
+#endif
 #ifdef Sullivan  //  miguel-l/Stockfish/tree/d2a6f..d10ad7
 			  else if (type_of(movedPiece) == PAWN
 					   && relative_rank(us, rank_of(from_sq(move))) > RANK_5)  // changed Rank by Michael B7
@@ -1661,6 +1678,10 @@ moves_loop: // When in check, search starts from here
               // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
               r -= ss->statScore / 20000 * ONE_PLY;
           }
+#ifdef Sullivan // VoyagerOne escapre Capture
+            else if (escapeCaptureSq == from_sq(move))
+                r -= ONE_PLY;
+#endif
 
           Depth d = std::max(newDepth - std::max(r, DEPTH_ZERO), ONE_PLY);
 
