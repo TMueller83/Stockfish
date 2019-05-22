@@ -743,9 +743,12 @@ namespace {
     assert(DEPTH_ZERO < depth && depth < DEPTH_MAX);
     assert(!(PvNode && cutNode));
     assert(depth / ONE_PLY * ONE_PLY == depth);
-
+#ifdef Sullivan
+    Move pv[MAX_PLY+1], capturesSearched[16], quietsSearched[32];
+#else
     Move pv[MAX_PLY+1], capturesSearched[32], quietsSearched[64];
-    StateInfo st;
+#endif
+	  StateInfo st;
     TTEntry* tte;
     Key posKey;
     Move ttMove, move, excludedMove, bestMove;
@@ -1574,11 +1577,19 @@ moves_loop: // When in check, search starts from here
 
       if (move != bestMove)
       {
+#ifdef Sullivan
+          if (captureOrPromotion && captureCount < 16)
+              capturesSearched[captureCount++] = move;
+
+          else if (!captureOrPromotion && quietCount < 32)
+              quietsSearched[quietCount++] = move;
+#else
           if (captureOrPromotion && captureCount < 32)
               capturesSearched[captureCount++] = move;
 
           else if (!captureOrPromotion && quietCount < 64)
               quietsSearched[quietCount++] = move;
+#endif
       }
     }
 
