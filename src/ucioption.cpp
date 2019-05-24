@@ -87,16 +87,16 @@ void init(OptionsMap& o) {
 #ifdef Add_Features
     o["Analysis Contempt"]    << Option("var Off var White var Black var Both ", "Off");
 #else
-    o["Analysis Contempt"]    << Option("Both var Off var White var Black var Both", "Both");
+    o["Analysis Contempt"]    << Option("var Both var Off var White var Black var Both", "Both");
 #endif
 #ifdef Add_Features
     o["Use_Book_1"] 	        << Option(false);
     o["Book_File_1"] 	        << Option("var None var Cerebellum var Champions "
-										"var Alekhine var Anand var Botvinnik "
-										"var Capablanca var Carlsen var Fischer "
-										"var Karpov var Kasparov var Kortschnoi "
-										"var Kramink var Lasker var Petrosian "
-										"var Tal ","Carlsen", on_book_file1);
+                                          "var Alekhine var Anand var Botvinnik "
+                                          "var Capablanca var Carlsen var Fischer "
+                                          "var Karpov var Kasparov var Kortschnoi "
+                                          "var Kramink var Lasker var Petrosian "
+                                          "var Tal ","None", on_book_file1);
     o["Best_Move_1"] 	        << Option(false, on_best_book_move1);
     o["Book_Depth_1"] 	        << Option(127, 1, 127, on_book_depth1);
     o["Use_Book_2"] 	        << Option(false);
@@ -123,13 +123,15 @@ void init(OptionsMap& o) {
     o["FastPlay"]               << Option(false);
     o["Minimal_Output"]         << Option(false);
     o["No_Null_Moves"]          << Option(false);
-    o["UCI_LimitStrength"]      << Option(false);
-	o["Levels"]                 << Option("World_Champion var World_Champion var Super_GM "
-								"var GM  var Deep_Thought var SIM var Cray_Blitz "
-								"var IM var Master var Expert var Class_A "
-								"var Class_B var Class_C var Class_D var Boris "
-								"var Novice var None ", "World_Champion");
-	o["UCI_Elo"]                << Option(1300, 1300, 2850);
+	o["UCI_LimitStrength"]      << Option(false);
+	o["xBoard"]                 << Option(false);
+	o["Score_Output"]           << Option("var CentiPawn var CentiPawn var Score% ", "CentiPawn");
+    o["Levels"]                 << Option("var World_Champion var World_Champion var Super_GM "
+                                          "var GM  var Deep_Thought var SIM var Cray_Blitz "
+                                          "var IM var Master var Expert var Class_A "
+                                          "var Class_B var Class_C var Class_D var Boris "
+                                          "var Novice var None ", "World_Champion");
+    o["UCI_Elo"]                << Option(1300, 1300, 2850);
 #endif
 #ifdef Maverick
 	o["DC_Slider"]              << Option(65, -180, 180);
