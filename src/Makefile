@@ -25,7 +25,7 @@
 ### ==========================================================================
 
 ### Executable name
-### Honey bench nodes -----> 5258240 > based on commits up to 5/18/2019
+### Honey bench nodes -----> 4588239 > based on commits up to 5/18/2019
 ### stockfish bench nodes -> 3415326 > based on commits up to 5/18/2019
 
 ####  Always leave the three lines below as is (any subsequent defines will override)
@@ -42,8 +42,8 @@ ifeq ($(TEST),yes)
 endif
 
 ### Release versions , enter yes and release version below foor releases
-RELEASE = no
-RELVERSION =
+RELEASE = yes
+RELVERSION = XPro
 
 ### Uncomment the line below for Honey, comment out for Stockfish
 	VERSION=sullivan
