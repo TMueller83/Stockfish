@@ -24,7 +24,7 @@
 ### ==========================================================================
 
 ### Executable name
-### McCain bench nodes ----> 5362826 > based on commits up to 5/26/2019
+### McCain bench nodes ----> 4717765 > based on commits up to 5/26/2019
 ### stockfish bench nodes -> 3817662 > based on commits up to 5/26/2019
 
 ####  Always leave the three lines below as is (any subsequent defines will override)
