@@ -35,11 +35,23 @@ namespace {
   constexpr int MoveHorizon   = 50;   // Plan time management at most this many moves ahead
   constexpr double MaxRatio   = 7.3;  // When in trouble, we can step over reserved time with this ratio
   constexpr double StealRatio = 0.34; // However we must not steal time from remaining moves over this ratio
+#ifdef Sullivan  //ps_moveimportance6 by ProtonSpring
+   // move_importance() is a sigmoid for scaling time usage according to ply.
+   double move_importance(int ply) {
+     return 1 - (ply - 88) / std::hypot(44, ply - 88);
+#else
+	// move_importance() is a skew-logistic function based on naive statistical
+	// analysis of "how many games are still undecided after n half-moves". Game
+	// is considered "undecided" as long as neither side has >275cp advantage.
+	// Data was extracted from the CCRL game database with some simple filtering criteria.
+	double move_importance(int ply) {
 
+	  constexpr double XScale = 6.85;
+	  constexpr double XShift = 64.5;
+	  constexpr double Skew   = 0.171;
 
-  // move_importance() is a sigmoid for scaling time usage according to ply.
-  double move_importance(int ply) {
-    return 1 - (ply - 88) / std::hypot(44, ply - 88);
+	  return pow((1 + exp((ply - XShift) / XScale)), -Skew) + DBL_MIN; // Ensure non-zero
+#endif
   }
 
   template<TimeType T>
