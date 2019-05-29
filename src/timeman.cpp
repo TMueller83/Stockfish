@@ -36,7 +36,7 @@ namespace {
   constexpr int MoveHorizon   = 50;   // Plan time management at most this many moves ahead
   constexpr double MaxRatio   = 7.3;  // When in trouble, we can step over reserved time with this ratio
   constexpr double StealRatio = 0.34; // However we must not steal time from remaining moves over this ratio
-#ifdef Maverick //  ps_moveimportance6 by ProtonSpring
+#ifdef Maverick //  ps_moveimportance6 by ProtonSpring #2145
   // move_importance() is a sigmoid for scaling time usage according to ply.
   double move_importance(int ply) {
   return 1 - (ply - 88) / std::hypot(44, ply - 88);
