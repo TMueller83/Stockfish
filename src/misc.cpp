@@ -144,18 +144,26 @@ const string engine_info(bool to_uci) {
 #else
     ss << "Stockfish " << Version << setfill('0');
 #endif
+#if (defined Maverick && defined Test)
+	if (Version.empty())
+	{
+		date >> month >> day;
+		ss << setw(2) << (1 + months.find(month) / 4) <<setw(2) << day  << "";
+	}
 
+#else
     if (Version.empty())
     {
         date >> month >> day >> year;
 		ss << setw(2) << (1 + months.find(month) / 4) <<setw(2) << day << year.substr(2) << "";
     }
+#endif
 #ifdef Maverick
     ss	<< (to_uci  ? "\nid author ": " by ")
             << "M. Byrne and scores of others...";
 #else
-//     ss << (Is64Bit ? " 64" : "") //most 95% of systems are 64 bit
-//     << (HasPext ? " BMI2" : (HasPopCnt ? " POPCNT" : "")) // may direupt some GUIs
+//     ss << (Is64Bit ? " 64" : "") // 95% of systems are now 64 bit
+//     << (HasPext ? " BMI2" : (HasPopCnt ? " POPCNT" : "")) // may disrupt some GUIs due to length
 	   ss << (to_uci  ? "\nid author ": " by ")
        << "T. Romstad, M. Costalba, J. Kiiski, G. Linscott";
 #endif

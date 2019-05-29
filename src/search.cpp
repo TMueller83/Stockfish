@@ -743,7 +743,7 @@ namespace {
     assert(DEPTH_ZERO < depth && depth < DEPTH_MAX);
     assert(!(PvNode && cutNode));
     assert(depth / ONE_PLY * ONE_PLY == depth);
-#ifdef Sullivan
+#ifdef Maverick
     Move pv[MAX_PLY+1], capturesSearched[16], quietsSearched[32];
 #else
     Move pv[MAX_PLY+1], capturesSearched[32], quietsSearched[64];
@@ -830,7 +830,7 @@ namespace {
     ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
             : ttHit    ? tte->move() : MOVE_NONE;
 
-#ifdef Sullivan  //locutust2 #2166
+#ifdef Maverick  //locutust2 #2166
     ttPv =  PvNode || (ttHit && tte->is_pv());
 #else
     ttPv = (ttHit && tte->is_pv()) || (PvNode && depth > 4 * ONE_PLY);
@@ -1581,7 +1581,7 @@ moves_loop: // When in check, search starts from here
 
       if (move != bestMove)
       {
-#ifdef Sullivan
+#ifdef Maverick
           if (captureOrPromotion && captureCount < 16)
               capturesSearched[captureCount++] = move;
 
