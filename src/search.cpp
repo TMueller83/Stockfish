@@ -829,8 +829,12 @@ namespace {
     ttValue = ttHit ? value_from_tt(tte->value(), ss->ply) : VALUE_NONE;
     ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
             : ttHit    ? tte->move() : MOVE_NONE;
-    ttPv = (ttHit && tte->is_pv()) || (PvNode && depth > 4 * ONE_PLY);
 
+#ifdef Sullivan  //locutust2 #2166
+    ttPv =  PvNode || (ttHit && tte->is_pv());
+#else
+    ttPv = (ttHit && tte->is_pv()) || (PvNode && depth > 4 * ONE_PLY);
+#endif
     // At non-PV nodes we check for an early TT cutoff
     if (  !PvNode
         && ttHit
