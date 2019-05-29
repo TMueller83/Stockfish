@@ -117,7 +117,7 @@ namespace {
     return (Reductions[i][std::min(d / ONE_PLY, 63)][mn]) * ONE_PLY;
 #else		
   Depth reduction(bool i, Depth d, int mn) {
-    int r = Reductions[d / ONE_PLY] * Reductions[mn] / 1024;
+    int r = Reductions[d / ONE_PLY] * Reductions[mn];
     return ((r + 512) / 1024 + (!i && r > 1024)) * ONE_PLY;
 #endif
   }
@@ -212,9 +212,8 @@ void Search::init() {
               Reductions[imp][d][mc]++;			}
 #else
   for (int i = 1; i < MAX_MOVES; ++i)
-     Reductions[i] = int(733.3 * std::log(i));
+     Reductions[i] = int(22.9 * std::log(i));
 #endif
-
 }
 
 
@@ -982,8 +981,12 @@ namespace {
     ttValue = ttHit ? value_from_tt(tte->value(), ss->ply) : VALUE_NONE;
     ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
             : ttHit    ? tte->move() : MOVE_NONE;
-    ttPv = (ttHit && tte->is_pv()) || (PvNode && depth > 4 * ONE_PLY);
 
+#ifdef Sullivan  //locutust2 #2166
+    ttPv =  PvNode || (ttHit && tte->is_pv());
+#else
+    ttPv = (ttHit && tte->is_pv()) || (PvNode && depth > 4 * ONE_PLY);
+#endif
     // At non-PV nodes we check for an early TT cutoff
     if (  !PvNode
         && ttHit

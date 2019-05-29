@@ -62,7 +62,7 @@ namespace {
 #endif
 	
 #if (defined Sullivan && defined Add_Features )
-const string Version = "XPro";
+const string Version = "";
 #endif
 
 #if (defined Stockfish && defined Add_Features)
@@ -148,7 +148,7 @@ const string engine_info(bool to_uci) {
 	if (Version.empty())
 	{
 		date >> month >> day;
-		ss << setw(2) << (1 + months.find(month) / 4) <<setw(2) << day  << "";
+		ss << setw(2) << (1 + months.find(month) / 4) <<setw(2) << day  << "-" << "mpvjos";
 	}
 	
 #else
