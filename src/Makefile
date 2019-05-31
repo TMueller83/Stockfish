@@ -29,16 +29,17 @@
 
 ####  Always leave the three lines below as is (any subsequent defines will override)
 DATE=$(shell date +"%m%d%y")
+DATE2=$(shell date +"%m%d")
 FEATURE1=
 
 ### TEST versions, enter yes and labels below to build named test exe's
 TEST = no
-TESTv1 = 
+TESTv1 = $(DATE2)
 TESTv2 =
 
 ### Release versions , enter yes and release version below foor releases
 RELEASE = no
-RELVERSION = no
+RELVERSION = 
 
 ### Uncomment the line below for McCain, comment out for Stockfish
 	VERSION=maverick
@@ -76,7 +77,7 @@ ifeq ($(VERSION),maverick)
 			endif
 		endif
 		ifeq ($(TEST),yes)
-			EXE = McCain-$(TESTv1)$(TESTv2)
+			EXE = McCain-$(TESTv1)-$(TESTv2)
 		endif
 	endif
 	ifeq ($(RELEASE),yes)
