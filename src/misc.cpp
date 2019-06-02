@@ -148,7 +148,7 @@ const string engine_info(bool to_uci) {
 	if (Version.empty())
 	{
 		date >> month >> day;
-		ss << setw(2) << (1 + months.find(month) / 4) <<setw(2) << day  << "-" << "mpvjos";
+		ss << setw(2) << (1 + months.find(month) / 4) <<setw(2) << day  << "-" << "";
 	}
 	
 #else
