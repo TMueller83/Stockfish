@@ -749,14 +749,22 @@ ss->pv = pv;
 #endif
       }
 
-      // Have we found a "mate in x"?
-      if (   Limits.mate
-          && bestValue >= VALUE_MATE_IN_MAX_PLY
-          && VALUE_MATE - bestValue <= 2 * Limits.mate)
-          Threads.stop = true;
-
-      if (!mainThread)
-          continue;
+#ifndef Sullivan  // Make MultiPV search stop properly with "go mate x" command. #2173
+    // Have we found a "mate in x"?
+    if (   Limits.mate
+        && bestValue >= VALUE_MATE_IN_MAX_PLY
+        && VALUE_MATE - bestValue <= 2 * Limits.mate)
+        Threads.stop = true;
+#endif
+	if (!mainThread)
+        continue;
+#ifdef Sullivan  //Make MultiPV search stop properly with "go mate x" command. #2173
+        // Have we found a "mate in x"?
+        if (   Limits.mate
+            && rootMoves[0].score >= VALUE_MATE_IN_MAX_PLY
+            && VALUE_MATE - rootMoves[0].score <= 2 * Limits.mate)
+            Threads.stop = true;
+#endif
 #ifdef Add_Features
         if (Options["FastPlay"])
         {
