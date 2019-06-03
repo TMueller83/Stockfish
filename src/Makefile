@@ -24,7 +24,7 @@
 ### ==========================================================================
 
 ### Executable name
-### McCain bench nodes ----> 4615363 > based on commits up to 5/29/2019
+### McCain bench nodes ----> 4490937 > based on commits up to 5/29/2019
 ### stockfish bench nodes -> 3807737 > based on commits up to 5/29/2019
 
 ####  Always leave the three lines below as is (any subsequent defines will override)
@@ -36,6 +36,9 @@ FEATURE1=
 TEST = no
 TESTv1 = $(DATE2)
 TESTv2 =
+ifeq ($(TEST),yes)
+CXXFLAGS += -DTest
+endif
 
 ### Release versions , enter yes and release version below foor releases
 RELEASE = no

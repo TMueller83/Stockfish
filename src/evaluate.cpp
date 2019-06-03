@@ -147,30 +147,29 @@ constexpr Score MobilityBonus[][32] = {
     S(-30,-14), S(-9, -8), S( 0,  9), S( -1,  7)
 };
 #ifdef Maverick
-// Combo #1867 Jonathan D
+// Combo #1867 Jonathan D - others as noted
 // Assorted bonuses and penalties
 constexpr Score BishopPawns        = S(  3,  7);
 constexpr Score CorneredBishop     = S( 50, 50);
-constexpr Score FlankAttacks       = S(  7,  0);
-constexpr Score Hanging            = S( 69, 36);
+constexpr Score FlankAttacks       = S(  8, -2); //Fauzi
+constexpr Score Hanging            = S( 70, 45); //Fauzi
 constexpr Score KingProtector      = S(  7,  8);
-constexpr Score KnightManeuver     = S(  8,  4);  // miguel-l
-constexpr Score KnightOnQueen      = S( 16, 12);
-constexpr Score LongDiagonalBishop = S( 45,  0);
-constexpr Score MinorBehindPawn    = S( 18,  3);
-constexpr Score PawnlessFlank      = S( 17, 95);	
-constexpr Score RestrictedPiece    = S(  7,  7);
-constexpr Score RookOnPawn         = S( 10, 32);
-constexpr Score SliderOnQueen      = S( 59, 18);
+constexpr Score KnightManeuver     = S(  8,  4); //miguel-l
+constexpr Score KnightOnQueen      = S( 17,  8); //Fauzi
+constexpr Score LongDiagonalBishop = S( 40,  3); //Fauzi
+constexpr Score MinorBehindPawn    = S( 16,  1); //Fauzi
+constexpr Score Outpost            = S(  9,  3);
+constexpr Score PawnlessFlank      = S(  6, 96); //Fauzi
+constexpr Score RestrictedPiece    = S(  7,  4); //Fauzi
+constexpr Score RookOnPawn         = S( 13, 29); //Fauzi
+constexpr Score SliderOnQueen      = S( 63, 21); //Fauzi
 constexpr Score ThreatByKing       = S( 24, 89);
 constexpr Score ThreatByPawnPush   = S( 45, 37); // Michael Chaly https://github.com/Vizvezdenec/Stockfish/commit/76dbbc7d1a45160c7d78852fd33a289459e6932a
 constexpr Score ThreatByRank       = S( 13,  0);
 constexpr Score ThreatBySafePawn   = S(173, 94);
 constexpr Score TrappedRook        = S( 96,  4);
-//constexpr Score WeakQueen          = S( 49, 15);
-constexpr Score WeakUnopposedPawn  = S( 12, 23);
-constexpr Score WeakQueen          = S( 10,  2);// Gunther Dementz weak queen mod
-constexpr Score Outpost            = S(  9,  3);
+constexpr Score WeakQueen          = S( 10,  2); // Gunther Dementz weak queen mod
+constexpr Score WeakUnopposedPawn  = S( 14, 19); //Fauzi
 #else
   // Assorted bonuses and penalties
   constexpr Score BishopPawns        = S(  3,  7);
@@ -342,7 +341,6 @@ constexpr Score Outpost            = S(  9,  3);
 #else
 		if (b & kingRing[Them])
 #endif
-			
         {
             kingAttackersCount[Us]++;
             kingAttackersWeight[Us] += KingAttackWeights[Pt];
@@ -425,7 +423,7 @@ constexpr Score Outpost            = S(  9,  3);
                 File kf = file_of(pos.square<KING>(Us));
                 if ((kf < FILE_E) == (file_of(s) < kf))
 #ifdef Maverick  //Simplify TrappedRook to a single penalty (no longer based on mobility). #1958
-					score -= (TrappedRook - make_score(mob * 22, 0)) * (1 + !pos.castling_rights(Us));
+		   score -= (TrappedRook - make_score(mob * 22, 0)) * (1 + !pos.castling_rights(Us));
 #else
                     score -= TrappedRook * (1 + !pos.castling_rights(Us));
 #endif
@@ -436,14 +434,14 @@ constexpr Score Outpost            = S(  9,  3);
         {
             // Penalty if any relative pin or discovered attack against the queen
 #ifdef Maverick  // Günther Demetz weakQueen2 e62bdb0
-			Bitboard queenPinners, blocker = pos.slider_blockers(pos.pieces(Them, ROOK, BISHOP), s, queenPinners);
-				if (blocker)
-				{
-					score -= WeakQueen;
-					score -= WeakQueen * 5;
-					if (!(blocker & pos.pieces(PAWN)) || file_of(lsb(blocker)) != file_of(s))
-						score -= WeakQueen * 2; // even more penalty when blocker is'nt pawn on the same file
-				}
+             Bitboard queenPinners, blocker = pos.slider_blockers(pos.pieces(Them, ROOK, BISHOP), s, queenPinners);
+             if (blocker)
+             {
+                score -= WeakQueen;
+                score -= WeakQueen * 5;
+                if (!(blocker & pos.pieces(PAWN)) || file_of(lsb(blocker)) != file_of(s))
+                    score -= WeakQueen * 2; // even more penalty when blocker is'nt pawn on the same file
+              }
 #else
             Bitboard queenPinners;
             if (pos.slider_blockers(pos.pieces(Them, ROOK, BISHOP), s, queenPinners))
@@ -501,7 +499,6 @@ constexpr Score Outpost            = S(  9,  3);
                  & safe
                  & ~attackedBy[Us][QUEEN]
                  & ~rookChecks;
-
 
     if (queenChecks)
 #ifdef Maverick   // Michael Chaly /Enemy queen safe checks tweak
@@ -568,10 +565,10 @@ constexpr Score Outpost            = S(  9,  3);
     // Transform the kingDanger units into a Score, and subtract it from the evaluation
 #ifdef Maverick //tweaked by MichelB7
     if (abs(kingDanger) > 50 )
-		score -= make_score(9 * kingDanger * kingDanger / 32768 , kingDanger / 16);//tweak Michael B7
+        score -= make_score(9 * kingDanger * kingDanger / 32768 , kingDanger / 16);// byMichael B7
 #else
-	if (kingDanger > 100)
-		score -= make_score(kingDanger * kingDanger / 4096, kingDanger / 16);
+    if (kingDanger > 100)
+        score -= make_score(kingDanger * kingDanger / 4096, kingDanger / 16);
 #endif
 
     // Penalty when our king is on a pawnless flank
@@ -884,14 +881,13 @@ constexpr Score Outpost            = S(  9,  3);
 
     // If scale is not already specific, scale down the endgame via general heuristics
     if (sf == SCALE_FACTOR_NORMAL)
-
-	{
+    {
         if (   pos.opposite_bishops()
             && pos.non_pawn_material() == 2 * BishopValueMg)
             sf = 16 + 4 * pe->passed_count();
-
         else
-            sf = std::min( 40 + (pos.opposite_bishops() ? 2 : 7) * pos.count<PAWN>(strongSide), sf );
+            sf = std::min(40 + (pos.opposite_bishops() ? 2 : 7) * pos.count<PAWN>(strongSide), sf);
+
     }
 
     return ScaleFactor(sf);
