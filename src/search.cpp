@@ -1560,22 +1560,28 @@ moves_loop: // When in check, search starts from here
           // Skip quiet moves if movecount exceeds our FutilityMoveCount threshold
           moveCountPruning = moveCount >= futility_move_count(improving, depth / ONE_PLY);
 
-          if (   !captureOrPromotion
+          if (
+#ifdef Sullivan
+              !extension  //Michael B7
+              && !captureOrPromotion
+#else
+              !captureOrPromotion
+#endif
               && !givesCheck
 #ifdef Sullivan  //MichaelB7
-			  && !extension
-#endif
+              && (!pos.advanced_pawn_push(move) || pos.non_pawn_material(~us) > BishopValueMg))  //Michael Chaly #2175
+#else
               && !pos.advanced_pawn_push(move))
+#endif
           {
               // Move count based pruning (~30 Elo)
               if (moveCountPruning)
                   continue;
 #ifdef Sullivan  // from SugaR by Marco Zerbinati
-			  if (mcts && SE && moveCount > 3)
-				  continue;
+              if (mcts && SE && moveCount > 3)
+                  continue;
 #endif
-			  
-		 
+
               // Reduced depth of the next LMR search
               int lmrDepth = std::max(newDepth - reduction(improving, depth, moveCount), DEPTH_ZERO);
               lmrDepth /= ONE_PLY;
