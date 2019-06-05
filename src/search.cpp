@@ -1323,20 +1323,28 @@ moves_loop: // When in check, search starts from here
 
           moveCountPruning = moveCount >= futility_move_count(improving, depth / ONE_PLY);
 
-          if (   !captureOrPromotion
+          if (
+#ifdef Maverick
+			  !extension  //Michael B7
+			  && !captureOrPromotion
+#else
+			  !captureOrPromotion
+#endif
               && !givesCheck
+#ifdef Maverick
+              && (!pos.advanced_pawn_push(move) || pos.non_pawn_material(~us) > BishopValueMg))  //Michael Chaly #2175
+#else
               && !pos.advanced_pawn_push(move))
+#endif
           {
               // Move count based pruning (~30 Elo)
               if (moveCountPruning)
                   continue;
 
               // Reduced depth of the next LMR search
-#ifdef Maverick
-			  int lmrDepth = std::max(newDepth - reduction(improving, depth, moveCount), DEPTH_ZERO);
-#else
+
               int lmrDepth = std::max(newDepth - reduction(improving, depth, moveCount), DEPTH_ZERO);
-#endif
+
               lmrDepth /= ONE_PLY;
 
               // Countermoves based pruning (~20 Elo)
