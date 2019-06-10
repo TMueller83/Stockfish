@@ -48,6 +48,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 PolyBook polybook1;  // global PolyBook1
 PolyBook polybook2;  // global PolyBook2
 PolyBook polybook3;  // global PolyBook3
+PolyBook polybook4;  // global PolyBook3
 
 using namespace std;
 

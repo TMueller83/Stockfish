@@ -50,14 +50,17 @@ void on_tb_path(const Option& o) { Tablebases::init(o); }
 void on_book_file1(const Option& o) { polybook1.init(o); }
 void on_book_file2(const Option& o) { polybook2.init(o); }
 void on_book_file3(const Option& o) { polybook3.init(o); }
+void on_book_file4(const Option& o) { polybook4.init(o); }
 
 void on_best_book_move1(const Option& o) { polybook1.set_best_book_move(o); }
 void on_best_book_move2(const Option& o) { polybook2.set_best_book_move(o); }
 void on_best_book_move3(const Option& o) { polybook3.set_best_book_move(o); }
+void on_best_book_move4(const Option& o) { polybook4.set_best_book_move(o); }
 
 void on_book_depth1(const Option& o) { polybook1.set_book_depth(o); }
 void on_book_depth2(const Option& o) { polybook2.set_book_depth(o); }
 void on_book_depth3(const Option& o) { polybook3.set_book_depth(o); }
+void on_book_depth4(const Option& o) { polybook4.set_book_depth(o); }
 #endif
 
 /// Our case insensitive less() function as required by UCI protocol
@@ -85,18 +88,13 @@ void init(OptionsMap& o) {
     o["Contempt"]             << Option(24, -100, 100);
 #endif
 #ifdef Add_Features
-    o["Analysis Contempt"]    << Option("var Off var White var Black var Both ", "Off");
+    o["Analysis Contempt"]    << Option("var Off var White var Black var Both var Off ", "Off");
 #else
     o["Analysis Contempt"]    << Option("var Both var Off var White var Black var Both", "Both");
 #endif
 #ifdef Add_Features
     o["Use_Book_1"] 	        << Option(false);
-    o["Book_File_1"] 	        << Option("var None var Cerebellum var Champions "
-                                          "var Alekhine var Anand var Botvinnik "
-                                          "var Capablanca var Carlsen var Fischer "
-                                          "var Karpov var Kasparov var Kortschnoi "
-                                          "var Kramink var Lasker var Petrosian "
-                                          "var Tal ","None", on_book_file1);
+    o["Book_File_1"] 	        << Option("Alekhine", on_book_file1);
     o["Best_Move_1"] 	        << Option(false, on_best_book_move1);
     o["Book_Depth_1"] 	        << Option(127, 1, 127, on_book_depth1);
     o["Use_Book_2"] 	        << Option(false);
@@ -107,6 +105,10 @@ void init(OptionsMap& o) {
     o["Book_File_3"]            << Option("Cerebellum", on_book_file3);
     o["Best_Move_3"]            << Option(true, on_best_book_move3);
     o["Book_Depth_3"]           << Option(127, 1, 127, on_book_depth3);
+	o["Use_Book_4"] 	        << Option(false);
+	o["Book_File_4"]            << Option("Cerebellum_NN", on_book_file4);
+	o["Best_Move_4"]            << Option(true, on_best_book_move4);
+	o["Book_Depth_4"]           << Option(127, 1, 127, on_book_depth4);
 
 #endif
     o["Skill Level"]            << Option(20, 0, 20);

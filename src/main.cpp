@@ -54,6 +54,7 @@ int main(int argc, char* argv[]) {
    polybook1.init(Options["Book_File_1"]);  // book idea from Marco Zerbanti
    polybook2.init(Options["Book_File_2"]);
    polybook3.init(Options["Book_File_3"]);
+   polybook4.init(Options["Book_File_4"]);
 #endif
   Search::init();
   Threads.set(Options["Threads"]);
