@@ -115,7 +115,7 @@ namespace {
 #ifdef Sullivan // MichaelB7
   Depth reduction(bool i, Depth d, int mn) {
     return (Reductions[i][std::min(d / ONE_PLY, 63)][mn]) * ONE_PLY;
-#else		
+#else
   Depth reduction(bool i, Depth d, int mn) {
     int r = Reductions[d / ONE_PLY] * Reductions[mn];
     return ((r + 512) / 1024 + (!i && r > 1024)) * ONE_PLY;
@@ -212,7 +212,7 @@ void Search::init() {
               Reductions[imp][d][mc]++;			}
 #else
   for (int i = 1; i < MAX_MOVES; ++i)
-     Reductions[i] = int(22.9 * std::log(i));
+      Reductions[i] = int(22.9 * std::log(i));
 #endif
 }
 
@@ -420,17 +420,13 @@ void MainThread::search() {
           minScore = std::min(minScore, th->rootMoves[0].score);
 
       // Vote according to score and depth, and select the best thread
-      int64_t bestVote = 0;
       for (Thread* th : Threads)
       {
           votes[th->rootMoves[0].pv[0]] +=
-               (th->rootMoves[0].score - minScore + 14) * int(th->completedDepth);
+              (th->rootMoves[0].score - minScore + 14) * int(th->completedDepth);
 
-          if (votes[th->rootMoves[0].pv[0]] > bestVote)
-          {
-              bestVote = votes[th->rootMoves[0].pv[0]];
+          if (votes[th->rootMoves[0].pv[0]] > votes[bestThread->rootMoves[0].pv[0]])
               bestThread = th;
-          }
       }
   }
 
@@ -438,49 +434,46 @@ void MainThread::search() {
 
 #ifdef Sullivan  //from SugaR by Marco Zerbinati
   if(mcts){
-	  if ((((Movesplayed <= 40) || (piecesCnt <= 6)) && (bestThread->completedDepth > 4 * ONE_PLY)))
-	  {
-		  std::ofstream general("experience.bin", std::ofstream::app | std::ofstream::binary);
-		  ExpEntry tempExpEntry;
-		  tempExpEntry.depth = bestThread->completedDepth;
-		  tempExpEntry.hashkey = rootPos.key();
-		  tempExpEntry.move = bestThread->rootMoves[0].pv[0];
-		  tempExpEntry.score = bestThread->rootMoves[0].score;
-		  if (Movesplayed <= 10 && startpoint &&  piecesCnt > 6)
-		  {
-			  general.write((char*)&tempExpEntry, sizeof(tempExpEntry));
-		  }
-		  if (startpoint &&  piecesCnt > 6)
-		  {
-			  for (int x = 0; x < openingswritten; x++)
-			  {
-				  string openings;
-				  char *opnings;
-	
-				  std::ostringstream ss;
-				  ss << OpFileKey[x];
-				  openings = ss.str() + ".bin";
-				  opnings = new char[openings.length() + 1];
-				  std::strcpy(opnings, openings.c_str());
-				  std::ofstream myFile(opnings, std::ofstream::app | std::ofstream::binary);
-				  myFile.write((char*)&tempExpEntry, sizeof(tempExpEntry));
-				  myFile.close();
-			  }
-		  }
-		  if (piecesCnt <= 2)
-		  {
-			  std::ofstream pawngame("pawngame.bin", std::ofstream::app | std::ofstream::binary);
-			  pawngame.write((char*)&tempExpEntry, sizeof(tempExpEntry));
-			  pawngame.close();
-		  }
-		  Movesplayed++;
-	
-	  }
-	
-	  if (!expHits)
-	  {
-		  useExp = false;
-	  }
+      if ((((Movesplayed <= 40) || (piecesCnt <= 6)) && (bestThread->completedDepth > 4 * ONE_PLY)))
+         {
+            std::ofstream general("experience.bin", std::ofstream::app | std::ofstream::binary);
+            ExpEntry tempExpEntry;
+            tempExpEntry.depth = bestThread->completedDepth;
+            tempExpEntry.hashkey = rootPos.key();
+            tempExpEntry.move = bestThread->rootMoves[0].pv[0];
+            tempExpEntry.score = bestThread->rootMoves[0].score;
+              if (Movesplayed <= 10 && startpoint &&  piecesCnt > 6)
+                 {
+                    general.write((char*)&tempExpEntry, sizeof(tempExpEntry));
+                  }
+              if (startpoint &&  piecesCnt > 6)
+                  {
+                     for (int x = 0; x < openingswritten; x++)
+                     {
+                        string openings;
+                        char *opnings;
+                        std::ostringstream ss;
+                        ss << OpFileKey[x];
+                        openings = ss.str() + ".bin";
+                        opnings = new char[openings.length() + 1];
+                        std::strcpy(opnings, openings.c_str());
+                        std::ofstream myFile(opnings, std::ofstream::app | std::ofstream::binary);
+                        myFile.write((char*)&tempExpEntry, sizeof(tempExpEntry));
+                        myFile.close();
+                      }
+                    }
+                if (piecesCnt <= 2)
+                   {
+                      std::ofstream pawngame("pawngame.bin", std::ofstream::app | std::ofstream::binary);
+                      pawngame.write((char*)&tempExpEntry, sizeof(tempExpEntry));
+                      pawngame.close();
+                    }
+                    Movesplayed++;
+                 }
+          if (!expHits)
+          {
+              useExp = false;
+          }
   }
 #endif
   // Send again PV info if we have a new best thread
@@ -637,18 +630,34 @@ ss->pv = pv;
               alpha = std::max(previousScore - delta,-VALUE_INFINITE);
               beta  = std::min(previousScore + delta, VALUE_INFINITE);
 #endif
-              // Adjust contempt based on root move's previousScore (dynamic contempt)
-              int dct = ct + 88 * previousScore / (abs(previousScore) + 200);
-
-              contempt = (us == WHITE ?  make_score(dct, dct / 2)
-                                      : -make_score(dct, dct / 2));
-          }
+		// Adjust contempt based on root move's previousScore (dynamic contempt)
+		int dct;
+#ifdef Add_Features
+		bool dc = Options["Dynamic_Contempt"];
+		if (!dc)
+		{
+			dct = 0;
+			contempt = Score(0);
+		}
+		else
+#endif
+                {
+#ifdef Add_Features
+                         dct = ct + 88 * previousScore / (abs(previousScore) + 200)
+                              + (attack * (ct + 88 * previousScore / (abs(previousScore) + 200)))/1000;
+#else
+                         dct = ct + 88 * previousScore / (abs(previousScore) + 200);
+#endif
+                contempt = (us == WHITE ?  make_score(dct, dct / 2)
+                            : -make_score(dct, dct / 2));
+                 }
+            }
 
           // Start with a small aspiration window and, in the case of a fail
           // high/low, re-search with a bigger window until we don't fail
           // high/low anymore.
           int failedHighCnt = 0;
-          while (true)
+          while (true )
           {
 
 #ifdef Sullivan  //Vondele - Fix issues from using adjustedDepth too broadly #1792
@@ -694,8 +703,6 @@ ss->pv = pv;
 #else
                   alpha = std::max(bestValue - delta, -VALUE_INFINITE);
 #endif
-
-
                   failedHighCnt = 0;
                   if (mainThread)
                       mainThread->stopOnPonderhit = false;
@@ -709,7 +716,6 @@ ss->pv = pv;
                       zugzwangMates-=100;
 #else
                   beta = std::min(bestValue + delta, VALUE_INFINITE);
-
 #endif
                   ++failedHighCnt;
               }
@@ -756,7 +762,7 @@ ss->pv = pv;
         && VALUE_MATE - bestValue <= 2 * Limits.mate)
         Threads.stop = true;
 #endif
-	if (!mainThread)
+      if (!mainThread)
         continue;
 #ifdef Sullivan  //Make MultiPV search stop properly with "go mate x" command. #2173
         // Have we found a "mate in x"?
@@ -924,7 +930,7 @@ namespace {
 #endif
     bool captureOrPromotion, doFullDepthSearch, moveCountPruning, ttCapture;
     Piece movedPiece;
-    int moveCount, captureCount, quietCount;
+    int moveCount, captureCount, quietCount, singularLMR;
 #ifdef Sullivan // escape capture
     Square escapeCaptureSq;
 #endif
@@ -933,7 +939,7 @@ namespace {
     Thread* thisThread = pos.this_thread();
     inCheck = pos.checkers();
     Color us = pos.side_to_move();
-    moveCount = captureCount = quietCount = ss->moveCount = 0;
+    moveCount = captureCount = quietCount = singularLMR = ss->moveCount = 0;
     bestValue = -VALUE_INFINITE;
     maxValue = VALUE_INFINITE;
 
@@ -978,10 +984,10 @@ namespace {
     // starts with statScore = 0. Later grandchildren start with the last calculated
     // statScore of the previous grandchild. This influences the reduction rules in
     // LMR which are based on the statScore of parent position.
-	if (rootNode)
-		(ss + 4)->statScore = 0;
-	else
-		(ss + 2)->statScore = 0;
+    if (rootNode)
+        (ss + 4)->statScore = 0;
+    else
+        (ss + 2)->statScore = 0;
 
     // Step 4. Transposition table lookup. We don't want the score of a partial
     // search to overwrite a previous full search TT value, so we use a different
@@ -992,12 +998,8 @@ namespace {
     ttValue = ttHit ? value_from_tt(tte->value(), ss->ply) : VALUE_NONE;
     ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
             : ttHit    ? tte->move() : MOVE_NONE;
+    ttPv = PvNode || (ttHit && tte->is_pv());
 
-#ifdef Sullivan  //locutust2 #2166
-    ttPv =  PvNode || (ttHit && tte->is_pv());
-#else
-    ttPv = (ttHit && tte->is_pv()) || (PvNode && depth > 4 * ONE_PLY);
-#endif
     // At non-PV nodes we check for an early TT cutoff
     if (  !PvNode
         && ttHit
@@ -1389,15 +1391,10 @@ moves_loop: // When in check, search starts from here
     value = bestValue; // Workaround a bogus 'uninitialized' warning under gcc
     moveCountPruning = false;
     ttCapture = ttMove && pos.capture_or_promotion(ttMove);
-#ifdef Sullivan  //Michael B7
-    bool singularExtensionLMR = false;
-#else
-    int singularExtensionLMRmultiplier = 0;
-#endif
-
 #ifdef Sullivan // VoyagerOne escapre Capture
      escapeCaptureSq = SQ_NONE;
 #endif
+
 
     // Step 12. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -1476,21 +1473,16 @@ moves_loop: // When in check, search starts from here
           ss->excludedMove = move;
           value = search<NonPV>(pos, ss, singularBeta - 1, singularBeta, halfDepth, cutNode);
           ss->excludedMove = MOVE_NONE;
-#ifdef Sullivan //MichaelB7
-		  if (value < singularBeta)
-		  {
-			  extension = ONE_PLY;
-			  singularExtensionLMR = true;
-		  }
-#else
+
           if (value < singularBeta)
-              {
+          {
               extension = ONE_PLY;
-              singularExtensionLMRmultiplier++;
+              singularLMR++;
+
               if (value < singularBeta - std::min(3 * depth / ONE_PLY, 39))
-              	  singularExtensionLMRmultiplier++;
-              }
-#endif
+                  singularLMR++;
+          }
+
           // Multi-cut pruning
           // Our ttMove is assumed to fail high, and now we failed high also on a reduced
           // search without the ttMove. So we assume this expected Cut-node is not singular,
@@ -1568,11 +1560,7 @@ moves_loop: // When in check, search starts from here
               !captureOrPromotion
 #endif
               && !givesCheck
-#ifdef Sullivan  //MichaelB7
-              && (!pos.advanced_pawn_push(move) || pos.non_pawn_material(~us) > BishopValueMg))  //Michael Chaly #2175
-#else
-              && !pos.advanced_pawn_push(move))
-#endif
+              && (!pos.advanced_pawn_push(move) || pos.non_pawn_material(~us) > BishopValueMg))
           {
               // Move count based pruning (~30 Elo)
               if (moveCountPruning)
@@ -1608,13 +1596,9 @@ moves_loop: // When in check, search starts from here
                   continue;
 #endif
           }
-#ifdef Sullivan  // idea from above
-          else if (!inCheck && !pos.see_ge(move, -PawnValueEg * (depth / ONE_PLY))) // (~20 Elo)
+          else if ((!givesCheck || !(pos.blockers_for_king(~us) & from_sq(move)))
+                  && !pos.see_ge(move, -PawnValueEg * (depth / ONE_PLY))) // (~20 Elo)
                   continue;
-#else
-          else if (!pos.see_ge(move, -PawnValueEg * (depth / ONE_PLY))) // (~20 Elo)
-		  continue;
-#endif
       }
 
       // Speculative prefetch as early as possible
@@ -1655,17 +1639,12 @@ moves_loop: // When in check, search starts from here
 #else
               r -= 2 * ONE_PLY;
 #endif
-#ifdef Sullivan
-		  // Decrease reduction if opponent's move count is high OR if move created a singular extension(~10 Elo) //MichaelB7
-		  if ((ss-1)->moveCount > 15 || (singularExtensionLMR))
-		  r -= ONE_PLY;
-#else
           // Decrease reduction if opponent's move count is high (~10 Elo)
           if ((ss-1)->moveCount > 15)
               r -= ONE_PLY;
+
           // Decrease reduction if move has been singularly extended
-          r -= singularExtensionLMRmultiplier * ONE_PLY;
-#endif
+          r -= singularLMR * ONE_PLY;
 
           if (!captureOrPromotion)
           {
@@ -1718,7 +1697,7 @@ moves_loop: // When in check, search starts from here
                 r -= ONE_PLY;
 #endif
 
-          Depth d = std::max(newDepth - std::max(r, DEPTH_ZERO), ONE_PLY);
+          Depth d = clamp(newDepth - r, ONE_PLY, newDepth);
 
           value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, d, true);
 
@@ -1888,10 +1867,10 @@ moves_loop: // When in check, search starts from here
 
         update_capture_stats(pos, bestMove, capturesSearched, captureCount, stat_bonus(depth + ONE_PLY));
 
-		// Extra penalty for a quiet TT or main killer move in previous ply when it gets refuted
-		if (   ((ss-1)->moveCount == 1 || ((ss-1)->currentMove == (ss-1)->killers[0]))
-			&& !pos.captured_piece())
-			update_continuation_histories(ss-1, pos.piece_on(prevSq), prevSq, -stat_bonus(depth + ONE_PLY));
+        // Extra penalty for a quiet TT or main killer move in previous ply when it gets refuted
+        if (   ((ss-1)->moveCount == 1 || ((ss-1)->currentMove == (ss-1)->killers[0]))
+            && !pos.captured_piece())
+                update_continuation_histories(ss-1, pos.piece_on(prevSq), prevSq, -stat_bonus(depth + ONE_PLY));
 
     }
     // Bonus for prior countermove that caused the fail low
@@ -2089,9 +2068,7 @@ moves_loop: // When in check, search starts from here
 
       // Don't search moves with negative SEE values
       if (  (!inCheck || evasionPrunable)
-#ifdef Sullivan // Günther Demetz - Avoid pruning disocver checks with negative SEE value
-          && !(givesCheck && (pos.blockers_for_king(~pos.side_to_move()) & from_sq(move)))
-#endif
+          && (!givesCheck || !(pos.blockers_for_king(~pos.side_to_move()) & from_sq(move)))
           && !pos.see_ge(move))
           continue;
 
@@ -2211,7 +2188,7 @@ moves_loop: // When in check, search starts from here
   void update_capture_stats(const Position& pos, Move move,
                             Move* captures, int captureCount, int bonus) {
 
-      CapturePieceToHistory& captureHistory =  pos.this_thread()->captureHistory;
+      CapturePieceToHistory& captureHistory = pos.this_thread()->captureHistory;
       Piece moved_piece = pos.moved_piece(move);
       PieceType captured = type_of(pos.piece_on(to_sq(move)));
 
@@ -2449,12 +2426,6 @@ void Tablebases::rank_root_moves(Position& pos, Search::RootMoves& rootMoves) {
         // Probe during search only if DTZ is not available and we are winning
         if (dtz_available || rootMoves[0].tbScore <= VALUE_DRAW)
             Cardinality = 0;
-    }
-    else
-    {
-        // Assign the same rank to all moves
-        for (auto& m : rootMoves)
-            m.tbRank = 0;
     }
 }
 #ifdef Sullivan  //from SugaR by Marco Zerbinati from Kelly

@@ -47,15 +47,14 @@ int main(int argc, char* argv[]) {
   Bitboards::init();
   Position::init();
   Bitbases::init();
-  Search::init();
-#ifdef Add_Featuers
-   Eval::init();   //  Replace Mobility table with log equations (with rook mg exception). #1784
-   polybook1.init(Options["Book_File_1"]);  // mulitple book idea from Marco Zerbanti
+  Endgames::init();
+#ifdef Sullivan
+   Eval::init();  //  Replace Mobility table with log equations (with rook mg exception). #1784
+   polybook1.init(Options["Book_File_1"]);  // book idea from Marco Zerbanti
    polybook2.init(Options["Book_File_2"]);
    polybook3.init(Options["Book_File_3"]);
 #endif
-  Endgames::init();
-
+  Search::init();
   Threads.set(Options["Threads"]);
   Search::clear(); // After threads are up
 

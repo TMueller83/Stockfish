@@ -1,47 +1,35 @@
 ### Overview
 
-SugaR is a free UCI chess engine derived from Stockfish. It is
+Honey is a free UCI chess engine derived from Stockfish. It is
 not a complete chess program and requires some UCI-compatible GUI
 (e.g. XBoard with PolyGlot, eboard, Arena, Sigma Chess, Shredder, Chess
 Partner, Aquarium or Fritz) in order to be used comfortably. Read the
 documentation for your GUI of choice for information about how to use
-SugaR with it.
+Honey with it.
 
-This version of SugaR supports up to 128 cores. The engine defaults
+This version of Honey supports up to 128 cores. The engine defaults
 to one search thread, so it is therefore recommended to inspect the value of
 the *Threads* UCI parameter, and to make sure it equals the number of CPU
 cores on your computer.
 
-This version of SugaR has support for Syzygybases.
+This version of Honey has support for Syzygybases.
 
 
 ### Files
 
-This distribution of SugaR consists of the following files:
+This distribution of Honey consists of the following files:
 
   * Readme.md, the file you are currently reading.
 
   * Copying.txt, a text file containing the GNU General Public License.
 
   * source, a subdirectory containing the full source code, including a Makefile
-    that can be used to compile SugaR on Unix-like systems.
+    that can be used to compile Honey on Unix-like systems.
 
 ## Uci options
-
-## Dynamic Strategy 
-_Boolean, Default: False_
-
-To be used as additional support in the analysis of particularly complex positions.
-With the increase of the score, that is how much the motor is in advantage or fundamentally closer to the checkmate.
-Or In all favorable pressing situations; The advanced Pawns are penalized and the King gains more importance because
-we must pay attention to the compactness and the other way around.
-
-## Uci options	### NN section (Experimental Neural Networks inspired technics)
-Experimental, MonteCarloTreeSearch, if activated, the engine's behaviour is similar to AlphaZero concepts.
-Idea are implemented, integrated on SugaR:
 	
-### NN MCTS Self-Learning
-_Boolean, Default: True_
+### MCTS
+_Boolean, Default: False_
 
 - [https://github.com/Kellykinyama12/Stockfish] (montecarlo by Kelly Kinyama) only when true. This creates three files for machine learning purposes:
 ###	-experience.bin
@@ -64,16 +52,6 @@ It persists the following information on the Hard Disk:
 With learning, the engine became stronger and stronger.
 The algorithm builds a decision tree of moves and contains the statistics similar to Monte Carlo Tree Search. It makes a decision depending on what information is in the Decision Tree, so both Best Search First and later Depth First Search.
 
-#### NN Perceptron Search
-
-_Boolean, Default: False_
-- [https://github.com/Stefano80/Stockfish/compare/82ff04b992a53c757519a6ff61576ebd267c0cee...f013d90c669940e68fd707e2197fe655e35c04ed]
-( perceptron by Stefano Cardanobile) for Late Move Reductions search as training signal
-
-#### MCTS Search
-_Boolean, Default: False_
-- [https://github.com/Stefano80/Stockfish/compare/badb2ac...86fdeac]
-( Montecarlo by Stefano Cardanobile and Jörg Oster) in main search function to an upper node.
 
 ### Syzygybases
 
@@ -129,14 +107,14 @@ the 50-move rule.
 
 ### Compiling it yourself
 
-On Unix-like systems, it should be possible to compile SugaR
+On Unix-like systems, it should be possible to compile Honey
 directly from the source code with the included Makefile.
 
-SugaR has support for 32 or 64-bit CPUs, the hardware POPCNT
+Honey has support for 32 or 64-bit CPUs, the hardware POPCNT
 instruction, big-endian machines such as Power PC, and other platforms.
 
-On Windows-like systems, it should be possible to compile SugaR
-directly from the source code with the included Sugar.sln with Visual Studio 15.3 Community 
+On Windows-like systems, it should be possible to compile Honey
+directly from the source code with the included Honey.sln with Visual Studio 15.3 Community 
 from GUI or with command scenario using Visual Studio 15.3 Community Commands Shell.
 
 In general it is recommended to run `make help` to see a list of make
@@ -148,14 +126,14 @@ for a quick reference.
 
 ### Terms of use
 
-SugaR is free, and distributed under the **GNU General Public License**
+Honey is free, and distributed under the **GNU General Public License**
 (GPL). Essentially, this means that you are free to do almost exactly
 what you want with the program, including distributing it among your
 friends, making it available for download from your web site, selling
 it (either by itself or as part of some bigger software package), or
 using it as the starting point for a software project of your own.
 
-The only real limitation is that whenever you distribute SugaR in
+The only real limitation is that whenever you distribute Honey in
 some way, you must always include the full source code, or a pointer
 to where the source code can be found. If you make any changes to the
 source code, these changes must also be made available under the GPL.
