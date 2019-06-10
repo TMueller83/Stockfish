@@ -343,25 +343,20 @@ string UCI::value(Value v) {
   constexpr float sf = 2.15; // scoring percentage factor
   constexpr float vf = 0.31492; // centipawn value factor
 #endif
-    if (abs(v) < VALUE_MATE - MAX_PLY)
+  if (abs(v) < VALUE_MATE - MAX_PLY)
 #ifdef Maverick
-	if (Options["Score_Output"] == "CentiPawn")
-	    ss << fixed << setprecision(0) << "cp " << (vs * vf);
-	else if ((Options["xBoard"])  && (Options["Score_Output"] == "Score%"))
-	     ss << "cp " << fixed << setprecision(2) << 10000 * (pow (sf,(sf * vs /1000)))
-	                                                / (pow(sf,(sf * vs /1000)) + 1);
-	else ss << "sp " << fixed << setprecision(2) << 100 * (pow (sf,(sf * vs /1000)))
-	                                                / (pow(sf,(sf * vs /1000)) + 1) << "% " ;
+  if (Options["Score_Output"] == "CentiPawn")
+       ss << fixed << setprecision(0) << "cp " << (vs * vf);
+  else if ( Options["Score_Output"] == "SP-GUI")
+       ss << "cp " << fixed << setprecision(2) << 10000 * (pow (sf,(sf * vs /1000)))
+                                / (pow(sf,(sf * vs /1000)) + 1); // for use with GUIs that divide centipawn scores by 100, e.g, xBoard
+  else ss << "cp " << fixed << setprecision(2) << 100 * (pow (sf,(sf * vs /1000)))
+                                / (pow(sf,(sf * vs /1000)) + 1) << "% " ;  // conmmand line score percenatge setting
 #else
-        ss << "cp " << v * 100 / PawnValueEg;
+  ss << "cp " << v * 100 / PawnValueEg;
 #endif
-	
-    else
-        ss << "mate " << (v > 0 ? VALUE_MATE - v + 1 : -VALUE_MATE - v) / 2;
-	
-	
-	
-
+  else
+    ss << "mate " << (v > 0 ? VALUE_MATE - v + 1 : -VALUE_MATE - v) / 2;
   return ss.str();
 }
 

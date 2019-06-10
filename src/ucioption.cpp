@@ -80,18 +80,6 @@ void init(OptionsMap& o) {
 	
     o["Debug Log File"]       << Option("<empty>", on_logger);
 	o["Clear_Hash"]            << Option(on_clear_hash);
-
-#ifdef Maverick
-    o["W_Contempt"] 	      << Option(  22, -150, 150);
-    o["B_Contempt"] 	      << Option(   2, -150, 150);
-#else
-    o["Contempt"]             << Option(24, -100, 100);
-#endif
-#ifdef Add_Features
-    o["Analysis Contempt"]    << Option("var Off var White var Black var Both var Off ", "Off");
-#else
-    o["Analysis Contempt"]    << Option("var Both var Off var White var Black var Both", "Both");
-#endif
 #ifdef Add_Features
     o["Use_Book_1"] 	        << Option(false);
     o["Book_File_1"] 	        << Option("Alekhine", on_book_file1);
@@ -102,14 +90,24 @@ void init(OptionsMap& o) {
     o["Best_Move_2"] 	        << Option(false, on_best_book_move2);
     o["Book_Depth_2"] 	        << Option(127, 1, 127, on_book_depth2);
     o["Use_Book_3"] 	        << Option(false);
-    o["Book_File_3"]            << Option("Cerebellum", on_book_file3);
+    o["Book_File_3"]            << Option("Cerebellum_NN", on_book_file3);
     o["Best_Move_3"]            << Option(true, on_best_book_move3);
     o["Book_Depth_3"]           << Option(127, 1, 127, on_book_depth3);
 	o["Use_Book_4"] 	        << Option(false);
-	o["Book_File_4"]            << Option("Cerebellum_NN", on_book_file4);
+	o["Book_File_4"]            << Option("Cerebellum", on_book_file4);
 	o["Best_Move_4"]            << Option(true, on_best_book_move4);
 	o["Book_Depth_4"]           << Option(127, 1, 127, on_book_depth4);
-
+#endif
+#ifdef Maverick
+	o["W_Contempt"] 	      << Option(  22, -150, 150);
+	o["B_Contempt"] 	      << Option(   2, -150, 150);
+#else
+	o["Contempt"]             << Option(24, -100, 100);
+#endif
+#ifdef Add_Features
+	o["Analysis_Contempt"]    << Option("var Off var White var Black var Both var Off ", "Off");
+#else
+	o["Analysis_Contempt"]    << Option("var Both var Off var White var Black var Both", "Both");
 #endif
     o["Skill Level"]            << Option(20, 0, 20);
     o["Move Overhead"]          << Option(30, 0, 5000);
@@ -125,15 +123,16 @@ void init(OptionsMap& o) {
     o["FastPlay"]               << Option(false);
     o["Minimal_Output"]         << Option(false);
     o["No_Null_Moves"]          << Option(false);
-	o["UCI_LimitStrength"]      << Option(false);
-	o["xBoard"]                 << Option(false);
-	o["Score_Output"]           << Option("var CentiPawn var CentiPawn var Score% ", "CentiPawn");
-    o["Levels"]                 << Option("var World_Champion var World_Champion var Super_GM "
-                                          "var GM  var Deep_Thought var SIM var Cray_Blitz "
+//	o["UCI_LimitStrength"]      << Option(false);
+//	o["xBoard"]                 << Option(false);
+    o["Levels"]                 << Option("var None var World_Champion var Super_GM "
+                                          "var GM var Deep_Thought var SIM var Cray_Blitz "
                                           "var IM var Master var Expert var Class_A "
                                           "var Class_B var Class_C var Class_D var Boris "
-                                          "var Novice var None ", "World_Champion");
-    o["UCI_Elo"]                << Option(1300, 1300, 2850);
+                                          "var Novice ", "None");
+    o["Play_By_Elo"]            << Option(false);
+    o["UCI_Elo"]                << Option(1200, 1200, 2850);
+	o["Score_Output"]           << Option("var CentiPawn var SP-GUI var SP ", "CentiPawn");
 #endif
 #ifdef Maverick
 	o["DC_Slider"]              << Option(65, -180, 180);
