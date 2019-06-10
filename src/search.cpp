@@ -1650,7 +1650,11 @@ moves_loop: // When in check, search starts from here
 
           // Decrease reduction if position is or has been on the PV
           if (ttPv)
+#ifdef Sullivan
+              r -= 1 * ONE_PLY;
+#else
               r -= 2 * ONE_PLY;
+#endif
 #ifdef Sullivan
 		  // Decrease reduction if opponent's move count is high OR if move created a singular extension(~10 Elo) //MichaelB7
 		  if ((ss-1)->moveCount > 15 || (singularExtensionLMR))
