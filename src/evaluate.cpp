@@ -158,7 +158,7 @@ constexpr Score KnightManeuver     = S(  8,  4); //miguel-l
 constexpr Score KnightOnQueen      = S( 17,  8); //Fauzi
 constexpr Score LongDiagonalBishop = S( 40,  3); //Fauzi
 constexpr Score MinorBehindPawn    = S( 16,  1); //Fauzi
-constexpr Score Outpost            = S(  9,  3);
+constexpr Score Outpost            = S( 36, 12);
 constexpr Score PawnlessFlank      = S(  6, 96); //Fauzi
 constexpr Score RestrictedPiece    = S(  7,  4); //Fauzi
 constexpr Score RookOnPawn         = S( 13, 29); //Fauzi
@@ -169,7 +169,6 @@ constexpr Score ThreatByRank       = S( 13,  0);
 constexpr Score ThreatBySafePawn   = S(173, 94);
 constexpr Score TrappedRook        = S( 96,  4);
 constexpr Score WeakQueen          = S( 10,  2); // Gunther Dementz weak queen mod
-constexpr Score WeakUnopposedPawn  = S( 14, 19); //Fauzi
 #else
   // Assorted bonuses and penalties
   constexpr Score BishopPawns        = S(  3,  7);
@@ -180,7 +179,7 @@ constexpr Score WeakUnopposedPawn  = S( 14, 19); //Fauzi
   constexpr Score KnightOnQueen      = S( 16, 12);
   constexpr Score LongDiagonalBishop = S( 45,  0);
   constexpr Score MinorBehindPawn    = S( 18,  3);
-  constexpr Score Outpost            = S(  9,  3);
+  constexpr Score Outpost            = S( 36, 12);
   constexpr Score PawnlessFlank      = S( 17, 95);
   constexpr Score RestrictedPiece    = S(  7,  7);
   constexpr Score RookOnPawn         = S( 10, 32);
@@ -191,7 +190,6 @@ constexpr Score WeakUnopposedPawn  = S( 14, 19); //Fauzi
   constexpr Score ThreatBySafePawn   = S(173, 94);
   constexpr Score TrappedRook        = S( 47,  4);
   constexpr Score WeakQueen          = S( 49, 15);
-  constexpr Score WeakUnopposedPawn  = S( 12, 23);
 #endif
 
 
@@ -232,10 +230,8 @@ constexpr Score WeakUnopposedPawn  = S( 14, 19); //Fauzi
     // color, including x-rays. But diagonal x-rays through pawns are not computed.
     Bitboard attackedBy2[COLOR_NB];
 
-    // kingRing[color] are the squares adjacent to the king, plus (only for a
-    // king on its first rank) the squares two ranks in front. For instance,
-    // if black's king is on g8, kingRing[BLACK] is f8, h8, f7, g7, h7, f6, g6
-    // and h6.
+    // kingRing[color] are the squares adjacent to the king plus some other
+    // very near squares, depending on king position.
     Bitboard kingRing[COLOR_NB];
 
     // kingAttackersCount[color] is the number of pieces of the given color
@@ -354,14 +350,12 @@ constexpr Score WeakUnopposedPawn  = S( 14, 19); //Fauzi
         if (Pt == BISHOP || Pt == KNIGHT)
         {
             // Bonus if piece is on an outpost square or can reach one
-            bb = OutpostRanks & ~pe->pawn_attacks_span(Them);
+            bb = OutpostRanks & attackedBy[Us][PAWN] & ~pe->pawn_attacks_span(Them);
             if (bb & s)
-                score += Outpost * (Pt == KNIGHT ? 4 : 2)
-                                 * ((attackedBy[Us][PAWN] & s) ? 2 : 1);
+                score += Outpost * (Pt == KNIGHT ? 2 : 1);
 
-            else if (bb &= b & ~pos.pieces(Us))
-                score += Outpost * (Pt == KNIGHT ? 2 : 1)
-                                 * ((attackedBy[Us][PAWN] & bb) ? 2 : 1);
+            else if (bb & b & ~pos.pieces(Us))
+                score += Outpost / (Pt == KNIGHT ? 1 : 2);
 
             // Knight and Bishop bonus for being right behind a pawn
             if (shift<Down>(pos.pieces(PAWN)) & s)
@@ -658,10 +652,6 @@ constexpr Score WeakUnopposedPawn  = S( 14, 19); //Fauzi
 
     score += RestrictedPiece * popcount(b);
 
-    // Bonus for enemy unopposed weak pawns
-    if (pos.pieces(Us, ROOK, QUEEN))
-        score += WeakUnopposedPawn * pe->weak_unopposed(Them);
-
     // Find squares where our pawns can push on the next move
     b  = shift<Up>(pos.pieces(Us, PAWN)) & ~pos.pieces();
     b |= shift<Up>(b & TRank3BB) & ~pos.pieces();
@@ -765,13 +755,9 @@ constexpr Score WeakUnopposedPawn  = S( 14, 19); //Fauzi
                 // assign a smaller bonus if the block square isn't attacked.
                 int k = !unsafeSquares ? 20 : !(unsafeSquares & blockSq) ? 9 : 0;
 
-                // If the path to the queen is fully defended, assign a big bonus.
-                // Otherwise assign a smaller bonus if the block square is defended.
-                if (defendedSquares == squaresToQueen)
-                    k += 6;
-
-                else if (defendedSquares & blockSq)
-                    k += 4;
+                // Assign a larger bonus if the block square is defended.
+                if (defendedSquares & blockSq)
+                    k += 5;
 
                 bonus += make_score(k * w, k * w);
             }
@@ -922,7 +908,7 @@ constexpr Score WeakUnopposedPawn  = S( 14, 19); //Fauzi
 
     // Early exit if score is high
     Value v = (mg_value(score) + eg_value(score)) / 2;
-    if (abs(v) > (LazyThreshold + pos.non_pawn_material() / 64))
+    if (abs(v) > LazyThreshold + pos.non_pawn_material() / 64)
        return pos.side_to_move() == WHITE ? v : -v;
 
     // Main evaluation begins here

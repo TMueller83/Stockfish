@@ -44,9 +44,10 @@ void TTEntry::save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev) 
 
   // Overwrite less valuable entries
   if (  (k >> 48) != key16
-      || d / ONE_PLY + 10 > depth8
+      ||(d - DEPTH_OFFSET) / ONE_PLY > depth8 - 4
       || b == BOUND_EXACT)
   {
+
 #ifdef Maverick
       key16     = (uint_fast16_t)(k >> 48);
       value16   = (int_fast16_t)v;
@@ -58,10 +59,9 @@ void TTEntry::save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev) 
       value16   = (int16_t)v;
       eval16    = (int16_t)ev;
       genBound8 = (uint8_t)(TT.generation8 | uint8_t(pv) << 2 | b);
-      assert((d - DEPTH_NONE) / ONE_PLY >= 0);
-      depth8    = (uint8_t)((d - DEPTH_NONE) / ONE_PLY);
+      assert((d - DEPTH_OFFSET) / ONE_PLY >= 0);
+      depth8    = (uint8_t)((d - DEPTH_OFFSET) / ONE_PLY);
 #endif
-
   }
 }
 
