@@ -464,10 +464,10 @@ ss->pv = pv;
 #endif
   // In analysis mode, adjust contempt in accordance with user preference
   if (Limits.infinite || Options["UCI_AnalyseMode"])
-      ct =  Options["Contempt_Analysis"] == "Off"  ? 0
-          : Options["Contempt_Analysis"] == "Both" ? ct
-          : Options["Contempt_Analysis"] == "White" && us == BLACK ? -ct
-          : Options["Contempt_Analysis"] == "Black" && us == WHITE ? -ct
+      ct =  Options["Analysis_Contempt"] == "Off"  ? 0
+          : Options["Analysis_Contempt"] == "Both" ? ct
+          : Options["Analysis_Contempt"] == "White" && us == BLACK ? -ct
+          : Options["Analysis_Contempt"] == "Black" && us == WHITE ? -ct
           : ct;
 
   // Evaluation score is from the white point of view

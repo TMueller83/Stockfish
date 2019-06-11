@@ -104,7 +104,7 @@ void init(OptionsMap& o) {
     o["Contempt"]                 << Option(24, -100, 100);
 #endif
 #ifdef Add_Features
-    o["Contempt_Analysis"]        << Option("Off var White var Black var Both var Off", "Off");
+    o["Analysis_Contempt"]        << Option("Off var White var Black var Both var Off", "Off");
 #else
     o["Analysis_Contempt"]        << Option("Both var Off var White var Black var Both", "Both");
 #endif
