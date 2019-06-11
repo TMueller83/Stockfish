@@ -345,13 +345,20 @@ string UCI::value(Value v) {
 #endif
   if (abs(v) < VALUE_MATE - MAX_PLY)
 #ifdef Maverick
-  if (Options["Score_Output"] == "CentiPawn")
-       ss << fixed << setprecision(0) << "cp " << (vs * vf);
-  else if ( Options["Score_Output"] == "SP-GUI")
-       ss << "cp " << fixed << setprecision(2) << 10000 * (pow (sf,(sf * vs /1000)))
-                                / (pow(sf,(sf * vs /1000)) + 1); // for use with GUIs that divide centipawn scores by 100, e.g, xBoard
+  // Score percentage evalaution output, similair to Lc0 output.
+  // For use with GUIs that divide centipawn scores by 100, e.g, xBoard, Arena, Fritz, etc.
+  if ( Options["Score_Output"] == "ScorPct-GUI")
+       ss << "cp " << fixed << setprecision(0) << 10000 * (pow (sf,(sf * vs /1000)))
+	  / (pow(sf,(sf * vs /1000)) + 1);
+	
+  // Centipawn scoring, value times centipawn factor
+  // SF values the raw score of pawns much higher than 100, see types.h
+  // The higher raw score allows for greater precison in many evaluation functions
+  else if (Options["Score_Output"] == "CentiPawn")
+	  ss << fixed << setprecision(0) << "cp " << (vs * vf);
+
   else ss << "cp " << fixed << setprecision(2) << 100 * (pow (sf,(sf * vs /1000)))
-                                / (pow(sf,(sf * vs /1000)) + 1) << "% " ;  // conmmand line score percenatge setting
+                                / (pow(sf,(sf * vs /1000)) + 1);  // Commandline score percenatge
 #else
   ss << "cp " << v * 100 / PawnValueEg;
 #endif

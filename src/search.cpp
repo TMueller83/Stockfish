@@ -45,8 +45,6 @@
 #include "syzygy/tbprobe.h"
 
 #ifdef Add_Features
-#include <unistd.h> //for sleep //MichaelB7
-#include <random> // ELO MichaelB7
 #include "polybook.h" // Cerebellum
 #endif
 namespace Search {
@@ -225,7 +223,7 @@ void MainThread::search() {
     minOutput           = Options["Minimal_Output"];
     noNULL              = Options["No_Null_Moves"];
     tactical            = Options["Tactical"];
-    uci_elo             = Options["UCI_Elo"];
+    uci_elo             = Options["Engine_Elo"];
     variety             = Options["Variety"];
 #endif
 
@@ -263,42 +261,42 @@ void MainThread::search() {
       {
 		 if (Options["Play_By_Elo"])
 		 {
-			 uci_elo = (Options["UCI_ELO"]);
+			 uci_elo = (Options["Engine_Elo"]);
              limitStrength = true;
              goto skipLevels;
 		 }
-		 if (Options["Levels"] == "None")
+		 if (Options["Engine_Level"] == "None")
              limitStrength = false;
 		 else limitStrength = true;
-         if (Options["Levels"] == "World_Champion")
+         if (Options["Engine_Level"] == "World_Champion")
 				uci_elo = 2750;
-         else if (Options["Levels"] == "Super_GM")
+         else if (Options["Engine_Level"] == "Super_GM")
 				uci_elo = 2625;
-		 else if (Options["Levels"] == "GM")
+		 else if (Options["Engine_Level"] == "GM")
 			 uci_elo = 2500;
-		 else if (Options["Levels"] == "Deep_Thought")
+		 else if (Options["Engine_Level"] == "Deep_Thought")
 				uci_elo = 2400;
-		 else if (Options["Levels"] == "SIM")
+		 else if (Options["Engine_Level"] == "SIM")
 				uci_elo = 2300;
-		 else if (Options["Levels"] == "Cray_Blitz")
+		 else if (Options["Engine_Level"] == "Cray_Blitz")
 				uci_elo = 2200;
-		 else if (Options["Levels"] == "IM")
+		 else if (Options["Engine_Level"] == "IM")
 				uci_elo = 2100;
-		 else if (Options["Levels"] == "Master")
+		 else if (Options["Engine_Level"] == "Master")
 				uci_elo = 2000;
-		 else if (Options["Levels"] == "Expert")
+		 else if (Options["Engine_Level"] == "Expert")
 				uci_elo = 1900;
-		 else if (Options["Levels"] == "Class_A")
+		 else if (Options["Engine_Level"] == "Class_A")
 				uci_elo = 1800;
-		 else if (Options["Levels"] == "Class_B")
+		 else if (Options["Engine_Level"] == "Class_B")
 				uci_elo = 1700;
-		 else if (Options["Levels"] == "Class_C")
+		 else if (Options["Engine_Level"] == "Class_C")
 				uci_elo = 1600;
-		 else if (Options["Levels"] == "Class_D")
+		 else if (Options["Engine_Level"] == "Class_D")
 				uci_elo = 1500;
-		 else if (Options["Levels"] == "Boris")
+		 else if (Options["Engine_Level"] == "Boris")
 				uci_elo = 1400;
-		 else if (Options["Levels"] == "Novice")
+		 else if (Options["Engine_Level"] == "Novice")
 				uci_elo = 1300;
 skipLevels:
          if (limitStrength)
@@ -466,10 +464,10 @@ ss->pv = pv;
 #endif
   // In analysis mode, adjust contempt in accordance with user preference
   if (Limits.infinite || Options["UCI_AnalyseMode"])
-      ct =  Options["Analysis_Contempt"] == "Off"  ? 0
-          : Options["Analysis_Contempt"] == "Both" ? ct
-          : Options["Analysis_Contempt"] == "White" && us == BLACK ? -ct
-          : Options["Analysis_Contempt"] == "Black" && us == WHITE ? -ct
+      ct =  Options["Contempt_Analysis"] == "Off"  ? 0
+          : Options["Contempt_Analysis"] == "Both" ? ct
+          : Options["Contempt_Analysis"] == "White" && us == BLACK ? -ct
+          : Options["Contempt_Analysis"] == "Black" && us == WHITE ? -ct
           : ct;
 
   // Evaluation score is from the white point of view

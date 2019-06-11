@@ -77,95 +77,97 @@ void init(OptionsMap& o) {
 
     // at most 2^32 clusters.
     constexpr int MaxHashMB = Is64Bit ? 131072 : 2048;
-	
-    o["Debug Log File"]       << Option("<empty>", on_logger);
-	o["Clear_Hash"]            << Option(on_clear_hash);
+    o["Debug Log File"]           << Option("", on_logger);
+    o["Clear_Hash"]               << Option(on_clear_hash);
 #ifdef Add_Features
-    o["Use_Book_1"] 	        << Option(false);
-    o["Book_File_1"] 	        << Option("Alekhine", on_book_file1);
-    o["Best_Move_1"] 	        << Option(false, on_best_book_move1);
-    o["Book_Depth_1"] 	        << Option(127, 1, 127, on_book_depth1);
-    o["Use_Book_2"] 	        << Option(false);
-    o["Book_File_2"] 	        << Option("Champions", on_book_file2);
-    o["Best_Move_2"] 	        << Option(false, on_best_book_move2);
-    o["Book_Depth_2"] 	        << Option(127, 1, 127, on_book_depth2);
-    o["Use_Book_3"] 	        << Option(false);
-    o["Book_File_3"]            << Option("Cerebellum_NN", on_book_file3);
-    o["Best_Move_3"]            << Option(true, on_best_book_move3);
-    o["Book_Depth_3"]           << Option(127, 1, 127, on_book_depth3);
-	o["Use_Book_4"] 	        << Option(false);
-	o["Book_File_4"]            << Option("Cerebellum", on_book_file4);
-	o["Best_Move_4"]            << Option(true, on_best_book_move4);
-	o["Book_Depth_4"]           << Option(127, 1, 127, on_book_depth4);
+    o["Use_Book_1"] 	          << Option(false);
+    o["Book_File_1"] 	          << Option("", on_book_file1);
+    o["Best_Move_1"] 	          << Option(false, on_best_book_move1);
+    o["Book_Depth_1"] 	          << Option(127, 1, 127, on_book_depth1);
+    o["Use_Book_2"] 	          << Option(false);
+    o["Book_File_2"] 	          << Option("", on_book_file2);
+    o["Best_Move_2"] 	          << Option(false, on_best_book_move2);
+    o["Book_Depth_2"] 	          << Option(127, 1, 127, on_book_depth2);
+    o["Use_Book_3"] 	          << Option(false);
+    o["Book_File_3"]              << Option("", on_book_file3);
+    o["Best_Move_3"]              << Option(true, on_best_book_move3);
+    o["Book_Depth_3"]             << Option(127, 1, 127, on_book_depth3);
+    o["Use_Book_4"]               << Option(false);
+    o["Book_File_4"]              << Option("", on_book_file4);
+    o["Best_Move_4"]              << Option(true, on_best_book_move4);
+    o["Book_Depth_4"]             << Option(127, 1, 127, on_book_depth4);
 #endif
 #ifdef Maverick
-	o["W_Contempt"] 	      << Option(  22, -150, 150);
-	o["B_Contempt"] 	      << Option(   2, -150, 150);
+    o["W_Contempt"]               << Option(  22, -150, 150);
+    o["B_Contempt"]               << Option(   2, -150, 150);
 #else
-	o["Contempt"]             << Option(24, -100, 100);
+    o["Contempt"]                 << Option(24, -100, 100);
 #endif
 #ifdef Add_Features
-	o["Analysis_Contempt"]    << Option("var Off var White var Black var Both var Off ", "Off");
+    o["Contempt_Analysis"]        << Option("Off var White var Black var Both var Off", "Off");
 #else
-	o["Analysis_Contempt"]    << Option("var Both var Off var White var Black var Both", "Both");
+    o["Analysis_Contempt"]        << Option("Both var Off var White var Black var Both", "Both");
 #endif
-    o["Skill Level"]            << Option(20, 0, 20);
-    o["Move Overhead"]          << Option(30, 0, 5000);
-    o["Minimum Thinking Time"]  << Option(20, 0, 5000);
-    o["Threads"]                << Option(1, 1, 512, on_threads);
-    o["Hash"]                   << Option(16, 1, MaxHashMB, on_hash_size);
-    o["Ponder"]                 << Option(false);
+    o["Skill Level"]              << Option(20, 0, 20);
+    o["Move Overhead"]            << Option(30, 0, 5000);
+    o["Minimum Thinking Time"]    << Option(20, 0, 5000);
+    o["Threads"]                  << Option(1, 1, 512, on_threads);
+    o["Hash"]                     << Option(16, 1, MaxHashMB, on_hash_size);
+    o["Ponder"]                   << Option(false);
 #ifdef Add_Features
-	o["Clean Search"]           << Option(false);
-    o["7 Man Probing"]          << Option(false);
-    o["BruteForce"] 	        << Option(false);
-    o["Dynamic_Contempt"]       << Option(true);
-    o["FastPlay"]               << Option(false);
-    o["Minimal_Output"]         << Option(false);
-    o["No_Null_Moves"]          << Option(false);
-//	o["UCI_LimitStrength"]      << Option(false);
-//	o["xBoard"]                 << Option(false);
-    o["Levels"]                 << Option("var None var World_Champion var Super_GM "
-                                          "var GM var Deep_Thought var SIM var Cray_Blitz "
-                                          "var IM var Master var Expert var Class_A "
-                                          "var Class_B var Class_C var Class_D var Boris "
-                                          "var Novice ", "None");
-    o["Play_By_Elo"]            << Option(false);
-    o["UCI_Elo"]                << Option(1200, 1200, 2850);
-	o["Score_Output"]           << Option("var CentiPawn var SP-GUI var SP ", "CentiPawn");
-#endif
-#ifdef Maverick
-	o["DC_Slider"]              << Option(65, -180, 180);
-	o["MultiPV"]                << Option(1, 1, 256);
+    o["7 Man Probing"]            << Option(false);
+    o["BruteForce"] 	          << Option(false);
+    o["Clean Search"]             << Option(false);
+    o["Dynamic_Contempt"]         << Option(true);
+    o["FastPlay"]                 << Option(false);
+    o["Minimal_Output"]           << Option(false);
+    o["No_Null_Moves"]            << Option(false);
+    o["Play_By_Elo"]              << Option(false);
 
+    o["Engine_Elo"]               << Option(1200, 1200, 2850);
+    // A separate weaker play level from the predefined levels below. The difference
+    // between both of the methods and the "skill level" is that the engine is only weakened
+    // by the reduction in nodes searched, thus reducing the move horizon visibility naturally
+    o["Engine_Level"]             << Option("None var World_Champion var Super_GM "
+                                            "var GM var Deep_Thought var SIM var Cray_Blitz "
+                                            "var IM var Master var Expert var Class_A "
+                                            "var Class_B var Class_C var Class_D var Boris "
+                                            "var Novice var None", "None");
+    // Score percentage evalaution output, similair to Lc0 output is now the default
+    o["Score_Output"]             << Option("ScorPct-GUI var CentiPawn var ScorPct var ScorPct-GUI"
+                                         ,"ScorPct-GUI");
+#endif
+#ifdef Maverick
+    o["DC_Slider"]                << Option(65, -180, 180);
+    o["MultiPV"]                  << Option(1, 1, 256);
 #else
-	o["DC_Slider"]              << Option(0, -180, 180);
-	o["MultiPV"]                << Option(1, 1, 500);
+    o["DC_Slider"]                << Option(0, -180, 180);
+    o["MultiPV"]                  << Option(1, 1, 500);
 #endif
 #ifdef Pi
-	o["Bench_KNPS"]             << Option (200, 100, 1000);//used for UCI Play By Elo
+    o["Bench_KNPS"]               << Option (200, 100, 1000);//used for UCI Play By Elo
 #else
-	o["Bench_KNPS"]             << Option (1500, 500, 5000);//used for UCI Play By Elo
+    o["Bench_KNPS"]               << Option (1500, 500, 5000);//used for UCI Play By Elo
 #endif
 #ifdef Add_Features
-	o["Jekyll_&_Hyde"]          << Option(0, 0, 15);
-	o["Tactical"]               << Option(0, 0,  8);
-	o["Variety"]                << Option(0, 0, 15);
+    o["Jekyll_&_Hyde"]            << Option(0, 0, 15);
+    o["Tactical"]                 << Option(0, 0,  8);
+    o["Variety"]                  << Option(0, 0, 15);
 #endif
 
 #ifdef Add_Features
-    o["Slow Mover"]              << Option(100, 10, 1000);
+    o["Slow Mover"]               << Option(100, 10, 1000);
 #else
-    o["Slow Mover"]              << Option(84, 10, 1000);
+    o["Slow Mover"]               << Option(84, 10, 1000);
 #endif
 
-  o["nodestime"]                 << Option(0, 0, 10000);
-  o["UCI_Chess960"]              << Option(false);
-  o["UCI_AnalyseMode"]           << Option(false);
-  o["SyzygyPath"]                << Option("<empty>", on_tb_path);
-  o["SyzygyProbeDepth"]          << Option(1, 1, 100);
-  o["Syzygy50MoveRule"]          << Option(true);
-  o["SyzygyProbeLimit"]          << Option(7, 0, 7);
+    o["nodestime"]                << Option(0, 0, 10000);
+    o["UCI_Chess960"]             << Option(false);
+    o["UCI_AnalyseMode"]          << Option(false);
+    o["SyzygyPath"]               << Option("", on_tb_path);
+    o["SyzygyProbeDepth"]         << Option(1, 1, 100);
+    o["Syzygy50MoveRule"]         << Option(true);
+    o["SyzygyProbeLimit"]         << Option(7, 0, 7);
 
 }
 
