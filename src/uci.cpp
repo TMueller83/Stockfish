@@ -400,15 +400,22 @@ string UCI::value(Value v) {
   constexpr float sf = 2.15; // scoring percentage factor
   constexpr float vf = 0.31492; // centipawn value factor
 #endif
-    if (abs(v) < VALUE_MATE - MAX_PLY)
+  if (abs(v) < VALUE_MATE - MAX_PLY)
 #ifdef Sullivan
-	if (Options["Score_Output"] == "CentiPawn")
-	    ss << fixed << setprecision(0) << "cp " << (vs * vf);
-	else if ((Options["xBoard"])  && (Options["Score_Output"] == "Score%"))
-	     ss << "cp " << fixed << setprecision(2) << 10000 * (pow (sf,(sf * vs /1000)))
-	                                                / (pow(sf,(sf * vs /1000)) + 1);
-	else ss << "sp " << fixed << setprecision(2) << 100 * (pow (sf,(sf * vs /1000)))
-	                                                / (pow(sf,(sf * vs /1000)) + 1) << "% " ;
+  // Score percentage evalaution output, similair to Lc0 output.
+  // For use with GUIs that divide centipawn scores by 100, e.g, xBoard, Arena, Fritz, etc.
+  if ( Options["Score_Output"] == "ScorPct-GUI")
+       ss << "cp " << fixed << setprecision(0) << 10000 * (pow (sf,(sf * vs /1000)))
+	  / (pow(sf,(sf * vs /1000)) + 1);
+	
+  // Centipawn scoring, value times centipawn factor
+  // SF values the raw score of pawns much higher than 100, see types.h
+  // The higher raw score allows for greater precison in many evaluation functions
+  else if (Options["Score_Output"] == "CentiPawn")
+	  ss << fixed << setprecision(0) << "cp " << (vs * vf);
+
+  else ss << "cp " << fixed << setprecision(2) << 100 * (pow (sf,(sf * vs /1000)))
+                                / (pow(sf,(sf * vs /1000)) + 1);  // Commandline score percenatge
 #else
         ss << "cp " << v * 100 / PawnValueEg;
 #endif

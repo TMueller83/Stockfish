@@ -44,8 +44,6 @@
 #include "syzygy/tbprobe.h"
 
 #ifdef Add_Features
-#include <unistd.h> //for sleep //MichaelB7
-#include <random> // ELO MichaelB7
 #include "polybook.h" // Cerebellum
 #endif
 
@@ -254,7 +252,7 @@ void MainThread::search() {
     minOutput           = Options["Minimal_Output"];
     noNULL              = Options["No_Null_Moves"];
     tactical            = Options["Tactical"];
-    uci_elo             = Options["UCI_Elo"];
+    uci_elo             = Options["Engine_Elo"];
     variety             = Options["Variety"];
 #endif
 
@@ -323,52 +321,58 @@ void MainThread::search() {
       }
       else
       {
-            if (limitStrength)
-            {
-				
-				if (Options["Levels"] == "World_Champion")
-						uci_elo = 2750;
-				else if (Options["Levels"] == "Super_GM")
-						uci_elo = 2625;
-				else if (Options["Levels"] == "GM")
-						uci_elo = 2500;
-				else if (Options["Levels"] == "Deep_Thought")
-						uci_elo = 2400;
-				else if (Options["Levels"] == "SIM")
-						uci_elo = 2300;
-				else if (Options["Levels"] == "Cray_Blitz")
-						uci_elo = 2200;
-				else if (Options["Levels"] == "IM")
-						uci_elo = 2100;
-				else if (Options["Levels"] == "Master")
-						uci_elo = 2000;
-				else if (Options["Levels"] == "Expert")
-						uci_elo = 1900;
-				else if (Options["Levels"] == "Class_A")
-						uci_elo = 1800;
-				else if (Options["Levels"] == "Class_B")
-						uci_elo = 1700;
-				else if (Options["Levels"] == "Class_C")
-						uci_elo = 1600;
-				else if (Options["Levels"] == "Class_D")
-						uci_elo = 1500;
-				else if (Options["Levels"] == "Boris")
-						uci_elo = 1400;
-				else if (Options["Levels"] == "Novice")
-						uci_elo = 1300;
-				else if (Options["Levels"] == "None")
-						uci_elo = (Options["UCI_ELO"]) - 100;
-				int benchKnps = 1000 * (Options["Bench_KNPS"]);
-                std::mt19937 gen(now());
-                std::uniform_int_distribution<int> dis(-8, 8);
-                int rand = dis(gen);
-                uci_elo += rand;
-                int NodesToSearch   = pow(1.006, (uci_elo - 1200)) * 8;
-                Limits.nodes = NodesToSearch;
-
-                Limits.nodes *= Time.optimum()/1000 ;
-                std::this_thread::sleep_for (std::chrono::seconds(Time.optimum()/1000) * (1 - Limits.nodes/benchKnps));
-            }
+		 if (Options["Play_By_Elo"])
+		 {
+			 uci_elo = (Options["Engine_Elo"]);
+             limitStrength = true;
+             goto skipLevels;
+		 }
+		 if (Options["Engine_Level"] == "None")
+             limitStrength = false;
+		 else limitStrength = true;
+         if (Options["Engine_Level"] == "World_Champion")
+				uci_elo = 2750;
+         else if (Options["Engine_Level"] == "Super_GM")
+				uci_elo = 2625;
+		 else if (Options["Engine_Level"] == "GM")
+			 uci_elo = 2500;
+		 else if (Options["Engine_Level"] == "Deep_Thought")
+				uci_elo = 2400;
+		 else if (Options["Engine_Level"] == "SIM")
+				uci_elo = 2300;
+		 else if (Options["Engine_Level"] == "Cray_Blitz")
+				uci_elo = 2200;
+		 else if (Options["Engine_Level"] == "IM")
+				uci_elo = 2100;
+		 else if (Options["Engine_Level"] == "Master")
+				uci_elo = 2000;
+		 else if (Options["Engine_Level"] == "Expert")
+				uci_elo = 1900;
+		 else if (Options["Engine_Level"] == "Class_A")
+				uci_elo = 1800;
+		 else if (Options["Engine_Level"] == "Class_B")
+				uci_elo = 1700;
+		 else if (Options["Engine_Level"] == "Class_C")
+				uci_elo = 1600;
+		 else if (Options["Engine_Level"] == "Class_D")
+				uci_elo = 1500;
+		 else if (Options["Engine_Level"] == "Boris")
+				uci_elo = 1400;
+		 else if (Options["Engine_Level"] == "Novice")
+				uci_elo = 1300;
+skipLevels:
+         if (limitStrength)
+         {
+             int benchKnps = 1000 * (Options["Bench_KNPS"]);
+             std::mt19937 gen(now());
+             std::uniform_int_distribution<int> dis(-8, 8);
+             int rand = dis(gen);
+             uci_elo += rand;
+             int NodesToSearch   = pow(1.006, (uci_elo - 1200)) * 8;
+             Limits.nodes = NodesToSearch;
+             Limits.nodes *= Time.optimum()/1000 ;
+             std::this_thread::sleep_for (std::chrono::seconds(Time.optimum()/1000) * (1 - Limits.nodes/benchKnps));
+		  }
 #endif
       for (Thread* th : Threads)
       {
@@ -566,10 +570,10 @@ ss->pv = pv;
 #endif
   // In analysis mode, adjust contempt in accordance with user preference
   if (Limits.infinite || Options["UCI_AnalyseMode"])
-      ct =  Options["Analysis Contempt"] == "Off"  ? 0
-          : Options["Analysis Contempt"] == "Both" ? ct
-          : Options["Analysis Contempt"] == "White" && us == BLACK ? -ct
-          : Options["Analysis Contempt"] == "Black" && us == WHITE ? -ct
+      ct =  Options["Analysis_Contempt"] == "Off"  ? 0
+          : Options["Analysis_Contempt"] == "Both" ? ct
+          : Options["Analysis_Contempt"] == "White" && us == BLACK ? -ct
+          : Options["Analysis_Contempt"] == "Black" && us == WHITE ? -ct
           : ct;
 
   // Evaluation score is from the white point of view
