@@ -63,7 +63,7 @@ namespace {
 #endif
 
 #if(defined Maverick && defined Add_Features)
-const string Version = "";
+const string Version = "X4";
 #endif
 
 #if(defined Stockfish && defined Add_Features)
