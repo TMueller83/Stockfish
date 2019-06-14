@@ -1238,13 +1238,15 @@ moves_loop: // When in check, search starts from here
       // Castling extension
       else if (type_of(move) == CASTLING)
           extension = ONE_PLY;
-
+#ifdef Maverick  // no shuffle extension for McCain
+#else
       // Shuffle extension
       else if (   PvNode
                && pos.rule50_count() > 18
                && depth < 3 * ONE_PLY
                && ss->ply < 3 * thisThread->rootDepth / ONE_PLY) // To avoid too deep searches
           extension = ONE_PLY;
+#endif
 #ifdef Maverick  //see above for Passed pawn extension
 #else
       // Passed pawn extension

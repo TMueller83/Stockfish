@@ -86,7 +86,7 @@ class TranspositionTable {
     char padding[2]; // Align to a divisor of the cache line size
   };
 
-  static_assert(CacheLineSize % sizeof(Cluster) == 0, "Cluster size incorrect");
+  //static_assert(CacheLineSize % sizeof(Cluster) == 0, "Cluster size incorrect"); causes a crash on Ubuntu 14.04.5 LTS [x64] gcc version 6.5.0 20181026
 
 public:
  ~TranspositionTable() { free(mem); }
