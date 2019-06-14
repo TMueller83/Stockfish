@@ -181,33 +181,33 @@ void Entry::evaluate_shelter(const Position& pos, Square ksq, Score& shelter) {
   constexpr Bitboard BlockSquares =  (Rank1BB | Rank2BB | Rank7BB | Rank8BB)
                                    & (FileABB | FileHBB);
 
-	Bitboard b = pos.pieces(PAWN) & ~forward_ranks_bb(Them, ksq);
-	Bitboard ourPawns = b & pos.pieces(Us);
-	Bitboard theirPawns = b & pos.pieces(Them);
-	
-	Value bonus[] = { (shift<Down>(theirPawns) & BlockSquares & ksq) ? Value(374) : Value(5),
-		VALUE_ZERO };
-	
-	File center = clamp(file_of(ksq), FILE_B, FILE_G);
-	for (File f = File(center - 1); f <= File(center + 1); ++f)
-	{
-		b = ourPawns & file_bb(f);
-		Rank ourRank = b ? relative_rank(Us, backmost_sq(Us, b)) : RANK_1;
-		
-		b = theirPawns & file_bb(f);
-		Rank theirRank = b ? relative_rank(Us, frontmost_sq(Them, b)) : RANK_1;
-		
-		int d = std::min(f, ~f);
-		bonus[MG] += ShelterStrength[d][ourRank];
-		
-		if (ourRank && (ourRank == theirRank - 1))
-			bonus[MG] -= 82 * (theirRank == RANK_3), bonus[EG] -= 82 * (theirRank == RANK_3);
-		else
-			bonus[MG] -= UnblockedStorm[d][theirRank];
-	}
-	
-	if (bonus[MG] > mg_value(shelter))
-		shelter = make_score(bonus[MG], bonus[EG]);
+  Bitboard b = pos.pieces(PAWN) & ~forward_ranks_bb(Them, ksq);
+  Bitboard ourPawns = b & pos.pieces(Us);
+  Bitboard theirPawns = b & pos.pieces(Them);
+
+  Value bonus[] = { (shift<Down>(theirPawns) & BlockSquares & ksq) ? Value(374) : Value(5),
+                    VALUE_ZERO };
+
+  File center = clamp(file_of(ksq), FILE_B, FILE_G);
+  for (File f = File(center - 1); f <= File(center + 1); ++f)
+  {
+      b = ourPawns & file_bb(f);
+      Rank ourRank = b ? relative_rank(Us, frontmost_sq(Them, b)) : RANK_1;
+
+      b = theirPawns & file_bb(f);
+      Rank theirRank = b ? relative_rank(Us, frontmost_sq(Them, b)) : RANK_1;
+
+      int d = std::min(f, ~f);
+      bonus[MG] += ShelterStrength[d][ourRank];
+
+      if (ourRank && (ourRank == theirRank - 1))
+          bonus[MG] -= 82 * (theirRank == RANK_3), bonus[EG] -= 82 * (theirRank == RANK_3);
+      else
+          bonus[MG] -= UnblockedStorm[d][theirRank];
+  }
+
+  if (bonus[MG] > mg_value(shelter))
+      shelter = make_score(bonus[MG], bonus[EG]);
 }
 
 
