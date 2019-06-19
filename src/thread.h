@@ -62,7 +62,7 @@ public:
   Material::Table materialTable;
 
 #ifdef Maverick
-  size_t pvIdx, multiPV, pvLast;  // Improve multiPV mode by joergoster
+	size_t pvIdx, multiPV, pvLast, shuffleExts;  // Improve multiPV mode by joergoster && #2197 by Vondele
   int selDepth, nmpMinPly, zugzwangMates; //  Gunther Demetz zugzwangSolver
   int64_t visits, allScores; //  Moez Jellouli -> Save_probcut #e05dc73
 #else
