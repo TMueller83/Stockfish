@@ -66,7 +66,7 @@ public:
   int selDepth, nmpMinPly, zugzwangMates; //  Gunther Demetz zugzwangSolver
   int64_t visits, allScores; //  Moez Jellouli -> Save_probcut #e05dc73
 #else
-  size_t pvIdx, pvLast;
+  size_t pvIdx, pvLast, shuffleExts; 
   int selDepth, nmpMinPly;   
 #endif
 

@@ -24,13 +24,18 @@
 ### ==========================================================================
 
 ### Executable name
-### McCain bench nodes ----> 4891804 > based on commits up to 6/14/2019
-### stockfish bench nodes -> 3897263 > based on commits up to 6/14/2019
-
+### McCain bench nodes ----> 5757357  > based on commits up to 6/19/2019
+### stockfish bench nodes -> 3961247* > based on commits up to 6/19/2019
+### * bench agrees with PR #2197 not ye committed which is the shuffling extension fix
+### made on 6/19/2019 by Vondele
 ####  Always leave the three lines below as is (any subsequent defines will override)
 DATE=$(shell date +"%m%d%y")
 DATE2=$(shell date +"%m%d")
 FEATURE1=
+
+### Release versions , enter yes and release version below foor releases
+RELEASE = yes
+RELVERSION = X4
 
 ### TEST versions, enter yes and labels below to build named test exe's
 TEST = no
@@ -40,9 +45,7 @@ ifeq ($(TEST),yes)
 CXXFLAGS += -DTest
 endif
 
-### Release versions , enter yes and release version below foor releases
-RELEASE = yes
-RELVERSION = X4
+
 
 ### Uncomment the line below for McCain, comment out for Stockfish
 	VERSION=maverick

@@ -1213,8 +1213,13 @@ moves_loop: // When in check, search starts from here
           // search without the ttMove. So we assume this expected Cut-node is not singular,
           // that is multiple moves fail high, and we can prune the whole subtree by returning
           // the hard beta bound.
+#ifdef Maverick  // Change multi-cut pruning condition #2192 by miguel-l
+		  else if (eval >= beta && singularBeta > beta)
+			  return beta;
+#else
           else if (cutNode && singularBeta > beta)
               return beta;
+#endif
       }
 
       // Check extension (~2 Elo)
@@ -2151,4 +2156,12 @@ void Tablebases::rank_root_moves(Position& pos, Search::RootMoves& rootMoves) {
         if (dtz_available || rootMoves[0].tbScore <= VALUE_DRAW)
             Cardinality = 0;
     }
+	// Partial revert of "Assorted trivial cleanups 5/2019" #2198 by Syzygy
+    else
+    {
+        // Clean up "if root_probe()" and "root_probe_wdl()" failures
+        // resulting from the user using incomplete or corrupt tablebase files
+        for (auto& m : rootMoves)
+             m.tbRank = 0;
+     }
 }
