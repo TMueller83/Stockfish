@@ -24,18 +24,21 @@
 ### ==========================================================================
 
 ### Executable name
-### McCain bench nodes ----> 5757357  > based on commits up to 6/19/2019
-### stockfish bench nodes -> 3961247* > based on commits up to 6/19/2019
-### * bench agrees with PR #2197 not ye committed which is the shuffling extension fix
-### made on 6/19/2019 by Vondele
+### McCain bench nodes ----> 5472976 > based on commits up to 6/22/2019
+### stockfish bench nodes -> 3398333 > based on commits up to 6/22/2019
+
 ####  Always leave the three lines below as is (any subsequent defines will override)
 DATE=$(shell date +"%m%d%y")
 DATE2=$(shell date +"%m%d")
 FEATURE1=
 
 ### Release versions , enter yes and release version below foor releases
-RELEASE = yes
-RELVERSION = X4
+RELEASE = no
+RELVERSION =
+###  playimg at reduced strength on hardware
+ifeq ($(RELEASE),yes)
+CXXFLAGS += -DRelease
+endif
 
 ### TEST versions, enter yes and labels below to build named test exe's
 TEST = no
@@ -45,14 +48,17 @@ ifeq ($(TEST),yes)
 CXXFLAGS += -DTest
 endif
 
-
-
 ### Uncomment the line below for McCain, comment out for Stockfish
 	VERSION=maverick
 
 ### Uncomment for use with Raspberry Pi -  a slower NPS UCI option setting used in Play
 ### by Elo and personalities
 ###	RASPBERRY=Pi
+###  to reduce NPS setting using "setoption" command, to enable more similiar play when
+###  playimg at reduced strength on hardware
+ifeq ($(RASPBERRY),Pi)
+CXXFLAGS += -DPi
+endif
 
 ### Features include : Cerebellum book functionality, play by Elo (UCI limit strength), keyboard shortcuts and a few other items. Comment out to eliminate
 	FEATURE1=add_features
@@ -64,12 +70,6 @@ ifeq ($(FEATURE1),add_features)
 	CXXFLAGS += -DAdd_Features
 	FILES = with_c_book
 	SUFFIX1 =
-endif
-
-###  to reduce NPS setting using "setoption" command, to enable more similiar play when
-###  playimg at reduced strength on hardware
-ifeq ($(RASPBERRY),Pi)
-CXXFLAGS += -DPi
 endif
 
 ifeq ($(VERSION),maverick)

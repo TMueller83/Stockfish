@@ -62,8 +62,10 @@ namespace {
 #define Stockfish
 #endif
 
-#if(defined Maverick && defined Add_Features)
+#if(defined Maverick && defined Add_Features && defined Release)
 const string Version = "X4";
+#else
+const string Version = "";
 #endif
 
 #if(defined Stockfish && defined Add_Features)
@@ -173,7 +175,7 @@ const string engine_info(bool to_uci) {
 
 
 /// Debug functions used mainly to collect run-time statistics
-static int64_t hits[2], means[2];
+static std::atomic<int64_t> hits[2], means[2];
 
 void dbg_hit_on(bool b) { ++hits[0]; if (b) ++hits[1]; }
 void dbg_hit_on(bool c, bool b) { if (c) dbg_hit_on(b); }
