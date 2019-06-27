@@ -158,6 +158,7 @@ constexpr Score MobilityBonus[][32] = {
 #ifdef Sullivan
 // Combo #1867 Jonathan D
 // Assorted bonuses and penalties
+constexpr Score AttacksOnSpaceArea = S(  4,  0);
 constexpr Score BishopPawns        = S(  3,  7);
 constexpr Score CorneredBishop     = S( 50, 50);
 constexpr Score FlankAttacks       = S(  7,  0);
@@ -180,6 +181,7 @@ constexpr Score TrappedRook        = S( 96,  4);
 constexpr Score WeakQueen          = S( 10,  2);// Gunther Dementz weak queen mod
 #else
   // Assorted bonuses and penalties
+  constexpr Score AttacksOnSpaceArea = S(  4,  0);
   constexpr Score BishopPawns        = S(  3,  7);
   constexpr Score CorneredBishop     = S( 50, 50);
   constexpr Score FlankAttacks       = S(  8,  0);
@@ -822,6 +824,8 @@ constexpr Score WeakQueen          = S( 10,  2);// Gunther Dementz weak queen mo
     int bonus = popcount(safe) + popcount(behind & safe);
     int weight = pos.count<ALL_PIECES>(Us) - 1;
     Score score = make_score(bonus * weight * weight / 16, 0);
+
+    score -= AttacksOnSpaceArea * popcount(attackedBy[Them][ALL_PIECES] & behind & safe);
 
     if (T)
         Trace::add(SPACE, Us, score);
