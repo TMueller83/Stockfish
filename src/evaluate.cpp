@@ -149,6 +149,7 @@ constexpr Score MobilityBonus[][32] = {
 #ifdef Maverick
 // Combo #1867 Jonathan D - others as noted
 // Assorted bonuses and penalties
+constexpr Score AttacksOnSpaceArea = S(  4,  0);
 constexpr Score BishopPawns        = S(  3,  7);
 constexpr Score CorneredBishop     = S( 50, 50);
 constexpr Score FlankAttacks       = S(  8, -2); //Fauzi
@@ -171,6 +172,7 @@ constexpr Score TrappedRook        = S( 96,  4);
 constexpr Score WeakQueen          = S( 10,  2); // Gunther Dementz weak queen mod
 #else
   // Assorted bonuses and penalties
+  constexpr Score AttacksOnSpaceArea = S(  4,  0);
   constexpr Score BishopPawns        = S(  3,  7);
   constexpr Score CorneredBishop     = S( 50, 50);
   constexpr Score FlankAttacks       = S(  8,  0);
@@ -813,6 +815,8 @@ constexpr Score WeakQueen          = S( 10,  2); // Gunther Dementz weak queen m
     int bonus = popcount(safe) + popcount(behind & safe);
     int weight = pos.count<ALL_PIECES>(Us) - 1;
     Score score = make_score(bonus * weight * weight / 16, 0);
+
+    score -= AttacksOnSpaceArea * popcount(attackedBy[Them][ALL_PIECES] & behind & safe);
 
     if (T)
         Trace::add(SPACE, Us, score);

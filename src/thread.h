@@ -60,13 +60,12 @@ public:
 
   Pawns::Table pawnsTable;
   Material::Table materialTable;
+  size_t pvIdx, multiPV, pvLast, shuffleExts;
 
 #ifdef Maverick
-  size_t pvIdx, multiPV, pvLast, shuffleExts;  // Improve multiPV mode by joergoster
   int selDepth, nmpMinPly, zugzwangMates; //  Gunther Demetz zugzwangSolver
   int64_t visits, allScores; //  Moez Jellouli -> Save_probcut #e05dc73
 #else
-  size_t pvIdx, pvLast, shuffleExts; 
   int selDepth, nmpMinPly;   
 #endif
 

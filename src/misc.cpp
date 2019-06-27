@@ -64,7 +64,7 @@ namespace {
 
 #if(defined Maverick && defined Add_Features && defined Release)
 const string Version = "X4";
-#else
+#elseif(defined Maverick && defined Add_Features)
 const string Version = "";
 #endif
 

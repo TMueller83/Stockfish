@@ -434,11 +434,7 @@ ss->pv = pv;
 #endif
 
   beta = VALUE_INFINITE;
-#ifdef Maverick //Improve multiPV mode #2163 by Joerg Oster
   multiPV = Options["MultiPV"];
-#else
-  size_t multiPV = Options["MultiPV"];
-#endif
   Skill skill(Options["Skill Level"]);
 
 #ifdef Maverick //zugzwangMates  by Gunther Dement
@@ -1158,14 +1154,10 @@ moves_loop: // When in check, search starts from here
           sync_cout << "info depth " << depth / ONE_PLY
                     << " currmove " << UCI::move(move, pos.is_chess960())
                     << " currmovenumber " << moveCount + thisThread->pvIdx << sync_endl;
-#ifdef Maverick  //  Improve multiPV mode #2163 by Joerg Oster
       // In MultiPV mode also skip moves which will be searched later as PV moves
-     //  this section updated by mstembera
-     if (   rootNode
-         && std::find(thisThread->rootMoves.begin() + thisThread->pvIdx, thisThread->rootMoves.begin() + thisThread->pvLast, move)
-             == thisThread->rootMoves.begin() + thisThread->pvLast)
+      if (rootNode && std::count(thisThread->rootMoves.begin() + thisThread->pvIdx + 1,
+                                 thisThread->rootMoves.begin() + thisThread->multiPV, move))
           continue;
-#endif
       if (PvNode)
           (ss+1)->pv = nullptr;
 
