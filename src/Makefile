@@ -25,8 +25,8 @@
 ### ==========================================================================
 
 ### Executable name
-### Honey bench nodes -----> 5112219 > based on commits up to 6/27/2019
-### stockfish bench nodes -> 3633546 > based on commits up to 6/27/2019
+### Honey bench nodes -----> 5196129 > based on commits up to 7/02/2019
+### stockfish bench nodes -> 3596270 > based on commits up to 7/02/2019
 
 ####  Always leave the three lines below as is (any subsequent defines will override)
 DATE=$(shell date +"%m%d%y")
@@ -372,7 +372,7 @@ endif
 ### 3.3 Optimization
 ifeq ($(optimize),yes)
 
-	CXXFLAGS += -O3
+	CXXFLAGS += -O3 -fno-tree-pre
 
 	ifeq ($(comp),gcc)
 		ifeq ($(OS), Android)

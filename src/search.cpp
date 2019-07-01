@@ -583,7 +583,12 @@ ss->pv = pv;
 
   beta = VALUE_INFINITE;
   multiPV = Options["MultiPV"];
-  Skill skill(Options["Skill Level"]);
+  // Pick integer skill levels, but non-deterministically round up or down
+  // such that the average integer skill corresponds to the input floating point one.
+  PRNG rng(now());
+  int intLevel = int(Options["Skill Level"]) +
+        ((Options["Skill Level"] - int(Options["Skill Level"])) * 1024 > rng.rand<unsigned>() % 1024  ? 1 : 0);
+  Skill skill(intLevel);
 
 #ifdef Sullivan //zugzwangMates by Gunther Dementz
   zugzwangMates=0;
