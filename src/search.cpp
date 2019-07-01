@@ -116,7 +116,7 @@ namespace {
   // Skill structure is used to implement strength limit
   struct Skill {
     explicit Skill(int l) : level(l) {}
-    bool enabled() const { return level < 20; }
+    bool enabled() const { return level < 40; }
     bool time_to_pick(Depth depth) const { return depth / ONE_PLY == 1 + level; }
     Move pick_best(size_t multiPV);
 
@@ -128,6 +128,48 @@ bool  bruteForce, cleanSearch, minOutput, noNULL;
 bool limitStrength = false;
 int   aggressiveness, attack, jekyll, tactical, uci_elo, variety;
 #endif
+
+  // Breadcrumbs are used to mark nodes as being searched by a given thread.
+  struct Breadcrumb {
+    std::atomic<Thread*> thread;
+    std::atomic<Key> key;
+  };
+  std::array<Breadcrumb, 1024> breadcrumbs;
+
+  // ThreadHolding keeps track of which thread left breadcrumbs at the given node for potential reductions.
+  // A free node will be marked upon entering the moves loop, and unmarked upon leaving that loop, by the ctor/dtor of this struct.
+  struct ThreadHolding {
+    explicit ThreadHolding(Thread* thisThread, Key posKey, int ply) {
+       location = ply < 8 ? &breadcrumbs[posKey & (breadcrumbs.size() - 1)] : nullptr;
+       otherThread = false;
+       owning = false;
+       if (location)
+       {
+          // see if another already marked this location, if not, mark it ourselves.
+          Thread* tmp = (*location).thread.load(std::memory_order_relaxed);
+          if (tmp == nullptr)
+          {
+              (*location).thread.store(thisThread, std::memory_order_relaxed);
+              (*location).key.store(posKey, std::memory_order_relaxed);
+              owning = true;
+          }
+          else if (   tmp != thisThread
+                   && (*location).key.load(std::memory_order_relaxed) == posKey)
+              otherThread = true;
+       }
+    }
+
+    ~ThreadHolding() {
+       if (owning) // free the marked location.
+           (*location).thread.store(nullptr, std::memory_order_relaxed);
+    }
+
+    bool marked() { return otherThread; }
+
+    private:
+    Breadcrumb* location;
+    bool otherThread, owning;
+  };
 
   // Breadcrumbs are used to mark nodes as being searched by a given thread.
   struct Breadcrumb {
@@ -477,12 +519,7 @@ ss->pv = pv;
 
   beta = VALUE_INFINITE;
   multiPV = Options["MultiPV"];
-  // Pick integer skill levels, but non-deterministically round up or down
-  // such that the average integer skill corresponds to the input floating point one.
-  PRNG rng(now());
-  int intLevel = int(Options["Skill Level"]) +
-        ((Options["Skill Level"] - int(Options["Skill Level"])) * 1024 > rng.rand<unsigned>() % 1024  ? 1 : 0);
-  Skill skill(intLevel);
+  Skill skill(Options["Skill Level"]);
 
 #ifdef Maverick //zugzwangMates  by Gunther Dement
   zugzwangMates=0;
@@ -1181,6 +1218,9 @@ moves_loop: // When in check, search starts from here
 #ifdef Maverick // VoyagerOne escapre Capture
      escapeCaptureSq = SQ_NONE;
 #endif
+
+    // Mark this node as being searched.
+    ThreadHolding th(thisThread, posKey, ss->ply);
 
     // Mark this node as being searched.
     ThreadHolding th(thisThread, posKey, ss->ply);
@@ -2024,7 +2064,7 @@ moves_loop: // When in check, search starts from here
     // RootMoves are already sorted by score in descending order
     Value topScore = rootMoves[0].score;
     int delta = std::min(topScore - rootMoves[multiPV - 1].score, PawnValueMg);
-    int weakness = 120 - 2 * level;
+    int weakness = 120 - level;
     int maxScore = -VALUE_INFINITE;
 
     // Choose best move. For each move score we add two terms, both dependent on
