@@ -62,9 +62,9 @@ namespace {
 #define Stockfish
 #endif
 
-#if(defined Maverick && defined Add_Features && defined Release)
+#if (defined Maverick && defined Add_Features && defined Release)
 const string Version = "X4";
-#elseif(defined Maverick && defined Add_Features)
+#elif (defined Maverick && defined Add_Features)
 const string Version = "";
 #endif
 

@@ -24,8 +24,8 @@
 ### ==========================================================================
 
 ### Executable name
-### McCain bench nodes ----> 5263810 > based on commits up to 6/27/2019
-### stockfish bench nodes -> 3633546 > based on commits up to 6/27/2019
+### McCain bench nodes ----> 5184376 > based on commits up to 7/02/2019
+### stockfish bench nodes -> 3596270 > based on commits up to 7/02/2019
 
 ####  Always leave the three lines below as is (any subsequent defines will override)
 DATE=$(shell date +"%m%d%y")
@@ -35,7 +35,6 @@ FEATURE1=
 ### Release versions , enter yes and release version below foor releases
 RELEASE = no
 RELVERSION =
-###  playimg at reduced strength on hardware
 ifeq ($(RELEASE),yes)
 CXXFLAGS += -DRelease
 endif
@@ -374,7 +373,7 @@ endif
 ### 3.3 Optimization
 ifeq ($(optimize),yes)
 
-	CXXFLAGS += -O3
+	CXXFLAGS += -O3 -fno-tree-pre
 
 	ifeq ($(comp),gcc)
 		ifeq ($(OS), Android)
