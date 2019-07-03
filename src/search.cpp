@@ -635,7 +635,6 @@ ss->pv = pv;
 
               // In case of failing low/high increase aspiration window and
               // re-search, otherwise exit the loop.
-
               if (bestValue <= alpha)
               {
                   beta = (alpha + beta) / 2;
@@ -645,7 +644,6 @@ ss->pv = pv;
                   alpha = std::max(bestValue - delta, -VALUE_INFINITE);
 #endif
                   failedHighCnt = 0;
-
                   if (mainThread)
                       mainThread->stopOnPonderhit = false;
               }
@@ -790,7 +788,6 @@ namespace {
         && pos.has_game_cycle(ss->ply))
     {
         alpha = value_draw(depth, pos.this_thread());
-
         if (alpha >= beta)
             return alpha;
     }
@@ -846,7 +843,6 @@ namespace {
         if (   Threads.stop.load(std::memory_order_relaxed)
             || pos.is_draw(ss->ply)
             || ss->ply >= MAX_PLY)
-
             return (ss->ply >= MAX_PLY && !inCheck) ? evaluate(pos)
                                                     : value_draw(depth, pos.this_thread());
 
@@ -856,11 +852,9 @@ namespace {
         // because we will never beat the current alpha. Same logic but with reversed
         // signs applies also in the opposite condition of being mated instead of giving
         // mate. In this case return a fail-high score.
-
         alpha = std::max(mated_in(ss->ply), alpha);
         beta = std::min(mate_in(ss->ply+1), beta);
         if (alpha >= beta)
-
             return alpha;
     }
 
@@ -1043,22 +1037,36 @@ namespace {
         && (ss-1)->currentMove != MOVE_NULL
         && (ss-1)->statScore < 23200
         &&  eval >= beta
+#ifdef Maverick //corchess
+        &&  ss->staticEval >= beta - int(320 * log(depth / ONE_PLY)) + 500
+#else
         &&  ss->staticEval >= beta - 36 * depth / ONE_PLY + 225
+#endif
         && !excludedMove
 #ifdef Maverick  //authored by Jörg Oster originally, in corchess by Ivan Ilvec
         && thisThread->selDepth + 3 > thisThread->rootDepth / ONE_PLY
 #endif
+#ifdef Maverick //corchess
+        &&  pos.non_pawn_material(us) > BishopValueMg
+#else
         &&  pos.non_pawn_material(us)
-        && (ss->ply >= thisThread->nmpMinPly || us != thisThread->nmpColor)
-)
+#endif
+        && (ss->ply >= thisThread->nmpMinPly || us != thisThread->nmpColor))
     {
         assert(eval - beta >= 0);
 
         // Null move dynamic reduction based on depth and value
+#ifdef Maverick //corchess
+        Depth R = std::max(1, int(2.6 * log(depth / ONE_PLY)) + std::min(int(eval - beta) / 200, 3)) * ONE_PLY;
+#else
         Depth R = ((823 + 67 * depth / ONE_PLY) / 256 + std::min(int(eval - beta) / 200, 3)) * ONE_PLY;
+#endif
+
         ss->currentMove = MOVE_NULL;
         ss->continuationHistory = &thisThread->continuationHistory[NO_PIECE][0];
+
         pos.do_null_move(st);
+
         Value nullValue = -search<NonPV>(pos, ss+1, -beta, -beta+1, depth-R, !cutNode);
         pos.undo_null_move();
 
@@ -1242,6 +1250,7 @@ moves_loop: // When in check, search starts from here
           ss->excludedMove = move;
           value = search<NonPV>(pos, ss, singularBeta - 1, singularBeta, halfDepth, cutNode);
           ss->excludedMove = MOVE_NONE;
+
           if (value < singularBeta)
           {
               extension = ONE_PLY;
@@ -1468,7 +1477,6 @@ moves_loop: // When in check, search starts from here
 #endif
           Depth d = clamp(newDepth - r, ONE_PLY, newDepth);
 
-
           value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, d, true);
 
           doFullDepthSearch = (value > alpha && d != newDepth);
@@ -1523,9 +1531,8 @@ moves_loop: // When in check, search starts from here
               // We record how often the best move has been changed in each
               // iteration. This information is used for time management: When
               // the best move changes frequently, we allocate some more time.
-
-			  if (moveCount > 1)
-				  ++thisThread->bestMoveChanges;
+              if (moveCount > 1)
+                  ++thisThread->bestMoveChanges;
 #ifdef Maverick //zugzwangMates Gunther Dementz
                 if (moveCount == 1 && thisThread->zugzwangMates > 100 && static_cast<MainThread*>(thisThread)->bestMoveChanges < 2)
                     thisThread->zugzwangMates = 1000000; // give up
