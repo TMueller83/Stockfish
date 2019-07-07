@@ -1,18 +1,18 @@
 ### ==========================================================================
 ### Copyright Notice and License Information
 ### ==========================================================================
-#   McBrain, a UCI chess playing engine derived from SugaR, Stockfish and Glaurung 2.1
+#   Burnzie, a UCI chess playing engine derived from SugaR, Stockfish and Glaurung 2.1
 #   Copyright (C) 2004-2008 Tord Romstad (Glaurung Author)
 #   Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad (Stockfish Authors)
 #   Copyright (C) 2015-2016 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Stockfish Authors)
-#   Copyright (C) 2017-2018 Michael Byrne, Marco Zerbinati, Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (McBrain Authors)
+#   Copyright (C) 2017-2018 Michael Byrne, Marco Zerbinati, Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Burnzie Authors)
 
-#   McBrain is free software: you can redistri/Volumes/Macintosh_1.5TBbute it and/or modify
+#   Burnzie is free software: you can redistri/Volumes/Macintosh_1.5TBbute it and/or modify
 #   it under the terms of the GNU General Public License as published by
 #   the Free Software Foundation, either version 3 of the License, or
 #   (at your option) any later version.
 
-#   McBrain is distributed in the hope that it will be useful,
+#   Burnzie is distributed in the hope that it will be useful,
 #   but WITHOUT ANY WARRANTY; without even the implied warranty of
 #   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #   GNU General Public License for more details.
@@ -24,8 +24,8 @@
 ### ==========================================================================
 
 ### Executable name
-### McCain bench nodes ----> 5184376 > based on commits up to 7/02/2019
-### stockfish bench nodes -> 3596270 > based on commits up to 7/02/2019
+### Burnzie bench nodes ----> 5364049 > based on commits up to 7/06/2019
+### stockfish bench nodes --> 3596270 > based on commits up to 7/06/2019
 
 ####  Always leave the three lines below as is (any subsequent defines will override)
 DATE=$(shell date +"%m%d%y")
@@ -47,7 +47,7 @@ ifeq ($(TEST),yes)
 CXXFLAGS += -DTest
 endif
 
-### Uncomment the line below for McCain, comment out for Stockfish
+### Uncomment the line below for Burnzie, comment out for Stockfish
 	VERSION=maverick
 
 ### Uncomment for use with Raspberry Pi -  a slower NPS UCI option setting used in Play
@@ -63,7 +63,7 @@ endif
 	FEATURE1=add_features
 
 ### should be no reason to change anything below here!
-### Only McCain with feature 1 will be publicly distributed at this time
+### Only Burnzie with feature 1 will be publicly distributed at this time
 
 ifeq ($(FEATURE1),add_features)
 	CXXFLAGS += -DAdd_Features
@@ -76,20 +76,20 @@ ifeq ($(VERSION),maverick)
 	ifeq ($(RELEASE),no)
 		ifeq ($(TEST),no)
 			ifeq ($(COMP),mingw)
-				EXE = McCain-dev-$(DATE).exe
+				EXE = Burnzie-dev-$(DATE).exe
 			else
-				EXE = McCain-dev-$(DATE)
+				EXE = Burnzie-dev-$(DATE)
 			endif
 		endif
 		ifeq ($(TEST),yes)
-			EXE = McCain-$(TESTv1)-$(TESTv2)
+			EXE = Burnzie-$(TESTv1)-$(TESTv2)
 		endif
 	endif
 	ifeq ($(RELEASE),yes)
 		ifeq ($(COMP),mingw)
-			EXE = McCain-$(RELVERSION).exe
+			EXE = Burnzie-$(RELVERSION).exe
 		else
-			EXE = McCain-$(RELVERSION)
+			EXE = Burnzie-$(RELVERSION)
 		endif
 	endif
 endif
@@ -462,7 +462,7 @@ endif
 
 help:
 	@echo ""
-	@echo "To compile McCain, type: "
+	@echo "To compile Burnzie, type: "
 	@echo "'make <target> ARCH=arch [COMP=compiler] [COMPCXX=cxx]'"
 	@echo "<target> would be 'build' or 'profile-build'"
 	@echo ""

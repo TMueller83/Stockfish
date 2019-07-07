@@ -1,16 +1,16 @@
 /*
- McCain, a UCI chess playing engine derived from Stockfish and Glaurung 2.1
+ Burnzie, a UCI chess playing engine derived from Stockfish and Glaurung 2.1
  Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
  Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad (Stockfish Authors)
  Copyright (C) 2015-2016 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Stockfish Authors)
- Copyright (C) 2017-2019 Michael Byrne, Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (McCain Authors)
+ Copyright (C) 2017-2019 Michael Byrne, Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Burnzie Authors)
 
- McCain is free software: you can redistribute it and/or modify
+ Burnzie is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
 
- McCain is distributed in the hope that it will be useful,
+ Burnzie is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
@@ -131,9 +131,9 @@ public:
 
 } // namespace
 
-/// engine_info() returns the full name of the current McCain version. This
-/// will be either "McCain <Tag> Mmm-dd-yy" (where Mmm-dd-yy is the date when
-/// the program was compiled) or "McCain <Version>", depending on whether
+/// engine_info() returns the full name of the current Burnzie version. This
+/// will be either "Burnzie <Tag> Mmm-dd-yy" (where Mmm-dd-yy is the date when
+/// the program was compiled) or "Burnzie <Version>", depending on whether
 /// Version is empty.
 
 const string engine_info(bool to_uci) {
@@ -142,7 +142,7 @@ const string engine_info(bool to_uci) {
     string month, day, year;
     stringstream ss, date(__DATE__); // From compiler, format is "Sep 21 2008"
 #ifdef Maverick
-    ss << "McCain " << Version << setfill('0');
+    ss << "Burnzie " << Version << setfill('0');
 #else
     ss << "Stockfish " << Version << setfill('0');
 #endif

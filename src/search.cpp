@@ -1,16 +1,16 @@
 /*
- McCain, a UCI chess playing engine derived from Stockfish and Glaurung 2.1
+ Burnzie, a UCI chess playing engine derived from Stockfish and Glaurung 2.1
  Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
  Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad (Stockfish Authors)
  Copyright (C) 2015-2016 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Stockfish Authors)
- Copyright (C) 2017-2019 Michael Byrne, Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (McCain Authors)
+ Copyright (C) 2017-2019 Michael Byrne, Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Burnzie Authors)
 
- McCain is free software: you can redistribute it and/or modify
+ Burnzie is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
 
- McCain is distributed in the hope that it will be useful,
+ Burnzie is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
@@ -128,48 +128,6 @@ bool  bruteForce, cleanSearch, minOutput, noNULL;
 bool limitStrength = false;
 int   aggressiveness, attack, jekyll, tactical, uci_elo, variety;
 #endif
-
-  // Breadcrumbs are used to mark nodes as being searched by a given thread.
-  struct Breadcrumb {
-    std::atomic<Thread*> thread;
-    std::atomic<Key> key;
-  };
-  std::array<Breadcrumb, 1024> breadcrumbs;
-
-  // ThreadHolding keeps track of which thread left breadcrumbs at the given node for potential reductions.
-  // A free node will be marked upon entering the moves loop, and unmarked upon leaving that loop, by the ctor/dtor of this struct.
-  struct ThreadHolding {
-    explicit ThreadHolding(Thread* thisThread, Key posKey, int ply) {
-       location = ply < 8 ? &breadcrumbs[posKey & (breadcrumbs.size() - 1)] : nullptr;
-       otherThread = false;
-       owning = false;
-       if (location)
-       {
-          // see if another already marked this location, if not, mark it ourselves.
-          Thread* tmp = (*location).thread.load(std::memory_order_relaxed);
-          if (tmp == nullptr)
-          {
-              (*location).thread.store(thisThread, std::memory_order_relaxed);
-              (*location).key.store(posKey, std::memory_order_relaxed);
-              owning = true;
-          }
-          else if (   tmp != thisThread
-                   && (*location).key.load(std::memory_order_relaxed) == posKey)
-              otherThread = true;
-       }
-    }
-
-    ~ThreadHolding() {
-       if (owning) // free the marked location.
-           (*location).thread.store(nullptr, std::memory_order_relaxed);
-    }
-
-    bool marked() { return otherThread; }
-
-    private:
-    Breadcrumb* location;
-    bool otherThread, owning;
-  };
 
   // Breadcrumbs are used to mark nodes as being searched by a given thread.
   struct Breadcrumb {
@@ -1218,9 +1176,6 @@ moves_loop: // When in check, search starts from here
 #ifdef Maverick // VoyagerOne escapre Capture
      escapeCaptureSq = SQ_NONE;
 #endif
-
-    // Mark this node as being searched.
-    ThreadHolding th(thisThread, posKey, ss->ply);
 
     // Mark this node as being searched.
     ThreadHolding th(thisThread, posKey, ss->ply);
