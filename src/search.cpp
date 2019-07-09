@@ -378,7 +378,7 @@ skipLevels:
       std::map<Move, int64_t> votes;
       Value minScore = this->rootMoves[0].score;
 
-      // Find out minimum score and reset votes for moves which can be voted
+      // Find out minimum score
       for (Thread* th: Threads)
           minScore = std::min(minScore, th->rootMoves[0].score);
 
@@ -388,11 +388,14 @@ skipLevels:
           votes[th->rootMoves[0].pv[0]] +=
               (th->rootMoves[0].score - minScore + 14) * int(th->completedDepth);
 
-          if (   (   votes[th->rootMoves[0].pv[0]] > votes[bestThread->rootMoves[0].pv[0]]
-                  && (   bestThread->rootMoves[0].score < VALUE_MATE_IN_MAX_PLY
-                      || th->rootMoves[0].score >= bestThread->rootMoves[0].score))
-              || (   th->rootMoves[0].score >= VALUE_MATE_IN_MAX_PLY
-                  && th->rootMoves[0].score > bestThread->rootMoves[0].score))
+          if (bestThread->rootMoves[0].score >= VALUE_MATE_IN_MAX_PLY)
+          {
+              // Make sure we pick the shortest mate
+              if (th->rootMoves[0].score > bestThread->rootMoves[0].score)
+                  bestThread = th;
+          }
+          else if (   th->rootMoves[0].score >= VALUE_MATE_IN_MAX_PLY
+                   || votes[th->rootMoves[0].pv[0]] > votes[bestThread->rootMoves[0].pv[0]])
               bestThread = th;
       }
   }
