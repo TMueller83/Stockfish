@@ -64,6 +64,8 @@ namespace {
 
 #if(defined Sullivan && defined Add_Features && defined Release)
 const string Version = "X5";
+#else
+const string Version = "";
 #endif
 
 #if(defined Stockfish && defined Add_Features)

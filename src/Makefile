@@ -34,13 +34,13 @@ DATE2=$(shell date +"%m%d")
 FEATURE1=
 
 ### Release versions , enter yes and release version below foor releases
-RELEASE = yes
+RELEASE = no
 RELVERSION = X5
 
 ### TEST versions, enter yes and labels below to build named test exe's
-TEST = no
+TEST = yes
 TESTv1 = $(DATE2)
-TESTv2 =
+TESTv2 = bench
 ifeq ($(TEST),yes)
 CXXFLAGS += -DTest
 endif
