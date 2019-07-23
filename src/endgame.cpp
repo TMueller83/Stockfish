@@ -1,16 +1,16 @@
 /*
- McCain, a UCI chess playing engine derived from Stockfish and Glaurung 2.1
+ Honey, a UCI chess playing engine derived from Stockfish and Glaurung 2.1
  Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
  Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad (Stockfish Authors)
  Copyright (C) 2015-2016 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Stockfish Authors)
- Copyright (C) 2017-2019 Michael Byrne, Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (McCain Authors)
+ Copyright (C) 2017-2019 Michael Byrne, Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Honey Authors)
 
- McCain is free software: you can redistribute it and/or modify
+ Honey is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
 
- McCain is distributed in the hope that it will be useful,
+ Honey is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
@@ -45,7 +45,7 @@ namespace {
   // Table used to drive the king towards a corner square of the
   // right color in KBN vs K endgames.
   constexpr int PushToCorners[SQUARE_NB] = {
-#ifdef Maverick  //MichaelB7
+#ifdef Sullivan  //MichaelB7
 	  6600, 6280, 5860, 5540, 5170, 4850, 4530, 4160,
 	  6280, 5760, 5490, 5120, 4800, 4280, 4160, 4530,
 	  5860, 5490, 4960, 4680, 4280, 4000, 4480, 4850,

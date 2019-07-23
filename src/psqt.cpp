@@ -1,16 +1,16 @@
 /*
- McCain, a UCI chess playing engine derived from Stockfish and Glaurung 2.1
+ Honey, a UCI chess playing engine derived from Stockfish and Glaurung 2.1
  Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
  Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad (Stockfish Authors)
  Copyright (C) 2015-2016 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Stockfish Authors)
- Copyright (C) 2017-2019 Michael Byrne, Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (McCain Authors)
+ Copyright (C) 2017-2019 Michael Byrne, Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Honey Authors)
 
- McCain is free software: you can redistribute it and/or modify
+ Honey is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
 
- McCain is distributed in the hope that it will be useful,
+ Honey is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
@@ -79,7 +79,7 @@ constexpr Score Bonus[][RANK_NB][int(FILE_NB) / 2] = {
    { S(-5,-50), S( 6,-27), S(10,-24), S( 8, -8) },
    { S(-2,-75), S(-2,-52), S( 1,-43), S(-2,-36) }
   },
-#ifndef Maverick
+
   { // King
    { S(272,  0), S(325, 41), S(273, 80), S(190, 93) },
    { S(277, 57), S(305, 98), S(241,138), S(183,131) },
@@ -91,35 +91,18 @@ constexpr Score Bonus[][RANK_NB][int(FILE_NB) / 2] = {
    { S( 64,  5), S( 87, 60), S( 49, 75), S(  0, 75) }
   }
 };
-#else
-	{ },
-};
-#endif
+
 
 constexpr Score PBonus[RANK_NB][FILE_NB] =
   { // Pawn (asymmetric distribution)
    { },
-   { S(  0,-10), S( -5,-3), S( 10, 7), S( 13,-1), S( 21,  7), S( 17,  6), S(  6, 1), S( -3,-20) },
-   { S(-11, -6), S(-10,-6), S( 15,-1), S( 22,-1), S( 26, -1), S( 28,  2), S(  4,-2), S(-24, -5) },
-   { S( -9,  4), S(-18,-5), S(  8,-4), S( 22,-5), S( 33, -6), S( 25,-13), S( -4,-3), S(-16, -7) },
-   { S(  6, 18), S( -3, 2), S(-10, 2), S(  1,-9), S( 12,-13), S(  6, -8), S(-12,11), S(  1,  9) },
-   { S( -6, 25), S( -8,17), S(  5,19), S( 11,29), S(-14, 29), S(  0,  8), S(-12, 4), S(-14, 12) },
-   { S(-10, -1), S(  6,-6), S( -5,18), S(-11,22), S( -2, 22), S(-14, 17), S( 12, 2), S( -1,  9) }
+   { S(  3,-10), S(  3, -6), S( 10, 10), S( 19,  0), S( 16, 14), S( 19,  7), S(  7, -5), S( -5,-19) },
+   { S( -9,-10), S(-15,-10), S( 11,-10), S( 15,  4), S( 32,  4), S( 22,  3), S(  5, -6), S(-22, -4) },
+   { S( -8,  6), S(-23, -2), S(  6, -8), S( 20, -4), S( 40,-13), S( 17,-12), S(  4,-10), S(-12, -9) },
+   { S( 13,  9), S(  0,  4), S(-13,  3), S(  1,-12), S( 11,-12), S( -2, -6), S(-13, 13), S(  5,  8) },
+   { S( -5, 28), S(-12, 20), S( -7, 21), S( 22, 28), S( -8, 30), S( -5,  7), S(-15,  6), S(-18, 13) },
+   { S( -7,  0), S(  7,-11), S( -3, 12), S(-13, 21), S(  5, 25), S(-16, 19), S( 10,  4), S( -8,  7) }
   };
-#ifdef Maverick
-constexpr Score KBonus[RANK_NB][FILE_NB] =  //8x8 PSQT for Kings. #1802  Jared Kish
-  { // King
-   { S(269, -4), S(350, 33), S(283, 70), S(201, 92), S(184, 66), S(261, 79), S(326, 39), S(273,  2) },
-   { S(292, 55), S(302, 94), S(245,149), S(192,133), S(184,123), S(222,127), S(300, 99), S(280, 55) },
-   { S(220, 76), S(267,137), S(161,154), S(124,174), S(115,163), S(159,156), S(251,133), S(213, 86) },
-   { S(172,103), S(195,153), S(136,167), S(86, 191), S(120,173), S(136,182), S(200,149), S(163, 97) },
-   { S(150,100), S(176,148), S(92, 211), S(76, 192), S(58, 188), S(123,193), S(152,168), S(136,103) },
-   { S(124, 85), S(161,162), S(71, 152), S(33, 176), S(11, 184), S(92, 176), S(169,156), S(123, 84) },
-   { S(81,  24), S(112,123), S(63, 133), S(26, 128), S(29, 152), S(54, 141), S(115,113), S(93,  50) },
-   { S(59,  -1), S(106, 73), S(57,  66), S(6,   71), S(0,   84), S(45,  55), S(73,  75), S(42,  11) }
-
-};
-#endif
 
 #undef S
 
@@ -140,14 +123,8 @@ void init() {
       for (Square s = SQ_A1; s <= SQ_H8; ++s)
       {
           File f = std::min(file_of(s), ~file_of(s));
-#ifdef Maverick
-		  psq[ pc][ s] = score + (type_of(pc) == PAWN ? PBonus[rank_of(s)][file_of(s)]
-					: type_of(pc) == KING ? KBonus[rank_of(s)][file_of(s)]
-					: Bonus[pc][rank_of(s)][f]);
-#else
           	  psq[ pc][ s] = score + (type_of(pc) == PAWN ? PBonus[rank_of(s)][file_of(s)]
                                          : Bonus[pc][rank_of(s)][f]);
-#endif
           psq[~pc][~s] = -psq[pc][s];
       }
   }

@@ -1,16 +1,16 @@
 /*
- McCain, a UCI chess playing engine derived from Stockfish and Glaurung 2.1
+ Honey, a UCI chess playing engine derived from Stockfish and Glaurung 2.1
  Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
  Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad (Stockfish Authors)
  Copyright (C) 2015-2016 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Stockfish Authors)
- Copyright (C) 2017-2019 Michael Byrne, Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (McCain Authors)
+ Copyright (C) 2017-2019 Michael Byrne, Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Honey Authors)
 
- McCain is free software: you can redistribute it and/or modify
+ Honey is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
 
- McCain is distributed in the hope that it will be useful,
+ Honey is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
@@ -97,18 +97,18 @@ void init(OptionsMap& o) {
     o["Best_Move_4"]              << Option(true, on_best_book_move4);
     o["Book_Depth_4"]             << Option(127, 1, 127, on_book_depth4);
 #endif
-#ifdef Maverick
+#ifdef Sullivan
     o["W_Contempt"]               << Option(  22, -150, 150);
-    o["B_Contempt"]               << Option(   2, -150, 150);
+    o["B_Contempt"]               << Option(  12, -150, 150);
 #else
-    o["Contempt"]                 << Option(24, -100, 100);
+    o["Contempt"]                 << Option(  24, -100, 100);
 #endif
 #ifdef Add_Features
     o["Analysis_Contempt"]        << Option("Off var White var Black var Both var Off", "Off");
 #else
     o["Analysis_Contempt"]        << Option("Both var Off var White var Black var Both", "Both");
 #endif
-    o["Skill Level"]              << Option(20, 0, 20);
+    o["Skill Level"]              << Option(40, 0, 40);
     o["Move Overhead"]            << Option(30, 0, 5000);
     o["Minimum Thinking Time"]    << Option(20, 0, 5000);
     o["Threads"]                  << Option(1, 1, 512, on_threads);
@@ -137,7 +137,7 @@ void init(OptionsMap& o) {
     o["Score_Output"]             << Option("ScorPct-GUI var CentiPawn var ScorPct var ScorPct-GUI"
                                          ,"ScorPct-GUI");
 #endif
-#ifdef Maverick
+#ifdef Sullivan
     o["DC_Slider"]                << Option(65, -180, 180);
     o["MultiPV"]                  << Option(1, 1, 256);
 #else
@@ -164,10 +164,13 @@ void init(OptionsMap& o) {
     o["nodestime"]                << Option(0, 0, 10000);
     o["UCI_Chess960"]             << Option(false);
     o["UCI_AnalyseMode"]          << Option(false);
-    o["SyzygyPath"]               << Option("", on_tb_path);
+    o["SyzygyPath"]               << Option("<empty>", on_tb_path);
     o["SyzygyProbeDepth"]         << Option(1, 1, 100);
     o["Syzygy50MoveRule"]         << Option(true);
     o["SyzygyProbeLimit"]         << Option(7, 0, 7);
+	//Stockfish methdd of play by Elo, a very nice  implementation.
+	o["UCI_LimitStrength"]        << Option(false);
+	o["UCI_Elo"]                  << Option(1350, 1350, 2850);
 
 }
 

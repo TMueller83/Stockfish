@@ -1,16 +1,16 @@
 /*
- McCain, a UCI chess playing engine derived from Stockfish and Glaurung 2.1
+ Honey, a UCI chess playing engine derived from Stockfish and Glaurung 2.1
  Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
  Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad (Stockfish Authors)
  Copyright (C) 2015-2016 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Stockfish Authors)
- Copyright (C) 2017-2019 Michael Byrne, Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (McCain Authors)
+ Copyright (C) 2017-2019 Michael Byrne, Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Honey Authors)
 
- McCain is free software: you can redistribute it and/or modify
+ Honey is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
 
- McCain is distributed in the hope that it will be useful,
+ Honey is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
@@ -39,7 +39,7 @@ Magic BishopMagics[SQUARE_NB];
 
 namespace {
 
-#ifdef Maverick //Niklas Fiekas fast magics
+#ifdef Sullivan //Niklas Fiekas fast magics
 Bitboard AttackTable[HasPext ? 107648 : 88772] = { 0 };
 
 struct MagicInit {
@@ -250,7 +250,7 @@ void Bitboards::init() {
   Direction RookDirections[] = { NORTH, EAST, SOUTH, WEST };
   Direction BishopDirections[] = { NORTH_EAST, SOUTH_EAST, SOUTH_WEST, NORTH_WEST };
 
-#ifdef Maverick ////Niklas Fiekas fast magics
+#ifdef Sullivan ////Niklas Fiekas fast magics
     if (HasPext)
     {
         unsigned offset = 0;
@@ -308,7 +308,7 @@ namespace {
 
     return attack;
 }
-#ifdef Maverick //Niklas Fiekas fast magics
+#ifdef Sullivan //Niklas Fiekas fast magics
 Bitboard relevant_occupancies(Direction directions[], Square s) {
     Bitboard edges = ((Rank1BB | Rank8BB) & ~rank_bb(s)) | ((FileABB | FileHBB) & ~file_bb(s));
     return sliding_attack(directions, s, 0) & ~edges;
@@ -320,7 +320,7 @@ Bitboard relevant_occupancies(Direction directions[], Square s) {
   // www.chessprogramming.org/Magic_Bitboards. In particular, here we use the so
   // called "fancy" approach.
 
-#ifdef Maverick //Niklas Fiekas fast magics
+#ifdef Sullivan //Niklas Fiekas fast magics
 template<PieceType Pt>
 void init_magics(MagicInit init[], Magic magics[], Direction directions[])
 {

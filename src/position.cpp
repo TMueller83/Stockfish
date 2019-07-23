@@ -1,16 +1,16 @@
 /*
- McCain, a UCI chess playing engine derived from Stockfish and Glaurung 2.1
+ Honey, a UCI chess playing engine derived from Stockfish and Glaurung 2.1
  Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
  Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad (Stockfish Authors)
  Copyright (C) 2015-2016 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Stockfish Authors)
- Copyright (C) 2017-2019 Michael Byrne, Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (McCain Authors)
+ Copyright (C) 2017-2019 Michael Byrne, Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Honey Authors)
 
- McCain is free software: you can redistribute it and/or modify
+ Honey is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
 
- McCain is distributed in the hope that it will be useful,
+ Honey is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
@@ -56,13 +56,13 @@ constexpr Piece Pieces[] = { W_PAWN, W_KNIGHT, W_BISHOP, W_ROOK, W_QUEEN, W_KING
 // valuable attacker for the side to move, remove the attacker we just found
 // from the bitboards and scan for new X-ray attacks behind it.
 
-template<int Pt>
+template<PieceType Pt>
 PieceType min_attacker(const Bitboard* byTypeBB, Square to, Bitboard stmAttackers,
                        Bitboard& occupied, Bitboard& attackers) {
 
   Bitboard b = stmAttackers & byTypeBB[Pt];
   if (!b)
-      return min_attacker<Pt + 1>(byTypeBB, to, stmAttackers, occupied, attackers);
+      return min_attacker<PieceType(Pt + 1)>(byTypeBB, to, stmAttackers, occupied, attackers);
 
   occupied ^= lsb(b); // Remove the attacker from occupied
 
@@ -78,7 +78,7 @@ PieceType min_attacker(const Bitboard* byTypeBB, Square to, Bitboard stmAttacker
   // X-ray may add already processed pieces because byTypeBB[] is constant: in
   // the rook example, now attackers contains _again_ rook in a7, so remove it.
   attackers &= occupied;
-  return (PieceType)Pt;
+  return Pt;
 }
 
 template<>
@@ -713,39 +713,6 @@ bool Position::gives_check(Move m) const {
       return false;
   }
 }
-#ifdef Maverick //Gunther Demetz zugzwangSolver
-void Position::removePawn(Square s, StateInfo& newSt) {
-    assert(&newSt != st);
-    assert(type_of(piece_on(s)) == PAWN);
-
-    std::memcpy(&newSt, st, offsetof(StateInfo, key));
-    newSt.previous = st;
-    st = &newSt;
-
-    Key k = st->previous->key;
-    Piece pc = piece_on(s);
-    st->pawnKey ^= Zobrist::psq[pc][s];
-
-    k ^= Zobrist::psq[pc][s];
-
-    remove_piece(pc, s);
-
-    st->epSquare= SQ_NONE;
-    board[s] = NO_PIECE;
-    st->checkersBB = attackers_to(square<KING>(sideToMove)) & pieces(~sideToMove);
-    set_check_info(st);
-
-    st->materialKey ^= Zobrist::psq[pc][pieceCount[pc]];
-    st->capturedPiece = NO_PIECE;
-    st->key = k;
-}
-
-void Position::undo_removePawn(Square s, Color c) {
-    st = st->previous;
-    Piece pc = make_piece(c, PAWN);
-    put_piece(pc, s);
-}
-#endif
 
 
 /// Position::do_move() makes a move, and saves all information necessary
@@ -1217,24 +1184,15 @@ bool Position::has_game_cycle(int ply) const {
       if (   (j = H1(moveKey), cuckoo[j] == moveKey)
           || (j = H2(moveKey), cuckoo[j] == moveKey))
       {
-#ifdef Maverick  //simplification, Rocky640
-		  Square s1 = from_sq(cuckooMove[j]);
-		  Square s2 = to_sq(cuckooMove[j]);
-#else
+
           Move move = cuckooMove[j];
           Square s1 = from_sq(move);
           Square s2 = to_sq(move);
-#endif
+
           if (!(between_bb(s1, s2) & pieces()))
           {
               if (ply > i)
                   return true;
-#ifdef Maverick // #2097 by svivanov72
-              // For nodes before or at the root, check that the move is a repetition one
-              // rather than a move to the current position
-              if (color_of(piece_on(empty(s1) ? s2 : s1)) != side_to_move())
-                  continue;
-#endif
 
               // For nodes before or at the root, check that the move is a
               // repetition rather than a move to the current position.

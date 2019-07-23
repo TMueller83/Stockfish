@@ -1,16 +1,16 @@
 /*
- McCain, a UCI chess playing engine derived from Stockfish and Glaurung 2.1
+ Honey, a UCI chess playing engine derived from Stockfish and Glaurung 2.1
  Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
  Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad (Stockfish Authors)
  Copyright (C) 2015-2016 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Stockfish Authors)
- Copyright (C) 2017-2019 Michael Byrne, Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (McCain Authors)
+ Copyright (C) 2017-2019 Michael Byrne, Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Honey Authors)
 
- McCain is free software: you can redistribute it and/or modify
+ Honey is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
 
- McCain is distributed in the hope that it will be useful,
+ Honey is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
@@ -28,17 +28,6 @@ namespace {
 
   template<GenType Type, Direction D>
   ExtMove* make_promotions(ExtMove* moveList, Square to, Square ksq) {
-#ifdef Maverick  //MichaelB7
-	  if (Type == CAPTURES || Type == QUIETS || Type == EVASIONS || Type == NON_EVASIONS)
-	  {
-		  *moveList++ = make<PROMOTION>(to - D, to, QUEEN);
-		  *moveList++ = make<PROMOTION>(to - D, to, KNIGHT);
-		  *moveList++ = make<PROMOTION>(to - D, to, BISHOP);
-		  *moveList++ = make<PROMOTION>(to - D, to, ROOK); 
-	  }
-	  
-	  
-#else
     if (Type == CAPTURES || Type == EVASIONS || Type == NON_EVASIONS)
         *moveList++ = make<PROMOTION>(to - D, to, QUEEN);
 
@@ -48,7 +37,6 @@ namespace {
         *moveList++ = make<PROMOTION>(to - D, to, BISHOP);
         *moveList++ = make<PROMOTION>(to - D, to, KNIGHT);
     }
-#endif
     // Knight promotion is the only promotion that can give a direct check
     // that's not already included in the queen promotion.
     if (Type == QUIET_CHECKS && (PseudoAttacks[KNIGHT][to] & ksq))
@@ -246,12 +234,6 @@ namespace {
         Bitboard b = pos.attacks_from<KING>(ksq) & target;
         while (b)
             *moveList++ = make_move(ksq, pop_lsb(&b));
-#ifdef Maverick  //Simplify generation of castling moves #1997 protonspring
-		if (Type != CAPTURES && pos.can_castle(CastlingRight(OO | OOO)))
-			for (CastlingRight cr : {OO, OOO})
-				if (!pos.castling_impeded(cr) && pos.can_castle(cr))
-					*moveList++ = make<CASTLING>(ksq, pos.castling_rook_square(cr));
-#else
         if (Type != CAPTURES && pos.can_castle(CastlingRight(OO | OOO)))
         {
             if (!pos.castling_impeded(OO) && pos.can_castle(OO))
@@ -260,7 +242,7 @@ namespace {
             if (!pos.castling_impeded(OOO) && pos.can_castle(OOO))
                 *moveList++ = make<CASTLING>(ksq, pos.castling_rook_square(OOO));
         }
-#endif
+
     }
 
     return moveList;

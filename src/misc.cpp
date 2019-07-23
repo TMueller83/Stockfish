@@ -1,16 +1,16 @@
 /*
- McCain, a UCI chess playing engine derived from Stockfish and Glaurung 2.1
+ Honey, a UCI chess playing engine derived from Stockfish and Glaurung 2.1
  Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
  Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad (Stockfish Authors)
  Copyright (C) 2015-2016 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Stockfish Authors)
- Copyright (C) 2017-2019 Michael Byrne, Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (McCain Authors)
+ Copyright (C) 2017-2019 Michael Byrne, Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Honey Authors)
 
- McCain is free software: you can redistribute it and/or modify
+ Honey is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
 
- McCain is distributed in the hope that it will be useful,
+ Honey is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
@@ -58,12 +58,12 @@ namespace {
 
 /// Version number. If Version is left empty, then compile date in the format
 /// DD-MM-YY and show in engine_info.
-#ifndef Maverick
+#ifndef Sullivan
 #define Stockfish
 #endif
 
-#if(defined Maverick && defined Add_Features)
-const string Version = "X4";
+#if(defined Sullivan && defined Add_Features && defined Release)
+const string Version = "X5";
 #endif
 
 #if(defined Stockfish && defined Add_Features)
@@ -129,9 +129,9 @@ public:
 
 } // namespace
 
-/// engine_info() returns the full name of the current McCain version. This
-/// will be either "McCain <Tag> Mmm-dd-yy" (where Mmm-dd-yy is the date when
-/// the program was compiled) or "McCain <Version>", depending on whether
+/// engine_info() returns the full name of the current Honey version. This
+/// will be either "Honey <Tag> Mmm-dd-yy" (where Mmm-dd-yy is the date when
+/// the program was compiled) or "Honey <Version>", depending on whether
 /// Version is empty.
 
 const string engine_info(bool to_uci) {
@@ -139,16 +139,16 @@ const string engine_info(bool to_uci) {
     const string months("Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec");
     string month, day, year;
     stringstream ss, date(__DATE__); // From compiler, format is "Sep 21 2008"
-#ifdef Maverick
-    ss << "McCain " << Version << setfill('0');
+#ifdef Sullivan
+    ss << "Honey " << Version << setfill('0');
 #else
     ss << "Stockfish " << Version << setfill('0');
 #endif
-#if (defined Maverick && defined Test)
+#if (defined Sullivan && defined Test)
 	if (Version.empty())
 	{
 		date >> month >> day;
-		ss << setw(2) << (1 + months.find(month) / 4) <<setw(2) << day  << "-" << "";
+		ss << setw(2) << (1 + months.find(month) / 4) <<setw(2) << day  << "-" << "newlmr";
 	}
 
 #else
@@ -158,7 +158,7 @@ const string engine_info(bool to_uci) {
 		ss << setw(2) << (1 + months.find(month) / 4) <<setw(2) << day << year.substr(2) << "";
     }
 #endif
-#ifdef Maverick
+#ifdef Sullivan
     ss	<< (to_uci  ? "\nid author ": " by ")
             << "M. Byrne and scores of others...";
 #else
@@ -173,7 +173,7 @@ const string engine_info(bool to_uci) {
 
 
 /// Debug functions used mainly to collect run-time statistics
-static int64_t hits[2], means[2];
+static std::atomic<int64_t> hits[2], means[2];
 
 void dbg_hit_on(bool b) { ++hits[0]; if (b) ++hits[1]; }
 void dbg_hit_on(bool c, bool b) { if (c) dbg_hit_on(b); }

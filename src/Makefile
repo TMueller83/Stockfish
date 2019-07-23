@@ -1,18 +1,18 @@
 ### ==========================================================================
 ### Copyright Notice and License Information
 ### ==========================================================================
-#   McBrain, a UCI chess playing engine derived from SugaR, Stockfish and Glaurung 2.1
+#   Honey, a UCI chess playing engine derived from SugaR, Stockfish and Glaurung 2.1
 #   Copyright (C) 2004-2008 Tord Romstad (Glaurung Author)
 #   Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad (Stockfish Authors)
 #   Copyright (C) 2015-2016 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Stockfish Authors)
-#   Copyright (C) 2017-2018 Michael Byrne, Marco Zerbinati, Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (McBrain Authors)
+#   Copyright (C) 2017-2018 Michael Byrne, Marco Zerbinati, Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Honey Authors)
 
-#   McBrain is free software: you can redistri/Volumes/Macintosh_1.5TBbute it and/or modify
+#   Honey is free software: you can redistri/Volumes/Macintosh_1.5TBbute it and/or modify
 #   it under the terms of the GNU General Public License as published by
 #   the Free Software Foundation, either version 3 of the License, or
 #   (at your option) any later version.
 
-#   McBrain is distributed in the hope that it will be useful,
+#   Honey is distributed in the hope that it will be useful,
 #   but WITHOUT ANY WARRANTY; without even the implied warranty of
 #   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #   GNU General Public License for more details.
@@ -24,8 +24,8 @@
 ### ==========================================================================
 
 ### Executable name
-### McCain bench nodes ----> 5757357  > based on commits up to 6/19/2019
-### stockfish bench nodes -> 3961247* > based on commits up to 6/19/2019
+### Honey bench nodes ----> 4014378  > based on commits up to 7/23/2019
+### stockfish bench nodes -> 3357457 > based on commits up to 7/23/2019
 ### * bench agrees with PR #2197 not ye committed which is the shuffling extension fix
 ### made on 6/19/2019 by Vondele
 ####  Always leave the three lines below as is (any subsequent defines will override)
@@ -35,7 +35,7 @@ FEATURE1=
 
 ### Release versions , enter yes and release version below foor releases
 RELEASE = yes
-RELVERSION = X4
+RELVERSION = X5
 
 ### TEST versions, enter yes and labels below to build named test exe's
 TEST = no
@@ -45,10 +45,8 @@ ifeq ($(TEST),yes)
 CXXFLAGS += -DTest
 endif
 
-
-
-### Uncomment the line below for McCain, comment out for Stockfish
-	VERSION=maverick
+### Uncomment the line below for Honey, comment out for Stockfish
+	VERSION=sullivan
 
 ### Uncomment for use with Raspberry Pi -  a slower NPS UCI option setting used in Play
 ### by Elo and personalities
@@ -58,7 +56,7 @@ endif
 	FEATURE1=add_features
 
 ### should be no reason to change anything below here!
-### Only McCain with feature 1 will be publicly distributed at this time
+### Only Honey with feature 1 will be publicly distributed at this time
 
 ifeq ($(FEATURE1),add_features)
 	CXXFLAGS += -DAdd_Features
@@ -72,31 +70,32 @@ ifeq ($(RASPBERRY),Pi)
 CXXFLAGS += -DPi
 endif
 
-ifeq ($(VERSION),maverick)
-	CXXFLAGS += -DMaverick
+ifeq ($(VERSION),sullivan)
+	CXXFLAGS += -DSullivan
 	ifeq ($(RELEASE),no)
 		ifeq ($(TEST),no)
 			ifeq ($(COMP),mingw)
-				EXE = McCain-dev-$(DATE).exe
+				EXE = Honey-dev-$(DATE).exe
 			else
-				EXE = McCain-dev-$(DATE)
+				EXE = Honey-dev-$(DATE)
 			endif
 		endif
 		ifeq ($(TEST),yes)
-			EXE = McCain-$(TESTv1)-$(TESTv2)
+			EXE = Honey-$(TESTv1)-$(TESTv2)
 		endif
 	endif
 	ifeq ($(RELEASE),yes)
+        CXXFLAGS += -DRelease
 		ifeq ($(COMP),mingw)
-			EXE = McCain-$(RELVERSION).exe
+			EXE = Honey-$(RELVERSION).exe
 		else
-			EXE = McCain-$(RELVERSION)
+			EXE = Honey-$(RELVERSION)
 		endif
 	endif
 endif
 
 ### Note:  For building cur-dev stockfish with the features added.
-ifneq ($(VERSION),maverick)
+ifneq ($(VERSION),sullivan)
 	ifeq ($(COMP),mingw)
 		EXE = stockfish-$(DATE).exe
 	else
@@ -225,6 +224,8 @@ endif
 ifeq ($(ARCH),ppc-64)
 	arch = ppc64
 	bits = 64
+	popcnt = yes
+	prefetch = yes
 endif
 
 
@@ -406,7 +407,9 @@ endif
 
 ### 3.6 popcnt
 ifeq ($(popcnt),yes)
-	ifeq ($(comp),icc)
+	ifeq ($(arch),ppc64)
+		CXXFLAGS += -DUSE_POPCNT
+	else ifeq ($(comp),icc)
 		CXXFLAGS += -msse3 -DUSE_POPCNT
 	else
 		CXXFLAGS += -msse3 -mpopcnt -DUSE_POPCNT
@@ -463,12 +466,12 @@ endif
 
 help:
 	@echo ""
-	@echo "To compile McCain, type: "
+	@echo "To compile Honey, type: "
 	@echo "'make <target> ARCH=arch [COMP=compiler] [COMPCXX=cxx]'"
 	@echo "<target> would be 'build' or 'profile-build'"
 	@echo ""
 	@echo "To compile stockfish, uncomment this line in the makefile: "
-	@echo "'### VERSION=maverick' by remvoing the 3 #(pound signs)"
+	@echo "'### VERSION=sullivan' by remvoing the 3 #(pound signs)"
 	@echo "then type: 'make <target> ARCH=<arch> [COMP=compiler] [COMPCXX=cxx]'"
 	@echo ""
 	@echo "Supported targets:"
