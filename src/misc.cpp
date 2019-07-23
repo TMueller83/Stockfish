@@ -62,15 +62,12 @@ namespace {
 #define Stockfish
 #endif
 
-#if(defined Sullivan && defined Add_Features && defined Release)
+#if (defined Sullivan && defined Add_Features)
 const string Version = "X5";
-#elif (defined Sullivan && defined Add_Features)
-const string Version = "";
 #endif
 
-#if(defined Stockfish && defined Add_Features)
+#if (defined Stockfish && defined Add_Features)
 const string Version = "";
-
 #endif
 
 /// Our fancy logging facility. The trick here is to replace cin.rdbuf() and
@@ -150,7 +147,7 @@ const string engine_info(bool to_uci) {
 	if (Version.empty())
 	{
 		date >> month >> day;
-		ss << setw(2) << (1 + months.find(month) / 4) <<setw(2) << day  << "-" << "test";
+		ss << setw(2) << (1 + months.find(month) / 4) <<setw(2) << day  << "-" << "";
 	}
 
 #else
@@ -164,7 +161,7 @@ const string engine_info(bool to_uci) {
     ss	<< (to_uci  ? "\nid author ": " by ")
             << "M. Byrne and scores of others...";
 #else
-//     ss << (Is64Bit ? " 64" : "") // 95% of systems are now 64 bit
+//     ss << (Is64Bit ? " 64" : "") // 95% of systems are 64 bit
 //     << (HasPext ? " BMI2" : (HasPopCnt ? " POPCNT" : "")) // may disrupt some GUIs due to length
 	   ss << (to_uci  ? "\nid author ": " by ")
        << "T. Romstad, M. Costalba, J. Kiiski, G. Linscott";
