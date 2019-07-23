@@ -24,9 +24,9 @@
 ### ==========================================================================
 
 ### Executable name
-### Honey bench nodes ----> 4014378  > based on commits up to 7/23/2019
-### stockfish bench nodes -> 3357457 > based on commits up to 7/23/2019
-### * bench agrees with PR #2197 not ye committed which is the shuffling extension fix
+### Honey bench nodes ----> 3798000  > based on commits up to 7/23/2019
+### stockfish bench nodes -> 3591896 > based on commits up to 7/23/2019
+### * commits  #2173, #2220, #2226, #2246, #2252
 ### made on 6/19/2019 by Vondele
 ####  Always leave the three lines below as is (any subsequent defines will override)
 DATE=$(shell date +"%m%d%y")
@@ -34,19 +34,19 @@ DATE2=$(shell date +"%m%d")
 FEATURE1=
 
 ### Release versions , enter yes and release version below foor releases
-RELEASE = no
+RELEASE = yes
 RELVERSION = X5
 
 ### TEST versions, enter yes and labels below to build named test exe's
 TEST = yes
 TESTv1 = $(DATE2)
-TESTv2 = bench
+TESTv2 =
 ifeq ($(TEST),yes)
 CXXFLAGS += -DTest
 endif
 
 ### Uncomment the line below for Honey, comment out for Stockfish
-	VERSION=sullivan
+###	VERSION=sullivan
 
 ### Uncomment for use with Raspberry Pi -  a slower NPS UCI option setting used in Play
 ### by Elo and personalities

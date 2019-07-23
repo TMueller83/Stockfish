@@ -64,7 +64,7 @@ namespace {
 
 #if(defined Sullivan && defined Add_Features && defined Release)
 const string Version = "X5";
-#else
+#elif (defined Sullivan && defined Add_Features)
 const string Version = "";
 #endif
 
@@ -150,7 +150,7 @@ const string engine_info(bool to_uci) {
 	if (Version.empty())
 	{
 		date >> month >> day;
-		ss << setw(2) << (1 + months.find(month) / 4) <<setw(2) << day  << "-" << "newlmr";
+		ss << setw(2) << (1 + months.find(month) / 4) <<setw(2) << day  << "-" << "test";
 	}
 
 #else
