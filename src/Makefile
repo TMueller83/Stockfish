@@ -40,13 +40,13 @@ RELVERSION = X5
 ### TEST versions, enter yes and labels below to build named test exe's
 TEST = yes
 TESTv1 = $(DATE2)
-TESTv2 = 1800
+TESTv2 = 07-26
 ifeq ($(TEST),yes)
 CXXFLAGS += -DTest
 endif
 
 ### Uncomment the line below for Honey, comment out for Stockfish
-###	VERSION=sullivan
+	VERSION=sullivan
 
 ### Uncomment for use with Raspberry Pi -  a slower NPS UCI option setting used in Play
 ### by Elo and personalities
