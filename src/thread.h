@@ -60,8 +60,11 @@ public:
 
   Pawns::Table pawnsTable;
   Material::Table materialTable;
+/*<<<<<<< HEAD
 
   size_t pvIdx, multiPV, pvLast, shuffleExts;
+=======*/ //delete
+  size_t pvIdx, pvLast, shuffleExts;
   int selDepth, nmpMinPly;
 
   Color nmpColor;
