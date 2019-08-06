@@ -34,19 +34,19 @@ DATE2=$(shell date +"%m%d")
 FEATURE1=
 
 ### Release versions , enter yes and release version below foor releases
-RELEASE = yes
+RELEASEVER = no
 RELVERSION = X5
 
 ### TEST versions, enter yes and labels below to build named test exe's
 TEST = yes
 TESTv1 = $(DATE2)
-TESTv2 =
+TESTv2 = 1800
 ifeq ($(TEST),yes)
 CXXFLAGS += -DTest
 endif
 
 ### Uncomment the line below for Honey, comment out for Stockfish
-	VERSION=sullivan
+###	VERSION=sullivan
 
 ### Uncomment for use with Raspberry Pi -  a slower NPS UCI option setting used in Play
 ### by Elo and personalities
@@ -72,7 +72,7 @@ endif
 
 ifeq ($(VERSION),sullivan)
 	CXXFLAGS += -DSullivan
-	ifeq ($(RELEASE),no)
+	ifeq ($(RELEASEVER),no)
 		ifeq ($(TEST),no)
 			ifeq ($(COMP),mingw)
 				EXE = Honey-dev-$(DATE).exe
@@ -84,8 +84,8 @@ ifeq ($(VERSION),sullivan)
 			EXE = Honey-$(TESTv1)-$(TESTv2)
 		endif
 	endif
-	ifeq ($(RELEASE),yes)
-        CXXFLAGS += -DRelease
+	ifeq ($(RELEASEVER),yes)
+        CXXFLAGS += -DReleaseVer
 		ifeq ($(COMP),mingw)
 			EXE = Honey-$(RELVERSION).exe
 		else

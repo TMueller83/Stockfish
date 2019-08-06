@@ -123,8 +123,8 @@ void init(OptionsMap& o) {
     o["Minimal_Output"]           << Option(false);
     o["No_Null_Moves"]            << Option(false);
     o["Play_By_Elo"]              << Option(false);
-
-    o["Engine_Elo"]               << Option(1200, 1200, 2850);
+    o["Engine_Elo"]               << Option(1000, 1000, 2850);
+    o["Sleep"]                    << Option(false);
     // A separate weaker play level from the predefined levels below. The difference
     // between both of the methods and the "skill level" is that the engine is only weakened
     // by the reduction in nodes searched, thus reducing the move horizon visibility naturally

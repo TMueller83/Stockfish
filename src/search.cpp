@@ -116,7 +116,7 @@ namespace {
 #ifdef Add_Features
 bool  bruteForce, cleanSearch, minOutput, noNULL;
 bool limitStrength = false;
-int   aggressiveness, attack, jekyll, tactical, uci_elo, variety;
+int   aggressiveness, attack, jekyll,  intLevel = 40, tactical, uci_elo, uci_sleep, variety;
 #endif
 
   // Breadcrumbs are used to mark nodes as being searched by a given thread.
@@ -243,6 +243,7 @@ void MainThread::search() {
     noNULL              = Options["No_Null_Moves"];
     tactical            = Options["Tactical"];
     uci_elo             = Options["Engine_Elo"];
+    uci_sleep           = Options["Sleep"];
     variety             = Options["Variety"];
 #endif
 
@@ -325,10 +326,18 @@ skipLevels:
              std::uniform_int_distribution<int> dis(-8, 8);
              int rand = dis(gen);
              uci_elo += rand;
-             int NodesToSearch   = pow(1.006, (uci_elo - 1200)) * 8;
+			 int NodesToSearch   = pow(1.006368, (std::max(uci_elo, 1300) - 1300)) * 8;
              Limits.nodes = NodesToSearch;
-             Limits.nodes *= Time.optimum()/1000 ;
-             std::this_thread::sleep_for (std::chrono::seconds(Time.optimum()/1000) * (1 - Limits.nodes/benchKnps));
+             Limits.nodes *= Time.optimum()/1000 + 1 ;
+			 PRNG rng(now());
+			  double floatLevel = Options["Play_By_Elo"] ?
+			  clamp(std::pow((Options["Engine_Elo"] - 946.6) / 101.6, 1 / 0.806), 0.0, 40.0) :
+			  double(Options["Skill Level"]);
+			  intLevel = int(floatLevel) +
+			  ((floatLevel - int(floatLevel)) * 1024 > rng.rand<unsigned>() % 1024  ? 1 : 0);
+			 
+			 if (uci_sleep)
+                 std::this_thread::sleep_for (std::chrono::seconds(Time.optimum()/1000) * (1 - Limits.nodes/benchKnps));
 		  }
 #endif
       for (Thread* th : Threads)
@@ -453,7 +462,7 @@ ss->pv = pv;
   bestValue = delta = alpha = -VALUE_INFINITE;
 
   multiPV = Options["MultiPV"];
-
+#ifndef Add_Features
   // Pick integer skill levels, but non-deterministically round up or down
   // such that the average integer skill corresponds to the input floating point one.
   // UCI_Elo is converted to a suitable fractional skill level, using anchoring
@@ -461,12 +470,12 @@ ss->pv = pv;
   // for match (TC 60+0.6) results spanning a wide range of k values.
   PRNG rng(now());
   double floatLevel = Options["UCI_LimitStrength"] ?
-                        clamp(std::pow((Options["UCI_Elo"] - 1346.6) / 143.4, 1 / 0.806), 0.0, 20.0) :
-                        double(Options["Skill Level"]);
-  int intLevel = int(floatLevel) +
-                 ((floatLevel - int(floatLevel)) * 1024 > rng.rand<unsigned>() % 1024  ? 1 : 0);
-  Skill skill(intLevel);
-
+                      clamp(std::pow((Options["UCI_Elo"] - 1346.6) / 71.7, 1 / 0.806), 0.0, 40.0) :
+                      double(Options["Skill Level"]);
+  intLevel = int(floatLevel) +
+             ((floatLevel - int(floatLevel)) * 1024 > rng.rand<unsigned>() % 1024  ? 1 : 0);
+#endif
+	Skill skill(intLevel);
 
 #ifdef Add_Features
     if (tactical) multiPV = pow(2, tactical);

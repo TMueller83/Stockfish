@@ -62,9 +62,13 @@ namespace {
 #define Stockfish
 #endif
 
-#if (defined Sullivan && defined Add_Features)
-const string Version = "X5";
+	
+#if (defined Sullivan && defined Add_Features && ReleaseVer)
+const string Version = "";
+#elif (defined Sullivan && defined Add_Features)
+const string Version = "";
 #endif
+
 
 #if (defined Stockfish && defined Add_Features)
 const string Version = "";
@@ -147,7 +151,7 @@ const string engine_info(bool to_uci) {
 	if (Version.empty())
 	{
 		date >> month >> day;
-		ss << setw(2) << (1 + months.find(month) / 4) <<setw(2) << day  << "-" << "";
+		ss << setw(2) << (1 + months.find(month) / 4) <<setw(2) << day  << "-" << "1800";
 	}
 
 #else
