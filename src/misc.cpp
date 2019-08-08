@@ -72,6 +72,8 @@ const string Version = "";
 
 #if (defined Stockfish && defined Add_Features)
 const string Version = "";
+#elif (defined Stockfish)
+const string Version = "";
 #endif
 
 /// Our fancy logging facility. The trick here is to replace cin.rdbuf() and

@@ -148,14 +148,6 @@ namespace {
             score -= Doubled;
     }
 
-/*<<<<<<< HEAD
-
-    // Unsupported friendly pawns attacked twice by the enemy
-    score -= Attacked2Unsupported * popcount(  ourPawns
-                                             & pawn_double_attacks_bb<Them>(theirPawns)
-                                             & ~pawn_attacks_bb<Us>(ourPawns)
-                                             & ~e->passedPawns[Us]);
-=======*/ //delete
     // Penalize our unsupported pawns attacked twice by enemy pawns
     score -= WeakLever * popcount(  ourPawns
                                   & doubleAttackThem

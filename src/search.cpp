@@ -114,9 +114,11 @@ namespace {
     Move best = MOVE_NONE;
   };
 #ifdef Add_Features
-bool  bruteForce, cleanSearch, minOutput, noNULL;
+bool  bruteForce, cleanSearch, minOutput, uci_sleep, noNULL;
 bool limitStrength = false;
-int   aggressiveness, attack, jekyll,  intLevel = 40, tactical, uci_elo, uci_sleep, variety;
+int   aggressiveness, attack, jekyll,  intLevel = 40, tactical, uci_elo, variety;
+#else
+	int intLevel = 40;
 #endif
 
   // Breadcrumbs are used to mark nodes as being searched by a given thread.
@@ -243,7 +245,7 @@ void MainThread::search() {
     noNULL              = Options["No_Null_Moves"];
     tactical            = Options["Tactical"];
     uci_elo             = Options["Engine_Elo"];
-    uci_sleep           = Options["Sleep"];
+    uci_sleep           = Options["UCI_Sleep"];
     variety             = Options["Variety"];
 #endif
 
@@ -279,45 +281,48 @@ void MainThread::search() {
       }
       else
       {
-		 if (Options["Play_By_Elo"])
+		 if (Options["UCI_LimitStrength"] && Options["Engine_Level"] == "None")
 		 {
-			 uci_elo = (Options["Engine_Elo"]);
+			 uci_elo = (Options["UCI_Elo"]);
              limitStrength = true;
              goto skipLevels;
 		 }
 		 if (Options["Engine_Level"] == "None")
+         {
              limitStrength = false;
-		 else limitStrength = true;
+		     goto skipLevels;
+         }
+         else limitStrength = true;
          if (Options["Engine_Level"] == "World_Champion")
-				uci_elo = 2750;
+                uci_elo = 2800;
          else if (Options["Engine_Level"] == "Super_GM")
-				uci_elo = 2625;
-		 else if (Options["Engine_Level"] == "GM")
-			 uci_elo = 2500;
-		 else if (Options["Engine_Level"] == "Deep_Thought")
-				uci_elo = 2400;
-		 else if (Options["Engine_Level"] == "SIM")
-				uci_elo = 2300;
-		 else if (Options["Engine_Level"] == "Cray_Blitz")
-				uci_elo = 2200;
-		 else if (Options["Engine_Level"] == "IM")
-				uci_elo = 2100;
-		 else if (Options["Engine_Level"] == "Master")
-				uci_elo = 2000;
-		 else if (Options["Engine_Level"] == "Expert")
-				uci_elo = 1900;
-		 else if (Options["Engine_Level"] == "Class_A")
-				uci_elo = 1800;
-		 else if (Options["Engine_Level"] == "Class_B")
-				uci_elo = 1700;
-		 else if (Options["Engine_Level"] == "Class_C")
-				uci_elo = 1600;
-		 else if (Options["Engine_Level"] == "Class_D")
-				uci_elo = 1500;
-		 else if (Options["Engine_Level"] == "Boris")
-				uci_elo = 1400;
-		 else if (Options["Engine_Level"] == "Novice")
-				uci_elo = 1300;
+                uci_elo = 2600;
+         else if (Options["Engine_Level"] == "GM")
+                uci_elo = 2500;
+         else if (Options["Engine_Level"] == "Deep_Thought")
+                uci_elo = 2400;
+         else if (Options["Engine_Level"] == "SIM")
+                uci_elo = 2300;
+         else if (Options["Engine_Level"] == "Cray_Blitz")
+                uci_elo = 2200;
+         else if (Options["Engine_Level"] == "IM")
+                uci_elo = 2100;
+         else if (Options["Engine_Level"] == "Master")
+                uci_elo = 2000;
+         else if (Options["Engine_Level"] == "Expert")
+                uci_elo = 1900;
+         else if (Options["Engine_Level"] == "Class_A")
+                uci_elo = 1800;
+         else if (Options["Engine_Level"] == "Class_B")
+                uci_elo = 1700;
+         else if (Options["Engine_Level"] == "Class_C")
+                uci_elo = 1600;
+         else if (Options["Engine_Level"] == "Class_D")
+                uci_elo = 1400;
+         else if (Options["Engine_Level"] == "Boris")
+                uci_elo = 1200;
+         else if (Options["Engine_Level"] == "Novice")
+                uci_elo = 1000;
 skipLevels:
          if (limitStrength)
          {
@@ -329,15 +334,16 @@ skipLevels:
 			 int NodesToSearch   = pow(1.006368, (std::max(uci_elo, 1300) - 1300)) * 8;
              Limits.nodes = NodesToSearch;
              Limits.nodes *= Time.optimum()/1000 + 1 ;
-			 PRNG rng(now());
-			  double floatLevel = Options["Play_By_Elo"] ?
-			  clamp(std::pow((Options["Engine_Elo"] - 946.6) / 101.6, 1 / 0.806), 0.0, 40.0) :
-			  double(Options["Skill Level"]);
-			  intLevel = int(floatLevel) +
-			  ((floatLevel - int(floatLevel)) * 1024 > rng.rand<unsigned>() % 1024  ? 1 : 0);
-			 
-			 if (uci_sleep)
-                 std::this_thread::sleep_for (std::chrono::seconds(Time.optimum()/1000) * (1 - Limits.nodes/benchKnps));
+             if (uci_sleep)
+                 std::this_thread::sleep_for (std::chrono::milliseconds(Time.optimum()) * double(1 - Limits.nodes/benchKnps));
+             PRNG rng(now());
+             double floatLevel = Options["UCI_LimitStrength"] ?
+             clamp(std::pow((Options["UCI_Elo"] - 946.6) / 101.6, 1 / 0.806), 0.0, 40.0) :
+             double(Options["Skill Level"]);
+             intLevel = int(floatLevel) +
+                        ((floatLevel - int(floatLevel)) * 1024 > rng.rand<unsigned>() % 1024  ? 1 : 0);
+             //if (uci_sleep)
+               //  std::this_thread::sleep_for (std::chrono::seconds(Time.optimum()/1000) * float(1 - Limits.nodes/benchKnps));
 		  }
 #endif
       for (Thread* th : Threads)
@@ -461,13 +467,9 @@ ss->pv = pv;
 #endif
   bestValue = delta = alpha = -VALUE_INFINITE;
 
-/* <<<<<<< HEAD
-multiPV = Options["MultiPV"];
-#ifndef Add_Features
-=======*/
+
   size_t multiPV = Options["MultiPV"];
 #ifndef Add_Features
-//>>>>>>> fcee0ce6a39a28ffdfa4b1ed438b353a895edb6b
   // Pick integer skill levels, but non-deterministically round up or down
   // such that the average integer skill corresponds to the input floating point one.
   // UCI_Elo is converted to a suitable fractional skill level, using anchoring
@@ -541,19 +543,15 @@ multiPV = Options["MultiPV"];
 
           // Reset UCI info selDepth for each depth and each PV line
           selDepth = 0;
-/*<<<<<<< HEAD
-           // Reset aspiration window starting size
-          if (rootDepth >= 5 * ONE_PLY)
-=======*/  //delete
+
           // Reset aspiration window starting size
           if (rootDepth >= 4 * ONE_PLY)
-//>>>>>>> fcee0ce6a39a28ffdfa4b1ed438b353a895edb6b
           {
               Value previousScore = rootMoves[pvIdx].previousScore;
               delta = Value(23);
               alpha = std::max(previousScore - delta,-VALUE_INFINITE);
               beta  = std::min(previousScore + delta, VALUE_INFINITE);
-//<<<<<<< HEAD
+
 		// Adjust contempt based on root move's previousScore (dynamic contempt)
 		int dct;
 #ifdef Add_Features
@@ -576,15 +574,6 @@ multiPV = Options["MultiPV"];
                                 : -make_score(dct, dct / 2));
                }
        }
-/*=======
-
-              // Adjust contempt based on root move's previousScore (dynamic contempt)
-              int dct = ct + 86 * previousScore / (abs(previousScore) + 176);
-
-              contempt = (us == WHITE ?  make_score(dct, dct / 2)
-                                      : -make_score(dct, dct / 2));
-          }
->>>>>>> fcee0ce6a39a28ffdfa4b1ed438b353a895edb6b*/
 
           // Start with a small aspiration window and, in the case of a fail
           // high/low, re-search with a bigger window until we don't fail
@@ -690,16 +679,8 @@ multiPV = Options["MultiPV"];
           double fallingEval = (354 + 10 * (mainThread->previousScore - bestValue)) / 692.0;
           fallingEval = clamp(fallingEval, 0.5, 1.5);
 
-          // If the bestMove is stable over several iterations, reduce time accordingly
-/*<<<<<<< HEAD
-          timeReduction = lastBestMoveDepth + 10 * ONE_PLY < completedDepth ? 1.95 : 1.0;
-
-          double reduction = (1.25 + mainThread->previousTimeReduction) / (2.25 * timeReduction);
-=======*/
           timeReduction = lastBestMoveDepth + 9 * ONE_PLY < completedDepth ? 1.97 : 0.98;
           double reduction = (1.36 + mainThread->previousTimeReduction) / (2.29 * timeReduction);
-//>>>>>>> fcee0ce6a39a28ffdfa4b1ed438b353a895edb6b
-
 
           // Use part of the gained time from a previous stable move for the current move
           for (Thread* th : Threads)
@@ -1011,12 +992,8 @@ namespace {
         assert(eval - beta >= 0);
 
         // Null move dynamic reduction based on depth and value
-/*<<<<<<< HEAD
-        Depth R = ((823 + 67 * depth / ONE_PLY) / 256 + std::min(int(eval - beta) / 200, 3)) * ONE_PLY;
-=======*/
         Depth R = ((835 + 70 * depth / ONE_PLY) / 256 + std::min(int(eval - beta) / 185, 3)) * ONE_PLY;
 
-//>>>>>>> fcee0ce6a39a28ffdfa4b1ed438b353a895edb6b
         ss->currentMove = MOVE_NULL;
         ss->continuationHistory = &thisThread->continuationHistory[NO_PIECE][0];
         pos.do_null_move(st);
@@ -1181,9 +1158,6 @@ moves_loop: // When in check, search starts from here
           {
               extension = ONE_PLY;
               singularLMR++;
-/*<<<<<<< HEAD
-              if (value < singularBeta - std::min(3 * depth / ONE_PLY, 39))
-=======*/  //delete
               if (value < singularBeta - std::min(4 * depth / ONE_PLY, 36))
                   singularLMR++;
           }
