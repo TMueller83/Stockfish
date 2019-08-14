@@ -1,3 +1,10 @@
+## The Honey Logo
+For use with the Stockfish derivative "Honey" located in the honey branch of this respository. 
+
+![test](https://github.com/MichaelB7/Stockfish/blob/honey/logo/Honey-X5.png?raw=true "Honey")
+
+The Honey logo is based on actual photo of the King from the Lewis Chess pieces hard-carved from a walrus tusk in approximately 1200 AD and discoverd in Scotland in 1830 or so. 
+
 ## Overview
 
 [![Build Status](https://travis-ci.org/official-stockfish/Stockfish.svg?branch=master)](https://travis-ci.org/official-stockfish/Stockfish)
@@ -9,7 +16,6 @@ UCI-compatible GUI (e.g. XBoard with PolyGlot, Scid, Cute Chess, eboard, Arena,
 Sigma Chess, Shredder, Chess Partner or Fritz) in order to be used comfortably.
 Read the documentation for your GUI of choice for information about how to use
 Stockfish with it.
-
 
 ## Files
 
