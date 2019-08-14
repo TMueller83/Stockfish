@@ -451,7 +451,6 @@ constexpr Score MobilityBonus[][32] = {
     // the square is in the attacker's mobility area.
     unsafeChecks &= mobilityArea[Them];
 #endif
->>>>>>> 91d75fe418dd56e8c539fc9a3d9a59f072109703
     // Find the squares that opponent attacks in our king flank, and the squares
     // which are attacked twice in that flank.
     b1 = attackedBy[Them][ALL_PIECES] & KingFlank[file_of(ksq)] & Camp;
