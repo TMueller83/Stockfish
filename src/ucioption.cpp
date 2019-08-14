@@ -122,9 +122,9 @@ void init(OptionsMap& o) {
     o["FastPlay"]                 << Option(false);
     o["Minimal_Output"]           << Option(false);
     o["No_Null_Moves"]            << Option(false);
-    o["Play_By_Elo"]              << Option(false);
-    o["Engine_Elo"]               << Option(1000, 1000, 2850);
-    o["Sleep"]                    << Option(false);
+    o["UCI_LimitStrength"]        << Option(false);
+    o["UCI_Elo"]                  << Option(1750, 600, 2900);
+    o["UCI_Sleep"]                    << Option(false);
     // A separate weaker play level from the predefined levels below. The difference
     // between both of the methods and the "skill level" is that the engine is only weakened
     // by the reduction in nodes searched, thus reducing the move horizon visibility naturally
@@ -137,16 +137,19 @@ void init(OptionsMap& o) {
     o["Score_Output"]             << Option("ScorPct-GUI var CentiPawn var ScorPct var ScorPct-GUI"
                                          ,"ScorPct-GUI");
 #endif
-#ifdef Sullivan
+#if (defined Add_Features && defined Sullivan)
     o["DC_Slider"]                << Option(65, -180, 180);
-    o["MultiPV"]                  << Option(1, 1, 256);
+#elif (defined Add_Features && Stockfish)
+	o["DC_Slider"]                << Option(0, -180, 180);
+#endif
+#ifdef Sullivan
+	o["MultiPV"]                  << Option(1, 1, 256);
 #else
-    o["DC_Slider"]                << Option(0, -180, 180);
     o["MultiPV"]                  << Option(1, 1, 500);
 #endif
-#ifdef Pi
+#if (defined Pi && defined Add_Features)
     o["Bench_KNPS"]               << Option (200, 100, 1000);//used for UCI Play By Elo
-#else
+#elif (defined Add_Features)
     o["Bench_KNPS"]               << Option (1500, 500, 5000);//used for UCI Play By Elo
 #endif
 #ifdef Add_Features
@@ -168,10 +171,11 @@ void init(OptionsMap& o) {
     o["SyzygyProbeDepth"]         << Option(1, 1, 100);
     o["Syzygy50MoveRule"]         << Option(true);
     o["SyzygyProbeLimit"]         << Option(7, 0, 7);
+#ifndef Add_Features
 	//Stockfish methdd of play by Elo, a very nice  implementation.
 	o["UCI_LimitStrength"]        << Option(false);
 	o["UCI_Elo"]                  << Option(1350, 1350, 2850);
-
+#endif
 }
 
 /// operator<<() is used to print all the options default values in chronological

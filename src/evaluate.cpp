@@ -125,16 +125,10 @@ constexpr Score MobilityBonus[][32] = {
 
   // PassedRank[Rank] contains a bonus according to the rank of a passed pawn
   constexpr Score PassedRank[RANK_NB] = {
-    S(0, 0), S(5, 18), S(12, 23), S(10, 31), S(57, 62), S(163, 167), S(271, 250)
+    S(0, 0), S(10, 28), S(17, 33), S(15, 41), S(62, 72), S(168, 177), S(276, 260)
   };
 
-  // PassedFile[File] contains a bonus according to the file of a passed pawn
-  constexpr Score PassedFile[FILE_NB] = {
-    S( -1,  7), S( 0,  9), S(-9, -8), S(-30,-14),
-    S(-30,-14), S(-9, -8), S( 0,  9), S( -1,  7)
-};
   // Assorted bonuses and penalties
-  constexpr Score AttacksOnSpaceArea = S(  4,  0);
   constexpr Score BishopPawns        = S(  3,  7);
   constexpr Score CorneredBishop     = S( 50, 50);
   constexpr Score FlankAttacks       = S(  8,  0);
@@ -144,6 +138,7 @@ constexpr Score MobilityBonus[][32] = {
   constexpr Score LongDiagonalBishop = S( 45,  0);
   constexpr Score MinorBehindPawn    = S( 18,  3);
   constexpr Score Outpost            = S( 18,  6);
+  constexpr Score PassedFile         = S( 11,  8);
   constexpr Score PawnlessFlank      = S( 17, 95);
   constexpr Score RestrictedPiece    = S(  7,  7);
   constexpr Score RookOnPawn         = S( 10, 32);
@@ -451,10 +446,11 @@ constexpr Score MobilityBonus[][32] = {
     else
         unsafeChecks |= knightChecks;
 
+#ifndef Sullivan //locutus2:tweak_unsafe_checksPR
     // Unsafe or occupied checking squares will also be considered, as long as
     // the square is in the attacker's mobility area.
     unsafeChecks &= mobilityArea[Them];
-	  
+#endif
     // Find the squares that opponent attacks in our king flank, and the squares
     // which are attacked twice in that flank.
     b1 = attackedBy[Them][ALL_PIECES] & KingFlank[file_of(ksq)] & Camp;
@@ -467,7 +463,12 @@ constexpr Score MobilityBonus[][32] = {
                  + 185 * popcount(kingRing[Us] & weak)
                  - 100 * bool(attackedBy[Us][KNIGHT] & attackedBy[Us][KING])
                  -  35 * bool(attackedBy[Us][BISHOP] & attackedBy[Us][KING])
+#ifdef Sullivan  //locutus2:tweak_unsafe_checksPR
+                 + 148 * popcount(unsafeChecks)
+                 +  98 * popcount(pos.blockers_for_king(Us))
+#else
                  + 150 * popcount(pos.blockers_for_king(Us) | unsafeChecks)
+#endif
                  - 873 * !pos.count<QUEEN>(Them)
                  -   6 * mg_value(score) / 8
                  +       mg_value(mobility[Them] - mobility[Us])
@@ -624,6 +625,7 @@ constexpr Score MobilityBonus[][32] = {
         assert(!(pos.pieces(Them, PAWN) & forward_file_bb(Us, s + Up)));
 
         int r = relative_rank(Us, s);
+        File f = file_of(s);
 
         Score bonus = PassedRank[r];
 
@@ -649,7 +651,7 @@ constexpr Score MobilityBonus[][32] = {
                 bb = forward_file_bb(Them, s) & pos.pieces(ROOK, QUEEN);
 
                 if (!(pos.pieces(Them) & bb))
-                    unsafeSquares &= attackedBy[Them][ALL_PIECES] | pos.pieces(Them);
+                    unsafeSquares &= attackedBy[Them][ALL_PIECES];
 
                 // If there are no enemy attacks on passed pawn span, assign a big bonus.
                 // Otherwise assign a smaller bonus if the path to queen is not attacked
@@ -673,7 +675,7 @@ constexpr Score MobilityBonus[][32] = {
             || (pos.pieces(PAWN) & (s + Up)))
             bonus = bonus / 2;
 
-        score += bonus + PassedFile[file_of(s)];
+        score += bonus - PassedFile * std::min(f, ~f);
     }
 
     if (T)
@@ -712,11 +714,9 @@ constexpr Score MobilityBonus[][32] = {
     behind |= shift<Down>(behind);
     behind |= shift<Down+Down>(behind);
 
-    int bonus = popcount(safe) + popcount(behind & safe);
+    int bonus = popcount(safe) + popcount(behind & safe & ~attackedBy[Them][ALL_PIECES]);
     int weight = pos.count<ALL_PIECES>(Us) - 1;
     Score score = make_score(bonus * weight * weight / 16, 0);
-
-    score -= AttacksOnSpaceArea * popcount(attackedBy[Them][ALL_PIECES] & behind & safe);
 
     if (T)
         Trace::add(SPACE, Us, score);
