@@ -122,7 +122,10 @@ void init(OptionsMap& o) {
     o["FastPlay"]                 << Option(false);
     o["Minimal_Output"]           << Option(false);
     o["No_Null_Moves"]            << Option(false);
+/* NEW Adaptive Play! -  A-Level for over 2000 Elo players, B_Level for under 2000 Elo PLayers */
+	o["Adaptive_Play"]            << Option("Off var A_Level var B_Level var Off", "Off");
     o["UCI_LimitStrength"]        << Option(false);
+/* Expanded Range (600 to 2900 Elo) and in sync with CCRL 40/4 and anchored to ShalleoBlue at Elo 1712*/
     o["UCI_Elo"]                  << Option(1750, 600, 2900);
     o["UCI_Sleep"]                    << Option(false);
     // A separate weaker play level from the predefined levels below. The difference

@@ -118,7 +118,7 @@ bool  bruteForce, cleanSearch, minOutput, uci_sleep, noNULL;
 bool limitStrength = false;
 int   aggressiveness, attack, jekyll,  intLevel = 40, tactical, uci_elo, variety;
 #else
-	int intLevel = 40;
+int intLevel = 40;
 #endif
 
   // Breadcrumbs are used to mark nodes as being searched by a given thread
@@ -359,8 +359,6 @@ skipLevels:
                  std::this_thread::sleep_for (std::chrono::milliseconds(Time.optimum()) * double(1 - Limits.nodes/benchKnps));
 			 if (uci_elo < 1456)
 			 {
-			 //uci_elo += (1456 - uci_elo);
-			 //int eloAdj = (1456 - uci_elo) * 2; //=700
              floatLevel = Options["UCI_LimitStrength"] ?
 				          clamp(std::pow((uci_elo - 752) / 17.9, 1 ), 0.0, 40.0):
                           double(Options["Skill Level"]);
@@ -410,7 +408,7 @@ skipLevels:
   // Check if there are threads with a better score than main thread
   if (    Options["MultiPV"] == 1
       && !Limits.depth
-      && !(Skill(Options["Skill Level"]).enabled() || Options["UCI_LimitStrength"])
+      && !(Skill(Options["Skill Level"]).enabled() || Options["UCI_LimitStrength"] || (Options["Adaptive_Play"]))
       &&  rootMoves[0].pv[0] != MOVE_NONE)
   {
       std::map<Move, int64_t> votes;
@@ -437,18 +435,73 @@ skipLevels:
               bestThread = th;
       }
   }
-
-  previousScore = bestThread->rootMoves[0].score;
+      previousScore = bestThread->rootMoves[0].score;
 
   // Send again PV info if we have a new best thread
   if (bestThread != this || Skill(Options["Skill Level"]).enabled())
       sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << sync_endl;
 
+      if (Options["Adaptive_Play"] == "B_Level") //designed for under 2000 , will make bigger blunders
+  {
+	  size_t i = 0;
+	  if ( previousScore <= PawnValueMg * 3 && previousScore > -PawnValueMg * 3)
+	  {
+          while (i+1 < rootMoves.size() && bestThread->rootMoves[i+1].score > previousScore)
+              ++i;
+          previousScore = bestThread->rootMoves[i].score;
+          sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[i].pv[0], rootPos.is_chess960());
+	  }
+	  else if ( previousScore > PawnValueMg * 3  && previousScore < QueenValueMg )
+	  {
+		  while (i+1 < rootMoves.size() && bestThread->rootMoves[i+1].score < previousScore)
+		  {
+			  ++i;
+			  break;
+		  }
+		  previousScore = bestThread->rootMoves[i].score;
+          sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[i].pv[0], rootPos.is_chess960());
+	  }
+	  else
+      {
+			  sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[0].pv[0], rootPos.is_chess960());
+			  if (bestThread->rootMoves[0].pv.size() > 1 || bestThread->rootMoves[0].extract_ponder_from_tt(rootPos))
+			  std::cout << " ponder " << UCI::move(bestThread->rootMoves[0].pv[1], rootPos.is_chess960());
+       }
+  }
+	else if (Options["Adaptive_Play"] == "A_Level") ////designed for over 2000 , not as many or as big blunders
+	{
+		size_t j = 0;
+		if ( previousScore <= PawnValueMg * 2 && previousScore > PawnValueMg)
+		{
+			while (j+1 < rootMoves.size() && bestThread->rootMoves[j+1].score > previousScore)
+			++j;
+			previousScore = bestThread->rootMoves[j].score;
+			sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[j].pv[0], rootPos.is_chess960());
+		}
+		else if ( previousScore > PawnValueMg * 5  && previousScore < RookValueMg )
+		{
+			while (j+1 < rootMoves.size() && bestThread->rootMoves[j+1].score < previousScore)
+			{
+				++j;
+				break;
+			}
+			previousScore = bestThread->rootMoves[j].score;
+			sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[j].pv[0], rootPos.is_chess960());
+		}
+		else
+		{
+			sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[0].pv[0], rootPos.is_chess960());
+			if (bestThread->rootMoves[0].pv.size() > 1 || bestThread->rootMoves[0].extract_ponder_from_tt(rootPos))
+			std::cout << " ponder " << UCI::move(bestThread->rootMoves[0].pv[1], rootPos.is_chess960());
+		}
+	}
+  else
+  {
   sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[0].pv[0], rootPos.is_chess960());
 
   if (bestThread->rootMoves[0].pv.size() > 1 || bestThread->rootMoves[0].extract_ponder_from_tt(rootPos))
       std::cout << " ponder " << UCI::move(bestThread->rootMoves[0].pv[1], rootPos.is_chess960());
-
+  }
   std::cout << sync_endl;
 }
 
@@ -515,8 +568,10 @@ ss->pv = pv;
   // use behind the scenes to retrieve a set of possible moves.
   if (skill.enabled())
       multiPV = std::max(multiPV, (size_t)4);
-
-  multiPV = std::min(multiPV, rootMoves.size());
+  if ((Options["Adaptive_Play"]) && !skill.enabled())
+	  multiPV = rootMoves.size();
+  else
+      multiPV = std::min(multiPV, rootMoves.size());
 #ifdef Sullivan  //MichaelB7
   int w_ct = int(Options["W_Contempt"]) * PawnValueEg / 100; // From centipawns
   int b_ct = int(Options["B_Contempt"]) * PawnValueEg / 100; // From centipawns
