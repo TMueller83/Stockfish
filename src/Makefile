@@ -23,11 +23,11 @@
 
 ### Executable name
 ifeq ($(COMP),mingw)
-EXE = stockfish.exe
+EXE = crystal.exe
 else
-EXE = stockfish
+EXE = crystal-10d2ebc6
 endif
-
+### current bench crystal 8/21/2018 :6080365
 ### Installation dir definitions
 PREFIX = /usr/local
 BINDIR = $(PREFIX)/bin
@@ -290,7 +290,7 @@ ifeq ($(optimize),yes)
 			CXXFLAGS += -fno-gcse -mthumb -march=armv7-a -mfloat-abi=softfp
 		endif
 	endif
-	
+
 	ifeq ($(comp),$(filter $(comp),gcc clang icc))
 		ifeq ($(KERNEL),Darwin)
 			CXXFLAGS += -mdynamic-no-pic
