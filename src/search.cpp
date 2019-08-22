@@ -284,10 +284,9 @@ void MainThread::search() {
       }
       else
       {
-		 int EloAdj = 156;
 		 if (Options["UCI_LimitStrength"] && Options["Engine_Level"] == "None")
 		 {
-			 uci_elo = (Options["UCI_Elo"]) + EloAdj;
+			 uci_elo = (Options["UCI_Elo"]);
              limitStrength = true;
              goto skipLevels;
 		 }
@@ -299,35 +298,44 @@ void MainThread::search() {
          else limitStrength = true;
 		  
          if (Options["Engine_Level"] == "World_Champion")
-                uci_elo = 2800 + EloAdj;
+                uci_elo = 2850;
          else if (Options["Engine_Level"] == "Super_GM")
-                uci_elo = 2650 + EloAdj;
+                uci_elo = 2725;
          else if (Options["Engine_Level"] == "GM")
-                uci_elo = 2500 + EloAdj;
+                uci_elo = 2600;
          else if (Options["Engine_Level"] == "Deep_Thought")
-                uci_elo = 2400 + EloAdj;
+                uci_elo = 2475;
          else if (Options["Engine_Level"] == "SIM")
-                uci_elo = 2300 + EloAdj;
+                uci_elo = 2350;
          else if (Options["Engine_Level"] == "Cray_Blitz")
-                uci_elo = 2200 + EloAdj;
+                uci_elo = 2225;
          else if (Options["Engine_Level"] == "IM")
-                uci_elo = 2100 + EloAdj;
+                uci_elo = 2100;
          else if (Options["Engine_Level"] == "Master")
-                uci_elo = 2000 + EloAdj;
+                uci_elo = 2000;
          else if (Options["Engine_Level"] == "Expert")
-                uci_elo = 1900 + EloAdj;
+                uci_elo = 1900;
          else if (Options["Engine_Level"] == "Class_A")
-                uci_elo = 1800 + EloAdj;
+                uci_elo = 1800;
          else if (Options["Engine_Level"] == "Class_B")
-                uci_elo = 1700 + EloAdj;
+                uci_elo = 1700;
          else if (Options["Engine_Level"] == "Class_C")
-                uci_elo = 1600 + EloAdj;
+            {
+                uci_elo = 1600;
+                intLevel = 30;
+			}
          else if (Options["Engine_Level"] == "Class_D")
-                uci_elo = 1400 + EloAdj;
+            {
+                uci_elo = 1450;
+                intLevel = 20;
+			}
          else if (Options["Engine_Level"] == "Boris")
-                uci_elo = 1200 + EloAdj;
+            {
+                uci_elo = 1300;
+                intLevel = 10;
+			}
          else if (Options["Engine_Level"] == "Novice")
-                uci_elo = 800 + EloAdj;
+                uci_elo = 1000;
 skipLevels:
          if (limitStrength)
          {
@@ -338,10 +346,10 @@ skipLevels:
              uci_elo += rand;
 			 
 			 int NodesToSearch  = pow(1.0065, (std::min(std::max(uci_elo, 1000) - 999, 751))) * 8
-								+ pow(1.0052, (std::min(std::max(uci_elo, 1000) - 999, 1051))) * 8
-								- pow(1.0052, (std::min(std::max(uci_elo, 1000) - 999, 751))) * 8
-								+ pow(1.0048, (std::min(std::max(uci_elo, 1000) - 999, 1551))) * 8
-								- pow(1.0048, (std::min(std::max(uci_elo, 1000) - 999, 1051))) * 8
+                                + pow(1.0052, (std::min(std::max(uci_elo, 1000) - 999, 1051))) * 8
+                                - pow(1.0052, (std::min(std::max(uci_elo, 1000) - 999, 751))) * 8
+                                + pow(1.0048, (std::min(std::max(uci_elo, 1000) - 999, 1551))) * 8
+                                - pow(1.0048, (std::min(std::max(uci_elo, 1000) - 999, 1051))) * 8
                                 + pow(1.0044, (std::min(std::max(uci_elo, 1000) - 999, 1651))) * 8
                                 - pow(1.0044, (std::min(std::max(uci_elo, 1000) - 999, 1551))) * 8
                                 + pow(1.0046, (std::min(std::max(uci_elo, 1000) - 999, 1751))) * 8
@@ -357,10 +365,10 @@ skipLevels:
              Limits.nodes *= Time.optimum()/1000 + 1 ;
              if (uci_sleep)
                  std::this_thread::sleep_for (std::chrono::milliseconds(Time.optimum()) * double(1 - Limits.nodes/benchKnps));
-			 if (uci_elo < 1456)
+			 if (uci_elo < 1300)
 			 {
              floatLevel = Options["UCI_LimitStrength"] ?
-				          clamp(std::pow((uci_elo - 752) / 17.9, 1 ), 0.0, 40.0):
+				          clamp(std::pow((uci_elo - 596) / 17.9, 1 ), 0.0, 40.0):
                           double(Options["Skill Level"]);
              intLevel = int(floatLevel) +
                         ((floatLevel - int(floatLevel)) * 1024 > rng.rand<unsigned>() % 1024  ? 1 : 0);
@@ -1276,6 +1284,9 @@ moves_loop: // When in check, search starts from here
       else if (   PvNode
                && pos.rule50_count() > 18
                && depth < 3 * ONE_PLY
+#ifdef Sullivan
+               && thisThread->selDepth < 102
+#endif
                && ++thisThread->shuffleExts < thisThread->nodes.load(std::memory_order_relaxed) / 4)  // To avoid too many extensions
           extension = ONE_PLY;
 #ifdef Sullivan  //see above for Passed pawn extension
