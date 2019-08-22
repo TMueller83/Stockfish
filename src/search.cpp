@@ -77,7 +77,7 @@ namespace {
   // Razor and futility margins
   constexpr int RazorMargin = 661;
   Value futility_margin(Depth d, bool improving) {
-    return Value(198 * (d / ONE_PLY) - 178 * improving);
+    return Value(198 * (d / ONE_PLY - improving));
   }
 
   // Reductions lookup table, initialized at startup
@@ -278,6 +278,18 @@ void MainThread::search() {
       }
       else
       {
+         if (Options["Adaptive_Play"] == "Adapt_2000+")
+		 {
+			 uci_elo = 2600;
+             limitStrength = true;
+             goto skipLevels;
+		 }
+		  if (Options["Adaptive_Play"] == "Adapt_2000-")
+		  {
+			  uci_elo = 2000;
+			  limitStrength = true;
+			  goto skipLevels;
+		  }
 		 if (Options["UCI_LimitStrength"] && Options["Engine_Level"] == "None")
 		 {
              uci_elo = (Options["UCI_Elo"]) ;
@@ -805,19 +817,6 @@ namespace {
 
     constexpr bool PvNode = NT == PV;
     const bool rootNode = PvNode && ss->ply == 0;
-
-   /* // Check if we have an upcoming move which draws by repetition, or
-    // if the opponent had an alternative move earlier to this position.
-    if (   pos.rule50_count() >= 3
-        && alpha < VALUE_DRAW
-        && !rootNode
-        && pos.has_game_cycle(ss->ply))
-    {
-        alpha = value_draw(depth, pos.this_thread());
-
-        if (alpha >= beta)
-            return alpha;
-    }*/
 
 
     // Dive into quiescence search when the depth reaches zero
