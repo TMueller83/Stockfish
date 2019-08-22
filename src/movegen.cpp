@@ -207,8 +207,14 @@ namespace {
         if (Checks)
             b &= pos.check_squares(Pt);
 
+        Square ksq = pos.square<KING>(us);
+
         while (b)
-            *moveList++ = make_move(from, pop_lsb(&b));
+        {
+            Square to = pop_lsb(&b);
+            if (!(pos.blockers_for_king(us) & from) || aligned(from, to, ksq))
+                *moveList++ = make_move(from, to);
+        }
     }
 
     return moveList;
@@ -233,7 +239,16 @@ namespace {
         Square ksq = pos.square<KING>(Us);
         Bitboard b = pos.attacks_from<KING>(ksq) & target;
         while (b)
+#ifndef Sullivan
             *moveList++ = make_move(ksq, pop_lsb(&b));
+#else
+        {
+           Square to = pop_lsb(&b);
+           if ((pos.attackers_to(to) & pos.pieces(~Us)) == 0)
+               *moveList++ = make_move(ksq, to);
+        }
+#endif
+
         if (Type != CAPTURES && pos.can_castle(CastlingRight(OO | OOO)))
         {
             if (!pos.castling_impeded(OO) && pos.can_castle(OO))
@@ -335,7 +350,11 @@ ExtMove* generate<EVASIONS>(const Position& pos, ExtMove* moveList) {
   // Generate evasions for king, capture and non capture moves
   Bitboard b = pos.attacks_from<KING>(ksq) & ~pos.pieces(us) & ~sliderAttacks;
   while (b)
-      *moveList++ = make_move(ksq, pop_lsb(&b));
+  {
+     Square to = pop_lsb(&b);
+     if ((pos.attackers_to(to) & pos.pieces(~us)) == 0)
+         *moveList++ = make_move(ksq, to);
+  }
 
   if (more_than_one(pos.checkers()))
       return moveList; // Double check, only a king move can save the day

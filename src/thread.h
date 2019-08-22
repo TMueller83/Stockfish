@@ -61,9 +61,14 @@ public:
   Pawns::Table pawnsTable;
   Material::Table materialTable;
   size_t pvIdx, pvLast, shuffleExts;
+#ifndef Sullivan
   int selDepth, nmpMinPly;
 
   Color nmpColor;
+#else
+  int selDepth;
+  bool nmpGuard;
+#endif
   std::atomic<uint64_t> nodes, tbHits, bestMoveChanges;
 
   Position rootPos;

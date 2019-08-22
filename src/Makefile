@@ -24,7 +24,8 @@
 ### ==========================================================================
 
 ### Executable name
-### Honey bench nodes -----> 4779507 > based on commits up to 8/21/2019
+
+### Crystal-Honey bench nodes -----> 4779507 > based on commits up to 8/21/2019
 ### stockfish bench nodes -> 3494372 > based on commits up to 8/21/2019
 
 ####  Always leave the three lines below as is (any subsequent defines will override)
@@ -45,7 +46,7 @@ CXXFLAGS += -DTest
 endif
 
 ### Uncomment the line below for Honey, comment out for Stockfish
-###	VERSION=sullivan
+	VERSION=sullivan
 
 ### Uncomment for use with Raspberry Pi -  a slower NPS UCI option setting used in Play
 ### by Elo and personalities
@@ -74,21 +75,21 @@ ifeq ($(VERSION),sullivan)
 	ifeq ($(RELEASEVER),no)
 		ifeq ($(TEST),no)
 			ifeq ($(COMP),mingw)
-				EXE = Honey-dev-$(DATE).exe
+				EXE = C-Honey-dev-$(DATE).exe
 			else
-				EXE = Honey-dev-$(DATE)
+				EXE = C-Honey-dev-$(DATE)
 			endif
 		endif
 		ifeq ($(TEST),yes)
-			EXE = Honey-$(TESTv1)-$(TESTv2)
+			EXE = C-Honey-$(TESTv1)-$(TESTv2)
 		endif
 	endif
 	ifeq ($(RELEASEVER),yes)
         CXXFLAGS += -DReleaseVer
 		ifeq ($(COMP),mingw)
-			EXE = Honey-$(RELVERSION).exe
+			EXE = C-Honey-$(RELVERSION).exe
 		else
-			EXE = Honey-$(RELVERSION)
+			EXE = C-Honey-$(RELVERSION)
 		endif
 	endif
 endif
@@ -381,7 +382,7 @@ ifeq ($(optimize),yes)
 			CXXFLAGS += -fno-gcse -mthumb -march=armv7-a -mfloat-abi=softfp
 		endif
 	endif
-	
+
 	ifeq ($(comp),$(filter $(comp),gcc clang icc))
 		ifeq ($(KERNEL),Darwin)
 			CXXFLAGS += -mdynamic-no-pic

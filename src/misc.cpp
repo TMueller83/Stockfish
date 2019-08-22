@@ -145,7 +145,7 @@ const string engine_info(bool to_uci) {
     string month, day, year;
     stringstream ss, date(__DATE__); // From compiler, format is "Sep 21 2008"
 #ifdef Sullivan
-    ss << "Honey " << Version << setfill('0');
+    ss << "Crystal-Honey " << Version << setfill('0');
 #else
     ss << "Stockfish " << Version << setfill('0');
 #endif

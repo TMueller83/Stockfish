@@ -102,7 +102,7 @@ typedef uint64_t Key;
 typedef uint64_t Bitboard;
 
 constexpr int MAX_MOVES = 256;
-constexpr int MAX_PLY   = 246;
+constexpr int MAX_PLY   = 192;
 
 /// A move needs 16 bits to be stored
 ///
@@ -210,7 +210,8 @@ enum Value : int {
     RookValueMg   = 1289*RVM,  RookValueEg   = 1378*RVE,
     QueenValueMg  = 2529*QVM,  QueenValueEg  = 2687*QVE,
 	
-    MidgameLimit  = 15258, EndgameLimit  = 3915
+    MidgameLimit  = 15258, EndgameLimit  = 3915,
+    VALUE_TB_WIN    = 101 * PawnValueEg
 
 };
 
