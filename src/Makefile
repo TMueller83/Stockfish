@@ -25,8 +25,8 @@
 
 ### Executable name
 
-### Crystal-Honey bench nodes -----> 4779507 > based on commits up to 8/21/2019
-### stockfish bench nodes -> 3494372 > based on commits up to 8/21/2019
+### Crystal-Honey bench nodes -----> 7001564 > based on commits up to 8/21/2019
+### stockfish bench nodes -> xxxxx > based on commits up to 8/21/2019
 
 ####  Always leave the three lines below as is (any subsequent defines will override)
 DATE=$(shell date +"%m%d%y")
@@ -45,8 +45,7 @@ ifeq ($(TEST),yes)
 CXXFLAGS += -DTest
 endif
 
-### Uncomment the line below for Honey, comment out for Stockfish
-	VERSION=sullivan
+VERSION=sullivan
 
 ### Uncomment for use with Raspberry Pi -  a slower NPS UCI option setting used in Play
 ### by Elo and personalities
@@ -94,14 +93,14 @@ ifeq ($(VERSION),sullivan)
 	endif
 endif
 
-### Note:  For building cur-dev stockfish with the features added.
-ifneq ($(VERSION),sullivan)
-	ifeq ($(COMP),mingw)
-		EXE = stockfish-$(DATE).exe
-	else
-		EXE = stockfish-$(DATE)
-	endif
-endif
+### Note:  For building cur-dev stockfish with the features added. NOT IMPLEMNETED
+#ifneq ($(VERSION),sullivan)
+#	ifeq ($(COMP),mingw)
+#		EXE = stockfish-$(DATE).exe
+#	else
+#		EXE = stockfish-$(DATE)
+#	endif
+#endif
 
 ### Installation dir definitions
 PREFIX = /opt/local

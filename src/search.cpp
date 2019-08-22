@@ -280,7 +280,7 @@ void MainThread::search() {
       {
 		 if (Options["UCI_LimitStrength"] && Options["Engine_Level"] == "None")
 		 {
-			 uci_elo = (Options["UCI_Elo"]) ;
+             uci_elo = (Options["UCI_Elo"]) ;
              limitStrength = true;
              goto skipLevels;
 		 }
@@ -483,6 +483,13 @@ skipLevels:
 		else if ( previousScore > PawnValueMg * 5  && previousScore < RookValueMg )
 		{
 			while (j+1 < rootMoves.size() && bestThread->rootMoves[j+1].score < previousScore)
+			{
+				++j;
+				break;
+			}
+			previousScore = bestThread->rootMoves[j].score;
+			j = 0;
+			while (j+1 < rootMoves.size() && bestThread->rootMoves[j+1].score > previousScore)
 			{
 				++j;
 				break;
@@ -890,15 +897,8 @@ namespace {
         // because we will never beat the current alpha. Same logic but with reversed
         // signs applies also in the opposite condition of being mated instead of giving
         // mate. In this case return a fail-high score.
-/*<<<<<<< HEAD
 
-        alpha = std::max(mated_in(ss->ply), alpha);
-        beta = std::min(mate_in(ss->ply+1), beta);
-        if (alpha >= beta)
-
-=======*/
         if (alpha >= mate_in(ss->ply+1))
-//>>>>>>> d2e5037f88a1751d1604bc96b536309eca0b20e8
             return alpha;
     }
 
@@ -1000,7 +1000,6 @@ namespace {
                     tte->save(posKey, value, ttPv,
                               v > drawScore ? BOUND_LOWER : v < -drawScore ? BOUND_UPPER : BOUND_EXACT,
                               depth, MOVE_NONE, VALUE_NONE);
-//>>>>>>> d2e5037f88a1751d1604bc96b536309eca0b20e8
 
                     if (abs(v) <= drawScore)
                         return value;
@@ -1043,53 +1042,13 @@ namespace {
         tte->save(posKey, VALUE_NONE, ttPv, BOUND_NONE, DEPTH_NONE, MOVE_NONE, eval);
     }
 
-/*<<<<<<< HEAD
-    // Step 7. Razoring (~2 Elo)
-    if (   !rootNode // The required rootNode PV handling is not available in qsearch
-#ifdef Add_Features
-        && !bruteForce
-#endif
-        &&  depth < 2 * ONE_PLY
-        &&  eval <= alpha - RazorMargin)
-        return qsearch<NT>(pos, ss, alpha, beta);
-
-=======
->>>>>>> d2e5037f88a1751d1604bc96b536309eca0b20e8*/
     improving =   ss->staticEval >= (ss-2)->staticEval
                || (ss-2)->staticEval == VALUE_NONE;
 
     // Begin early pruning.
     if (   !PvNode
-/*<<<<<<< HEAD
-#ifdef Add_Features
-        && !bruteForce
-#endif
-        &&  depth < 7 * ONE_PLY
-        &&  eval - futility_margin(depth, improving) >= beta
-        &&  eval < VALUE_KNOWN_WIN) // Do not return unproven wins
-        return eval;
-
-    // Step 9. Null move search with verification search (~40 Elo)
-#ifdef Add_Features
-    if (   !noNULL && !PvNode
-#else
-    if (   !PvNode
-#endif
-        && (ss-1)->currentMove != MOVE_NULL
-        && (ss-1)->statScore < 22661
-        &&  eval >= beta
-        &&  ss->staticEval >= beta - 33 * depth / ONE_PLY + 299
-        && !excludedMove
-#ifdef Sullivan  //authored by Jörg Oster originally, in corchess by Ivan Ilvec
-        && thisThread->selDepth + 3 > thisThread->rootDepth / ONE_PLY
-#endif
-        &&  pos.non_pawn_material(us)
-        && (ss->ply >= thisThread->nmpMinPly || us != thisThread->nmpColor)
-)
-=======*/
         && !excludedMove
         &&  abs(eval) < 2 * VALUE_KNOWN_WIN)
-//>>>>>>> d2e5037f88a1751d1604bc96b536309eca0b20e8
     {
        // Step 7. Razoring (~2 Elo)
        if (   depth < 2 * ONE_PLY
@@ -1119,13 +1078,6 @@ namespace {
        {
            assert(eval - beta >= 0);
 
-/*<<<<<<< HEAD
-        ss->currentMove = MOVE_NULL;
-        ss->continuationHistory = &thisThread->continuationHistory[NO_PIECE][0];
-        pos.do_null_move(st);
-        Value nullValue = -search<NonPV>(pos, ss+1, -beta, -beta+1, depth-R, !cutNode);
-        pos.undo_null_move();
-=======*/
            // Null move dynamic reduction based on depth and value
            Depth R = ((835 + 70 * depth / ONE_PLY) / 256 + std::min(int(eval - beta) / 185, 3)) * ONE_PLY;
 
@@ -1135,7 +1087,6 @@ namespace {
            pos.do_null_move(st);
 
            Value nullValue = -search<NonPV>(pos, ss+1, -beta, -beta+1, depth-R, !cutNode);
-//>>>>>>> d2e5037f88a1751d1604bc96b536309eca0b20e8
 
            pos.undo_null_move();
 
@@ -1160,21 +1111,6 @@ namespace {
            }
        }
 
-/*<<<<<<< HEAD
-    // Step 10. ProbCut (~10 Elo)
-    // If we have a good enough capture and a reduced search returns a value
-    // much above beta, we can (almost) safely prune the previous move.
-    if (   !PvNode
-#ifdef Add_Features
-        && !bruteForce
-#endif
-        &&  depth >= 5 * ONE_PLY
-        &&  abs(beta) < VALUE_MATE_IN_MAX_PLY)
-    {
-        Value raisedBeta = std::min(beta + 191 - 46 * improving, VALUE_INFINITE);
-        MovePicker mp(pos, ttMove, raisedBeta - ss->staticEval, &thisThread->captureHistory);
-        int probCutCount = 0;
-=======*/
        // Step 10. ProbCut (~10 Elo)
        // If we have a good enough capture and a reduced search returns a value
        // much above beta, we can (almost) safely prune the previous move.
@@ -1185,7 +1121,6 @@ namespace {
            Value raisedBeta = std::min(beta + 191 - 46 * improving, VALUE_INFINITE);
            MovePicker mp(pos, ttMove, raisedBeta - ss->staticEval, &thisThread->captureHistory);
            int probCutCount = 0;
-//>>>>>>> d2e5037f88a1751d1604bc96b536309eca0b20e8
 
            while (  (move = mp.next_move()) != MOVE_NONE
                   && probCutCount < 2 + 2 * cutNode)
@@ -1209,18 +1144,11 @@ namespace {
 
                    pos.undo_move(move);
 
-/*<<<<<<< HEAD
-                if (value >= raisedBeta)
-                    return value;
-        }
-    }
-=======*/
                    if (value >= raisedBeta)
                        return value;
                }
        }
     } //End early Pruning
-//>>>>>>> d2e5037f88a1751d1604bc96b536309eca0b20e8
 
     // Step 11. Internal iterative deepening (~2 Elo)
     if (depth >= 7 * ONE_PLY && !ttMove)
@@ -1374,6 +1302,7 @@ moves_loop: // When in check, search starts from here
       // Castling extension
       else if (type_of(move) == CASTLING)
           extension = ONE_PLY;
+
       // Shuffle extension
       else if (   PvNode
                && pos.rule50_count() > 18
@@ -1381,6 +1310,7 @@ moves_loop: // When in check, search starts from here
                && thisThread->selDepth < 102
                && ++thisThread->shuffleExts < thisThread->nodes.load(std::memory_order_relaxed) / 4)  // To avoid too many extensions
           extension = ONE_PLY;
+
 #ifdef Sullivan  //see above for Passed pawn extension
 #else
       // Passed pawn extension
@@ -1394,7 +1324,7 @@ moves_loop: // When in check, search starts from here
       newDepth = depth - ONE_PLY + extension;
 
       // Step 14. Pruning at shallow depth (~170 Elo)
-      if (  !PvNode
+      if (  !PvNode && !rootNode
 #ifdef Add_Features
           && !bruteForce
 #endif
@@ -1465,7 +1395,7 @@ moves_loop: // When in check, search starts from here
           &&  moveCount > 1 + 3 * rootNode
 
           && (!captureOrPromotion || moveCountPruning || ss->staticEval + PieceValue[EG][pos.captured_piece()] <= alpha
-			  || cutNode)
+          || cutNode)
           &&  thisThread->selDepth * ONE_PLY > depth) // needs to be tested at VLTC
 
       {
@@ -1484,7 +1414,7 @@ moves_loop: // When in check, search starts from here
           // Decrease reduction if move has been singularly extended
           r -= singularLMR * ONE_PLY;
 
-          if (!PvNode && !captureOrPromotion)
+          if (!PvNode && !rootNode && !captureOrPromotion)
           {
               // Increase reduction if ttMove is a capture (~0 Elo)
               if (ttCapture)
