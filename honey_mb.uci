@@ -151,23 +151,23 @@ BestBookMove = true
 UCI_LimitStrength = false
 UCI_Sleep = false
 
-[A_Level]
+[Adapt_2000+]
 UCI_Elo = 2600
 Skill_Level = 36
 Slow Mover = 84
 Move Overhead = 500
-Adaptive_Play = A_Level
+Adaptive_Play = Adapt_2000+
 Hash = 32
 Ponder = true
 UCI_LimitStrength = false
 UCI_Sleep = false
 
-[B_Level]
+[Adapt_2000-]
 UCI_Elo = 2000
 Skill_Level = 20
 Slow Mover = 84
 Move Overhead = 500
-Adaptive_Play = B_Level
+Adaptive_Play = Adapt_2000-
 Hash = 32
 Ponder = false
 UCI_LimitStrength = false
