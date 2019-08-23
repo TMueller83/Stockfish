@@ -292,42 +292,33 @@ void MainThread::search() {
          else limitStrength = true;
 		  
          if (Options["Engine_Level"] == "World_Champion")
-                uci_elo = 2850;
+                uci_elo = 2900;
          else if (Options["Engine_Level"] == "Super_GM")
-                uci_elo = 2725;
+                uci_elo = 2700;
          else if (Options["Engine_Level"] == "GM")
                 uci_elo = 2600;
          else if (Options["Engine_Level"] == "Deep_Thought")
-                uci_elo = 2475;
+                uci_elo = 2500;
          else if (Options["Engine_Level"] == "SIM")
-                uci_elo = 2350;
+                uci_elo = 2400;
+		 else if (Options["Engine_Level"] == "IM")
+                uci_elo = 2300;
          else if (Options["Engine_Level"] == "Cray_Blitz")
-                uci_elo = 2225;
-         else if (Options["Engine_Level"] == "IM")
-                uci_elo = 2100;
+                uci_elo = 2200;
          else if (Options["Engine_Level"] == "Master")
-                uci_elo = 2000;
+                uci_elo = 2125;
          else if (Options["Engine_Level"] == "Expert")
-                uci_elo = 1900;
+                uci_elo = 1975;
          else if (Options["Engine_Level"] == "Class_A")
-                uci_elo = 1800;
+                uci_elo = 1825;
          else if (Options["Engine_Level"] == "Class_B")
-                uci_elo = 1700;
+                uci_elo = 1675;
          else if (Options["Engine_Level"] == "Class_C")
-            {
-                uci_elo = 1600;
-                intLevel = 30;
-			}
-				else if (Options["Engine_Level"] == "Class_D")
-            {
-                uci_elo = 1450;
-                intLevel = 20;
-			}
+                uci_elo = 1525;
+         else if (Options["Engine_Level"] == "Class_D")
+                uci_elo = 1375;
          else if (Options["Engine_Level"] == "Boris")
-            {
-                uci_elo = 1300;
-                intLevel = 10;
-			}
+                uci_elo = 1225;
          else if (Options["Engine_Level"] == "Novice")
                 uci_elo = 1000;
 skipLevels:
@@ -359,10 +350,10 @@ skipLevels:
              Limits.nodes *= Time.optimum()/1000 + 1 ;
              if (uci_sleep)
                  std::this_thread::sleep_for (std::chrono::milliseconds(Time.optimum()) * double(1 - Limits.nodes/benchKnps));
-			 if (uci_elo < 1300)
+			 if (uci_elo < 1800)
 			 {
              floatLevel = Options["UCI_LimitStrength"] ?
-				          clamp(std::pow((uci_elo - 596) / 17.9, 1 ), 0.0, 40.0):
+				          clamp(std::pow((uci_elo - 796) / 25.42, 1 ), 0.0, 40.0):
                           double(Options["Skill Level"]);
              intLevel = int(floatLevel) +
                         ((floatLevel - int(floatLevel)) * 1024 > rng.rand<unsigned>() % 1024  ? 1 : 0);
@@ -443,7 +434,7 @@ skipLevels:
   if (bestThread != this || Skill(Options["Skill Level"]).enabled())
       sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << sync_endl;
 
-      if (Options["Adaptive_Play"] == "B_Level") //designed for under 2000 , will make bigger blunders
+      if (Options["Adaptive_Play"] == "Adapt_2000-") //designed for under 2000 , will make bigger blunders
   {
 	  size_t i = 0;
 	  if ( previousScore <= PawnValueMg * 3 && previousScore > -PawnValueMg * 3)
@@ -470,7 +461,7 @@ skipLevels:
 			  std::cout << " ponder " << UCI::move(bestThread->rootMoves[0].pv[1], rootPos.is_chess960());
        }
   }
-	else if (Options["Adaptive_Play"] == "A_Level") ////designed for over 2000 , not as many or as big blunders
+	else if (Options["Adaptive_Play"] == "Adapt_2000+") ////designed for over 2000 , not as many or as big blunders
 	{
 		size_t j = 0;
 		if ( previousScore <= PawnValueMg * 2 && previousScore > PawnValueMg)
