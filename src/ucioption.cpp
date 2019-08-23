@@ -123,10 +123,10 @@ void init(OptionsMap& o) {
     o["Minimal_Output"]           << Option(false);
     o["No_Null_Moves"]            << Option(false);
 /* NEW Adaptive Play! -  A-Level for over 2000 Elo players, B_Level for under 2000 Elo PLayers */
-	o["Adaptive_Play"]            << Option("Off var A_Level var B_Level var Off", "Off");
+	o["Adaptive_Play"]            << Option("Off var Adapt_2000+ var Adapt_2000- var Off", "Off");
     o["UCI_LimitStrength"]        << Option(false);
 /* Expanded Range (600 to 2900 Elo) and in sync with CCRL 40/4 and anchored to ShalleoBlue at Elo 1712*/
-    o["UCI_Elo"]                  << Option(1750, 600, 2900);
+    o["UCI_Elo"]                  << Option(1750, 800, 2900);
     o["UCI_Sleep"]                    << Option(false);
     // A separate weaker play level from the predefined levels below. The difference
     // between both of the methods and the "skill level" is that the engine is only weakened
@@ -175,7 +175,7 @@ void init(OptionsMap& o) {
     o["Syzygy50MoveRule"]         << Option(true);
     o["SyzygyProbeLimit"]         << Option(7, 0, 7);
 #ifndef Add_Features
-	//Stockfish methdd of play by Elo, a very nice  implementation.
+	//Stockfish method of play by Elo, a very nice  implementation.
 	o["UCI_LimitStrength"]        << Option(false);
 	o["UCI_Elo"]                  << Option(1350, 1350, 2850);
 #endif

@@ -2,86 +2,116 @@
 
 [DEFAULT]
 Hash = 16
-Skill Level = 40
 Threads = 1
 BestBookMove = false
-#BookFile = /opt/picochess/books/s-cerebellum.bin
+Use_Book_1 = true
+Book_File_1 = 
+Use_Book_2 = true
+Book_File_2 =
+Use_Book_3 = true 
+Book_File_3 = 
+Use_Book_4 = true
+Book_File_4 = 
 SyzygyPath = /opt/picochess/tablebases/syzygy/
 UCI_LimitStrength = true
 Ponder = false
 Adaptive_Play = off
 UCI_Sleep = true
 
-[Elo@0700]
-UCI_Elo = 700
+[Elo@0850] //Newbie
+UCI_Elo = 850
 
-[Elo@0825]
-UCI_Elo = 825
+[Elo@0925]
+UCI_Elo = 925
 
-[Elo@0950]
-UCI_Elo = 950
+[Elo@01000] //Novice
+UCI_Elo = 1000
 
-[Elo@01175]
-UCI_Elo = 1175
+[Elo@01075] 
+UCI_Elo = 1075
+ 
+[Elo@1150]  //New Club
+UCI_Elo = 1150  
 
-[Elo@1300]
+[Elo@1225]  //Boris 
+UCI_Elo = 1225
+
+[Elo@1300] //Club  
 UCI_Elo = 1300
-Skill Level = 10
 
-[Elo@1420]
-UCI_Elo = 1420
-Skill Level = 20
-
-[Elo@1540]
-UCI_Elo = 1540
-Skill Level = 25
-
-[Elo@1650]
-UCI_Elo = 1650
+[Elo@1375]
+UCI_Elo = 1375  //Class D
 Skill Level = 30
 
-[Elo@1760]
-UCI_Elo = 1760
+[Elo@1450]
+UCI_Elo = 1450
 
-[Elo@1880]
-UCI_Elo = 1880
+[Elo@1525] //Class C
+UCI_Elo = 1525
 
-[Elo@2000]
-UCI_Elo = 2000
+[Elo@1600]  
+UCI_Elo = 1600
 
-[Elo@2110]
-UCI_Elo = 2110
+[Elo@1675]
+UCI_Elo = 1675 //Class B
 
-[Elo@2220]
-UCI_Elo = 2220
+[Elo@1750]
+UCI_Elo = 1750
 
-[Elo@2340]
-UCI_Elo = 2340
+[Elo@1825]
+UCI_Elo = 1825 //Class A
 
-[Elo@2450]
-UCI_Elo = 2450
+[Elo@1900] 
+UCI_Elo = 1900
 Hash = 32
 
-[Elo@2570]
-UCI_Elo = 2570
+[Elo@1975]  //Expert
+UCI_Elo = 1975
 Hash = 32
 
-[Elo@2600]
+[Elo@2050] 
+UCI_Elo = 2050
+Hash = 32
+
+[Elo@2125] //Master
+UCI_Elo = 2125
+Hash = 32
+
+[Elo@2200]  //Cray Blitz
+UCI_Elo = 2200
+Hash = 32
+
+[Elo@2300]  //IM
+UCI_Elo = 2300
+Hash = 32
+
+[Elo@2400] //SIM
+UCI_Elo = 2400
+Hash = 32
+
+[Elo@2500] //Deep Thought
+UCI_Elo = 2500
+Hash = 32
+
+[Elo@2600]  //GM
 UCI_Elo = 2600
 Hash = 32
-BestBookMove = true
 
-[Elo@2725]
-UCI_Elo = 2725
+[Elo@2700] //SuperGM
+UCI_Elo = 2700
 Hash = 32
 BestBookMove = true
 
-[Elo@2850]
-UCI_Elo = 2850
+[Elo@2800]
+UCI_Elo = 2800
+Hash = 32
+BestBookMove = true
+
+[Elo@2900] //World Champion
+UCI_Elo = 2900
 Slow Mover = 84
 Move Overhead = 500
 Adaptive_Play = Off
-Threads = 4
 Hash = 64
 Ponder = true
 BestBookMove = true
@@ -122,6 +152,8 @@ UCI_LimitStrength = false
 UCI_Sleep = false
 
 [A_Level]
+UCI_Elo = 2600
+Skill_Level = 36
 Slow Mover = 84
 Move Overhead = 500
 Adaptive_Play = A_Level
@@ -131,9 +163,11 @@ UCI_LimitStrength = false
 UCI_Sleep = false
 
 [B_Level]
+UCI_Elo = 2000
+Skill_Level = 20
 Slow Mover = 84
 Move Overhead = 500
-Adaptive_Play = Level_B
+Adaptive_Play = B_Level
 Hash = 32
 Ponder = false
 UCI_LimitStrength = false
