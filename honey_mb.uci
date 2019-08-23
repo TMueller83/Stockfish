@@ -1,0 +1,150 @@
+#### for use with DGT board
+
+[DEFAULT]
+Hash = 16
+Skill Level = 40
+Threads = 1
+BestBookMove = false
+#BookFile = /opt/picochess/books/s-cerebellum.bin
+SyzygyPath = /opt/picochess/tablebases/syzygy/
+UCI_LimitStrength = true
+Ponder = false
+Adaptive_Play = off
+UCI_Sleep = true
+
+[Elo@0700]
+UCI_Elo = 700
+
+[Elo@0825]
+UCI_Elo = 825
+
+[Elo@0950]
+UCI_Elo = 950
+
+[Elo@01175]
+UCI_Elo = 1175
+
+[Elo@1300]
+UCI_Elo = 1300
+Skill Level = 10
+
+[Elo@1420]
+UCI_Elo = 1420
+Skill Level = 20
+
+[Elo@1540]
+UCI_Elo = 1540
+Skill Level = 25
+
+[Elo@1650]
+UCI_Elo = 1650
+Skill Level = 30
+
+[Elo@1760]
+UCI_Elo = 1760
+
+[Elo@1880]
+UCI_Elo = 1880
+
+[Elo@2000]
+UCI_Elo = 2000
+
+[Elo@2110]
+UCI_Elo = 2110
+
+[Elo@2220]
+UCI_Elo = 2220
+
+[Elo@2340]
+UCI_Elo = 2340
+
+[Elo@2450]
+UCI_Elo = 2450
+Hash = 32
+
+[Elo@2570]
+UCI_Elo = 2570
+Hash = 32
+
+[Elo@2600]
+UCI_Elo = 2600
+Hash = 32
+BestBookMove = true
+
+[Elo@2725]
+UCI_Elo = 2725
+Hash = 32
+BestBookMove = true
+
+[Elo@2850]
+UCI_Elo = 2850
+Slow Mover = 84
+Move Overhead = 500
+Adaptive_Play = Off
+Threads = 4
+Hash = 64
+Ponder = true
+BestBookMove = true
+UCI_LimitStrength = true
+UCI_Sleep = true
+
+[Elo@3000]
+Slow Mover = 84
+Move Overhead = 500
+Adaptive_Play = Off
+Threads = 1
+Hash = 96
+Ponder = true
+BestBookMove = true
+UCI_LimitStrength = false
+UCI_Sleep = false
+
+[Elo@3100]
+Slow Mover = 84
+Move Overhead = 500
+Adaptive_Play = Off
+Threads = 2
+Hash = 192
+Ponder = true
+BestBookMove = true
+UCI_LimitStrength = false
+UCI_Sleep = false
+
+[Elo@3200]
+Slow Mover = 84
+Move Overhead = 500
+Adaptive_Play = Off
+Threads = 4
+Hash = 192
+Ponder = true
+BestBookMove = true
+UCI_LimitStrength = false
+UCI_Sleep = false
+
+[A_Level]
+Slow Mover = 84
+Move Overhead = 500
+Adaptive_Play = A_Level
+Hash = 32
+Ponder = true
+UCI_LimitStrength = false
+UCI_Sleep = false
+
+[B_Level]
+Slow Mover = 84
+Move Overhead = 500
+Adaptive_Play = Level_B
+Hash = 32
+Ponder = false
+UCI_LimitStrength = false
+UCI_Sleep = false
+
+
+
+
+
+
+
+
+
+
