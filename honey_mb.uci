@@ -24,10 +24,10 @@ UCI_Elo = 850
 [Elo@0925]
 UCI_Elo = 925
 
-[Elo@01000] //Novice
+[Elo@1000] //Novice
 UCI_Elo = 1000
 
-[Elo@01075] 
+[Elo@1075] 
 UCI_Elo = 1075
  
 [Elo@1150]  //New Club
