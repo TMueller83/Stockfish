@@ -449,24 +449,31 @@ skipLevels:
       if (Options["Adaptive_Play"] == "Adapt_2000-") //designed for under 2000 , will make bigger blunders
   {
       limitStrength = true;
-      uci_elo = 2600;
+      uci_elo = 2000;
 	  size_t i = 0;
-	  if ( previousScore <= PawnValueMg * 3 && previousScore > -PawnValueMg * 3)
+	  if ( previousScore > -PawnValueMg/2)
 	  {
           while (i+1 < rootMoves.size() && bestThread->rootMoves[i+1].score > previousScore)
               ++i;
           previousScore = bestThread->rootMoves[i].score;
           sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[i].pv[0], rootPos.is_chess960());
 	  }
-	  else if ( previousScore > PawnValueMg * 3  && previousScore < QueenValueMg )
+	  else if ( previousScore > PawnValueMg/2  && previousScore < QueenValueMg )
 	  {
 		  while (i+1 < rootMoves.size() && bestThread->rootMoves[i+1].score < previousScore)
 		  {
 			  ++i;
 			  break;
 		  }
+		  previousScore = bestThread->rootMoves[i+1].score;
+		  i = 0;
+		  while (i+1 < rootMoves.size() && bestThread->rootMoves[i+1].score > previousScore)
+		  {
+			  ++i;
+			  break;
+		  }
 		  previousScore = bestThread->rootMoves[i].score;
-          sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[i].pv[0], rootPos.is_chess960());
+		  sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[i].pv[0], rootPos.is_chess960());
 	  }
 	  else
       {
@@ -480,14 +487,14 @@ skipLevels:
 		limitStrength = true;
         uci_elo = 2600;
 		size_t j = 0;
-		if ( previousScore <= PawnValueMg * 2 && previousScore > PawnValueMg)
+		if ( previousScore > -PawnValueMg/2)
 		{
 			while (j+1 < rootMoves.size() && bestThread->rootMoves[j+1].score > previousScore)
 			++j;
 			previousScore = bestThread->rootMoves[j].score;
 			sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[j].pv[0], rootPos.is_chess960());
 		}
-		else if ( previousScore > PawnValueMg * 5  && previousScore < RookValueMg )
+		else if ( previousScore > PawnValueMg/2   && previousScore < RookValueMg )
 		{
 			while (j+1 < rootMoves.size() && bestThread->rootMoves[j+1].score < previousScore)
 			{
