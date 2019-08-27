@@ -462,7 +462,10 @@ void Thread::search() {
                   beta = std::min(bestValue + delta, VALUE_INFINITE);
 
               else
+              {
+                  ++rootMoves[pvIdx].bestMoveCount;
                   break;
+              }
 
               delta += delta / 4 + 5;
 
@@ -1089,6 +1092,8 @@ moves_loop: // When in check, search starts from here
           && !gameCycle
           &&  moveCount > 1 + 3 * rootNode
           &&  thisThread->selDepth * ONE_PLY > depth
+          &&  moveCount > 1 + 2 * rootNode
+          && (!rootNode || thisThread->best_move_count(move) == 0)
           && (  !captureOrPromotion
               || moveCountPruning
               || ss->staticEval + PieceValue[EG][pos.captured_piece()] <= alpha
