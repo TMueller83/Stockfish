@@ -1087,8 +1087,7 @@ namespace {
         && (ss-1)->currentMove != MOVE_NULL
         && (ss-1)->statScore < 22661
         &&  eval >= beta
-        &&  eval >= ss->staticEval
-        &&  ss->staticEval >= beta - 33 * depth / ONE_PLY + 299 - improving * 30
+        &&  ss->staticEval >= beta - 33 * depth / ONE_PLY + 299
         && !excludedMove
 #ifdef Sullivan  //authored by Jörg Oster originally, in corchess by Ivan Ilvec
         && thisThread->selDepth + 3 > thisThread->rootDepth / ONE_PLY
