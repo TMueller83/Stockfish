@@ -24,8 +24,8 @@
 ### ==========================================================================
 
 ### Executable name
-### Honey bench nodes -----> 4273475 > based on commits up to 8/27/2019
-### stockfish bench nodes -> 3568210 > based on commits up to 8/27/2019
+### Honey bench nodes -----> 4374828 > based on commits up to 8/29/2019
+### stockfish bench nodes -> 3568210 > based on commits up to 8/29/2019
 
 ####  Always leave the three lines below as is (any subsequent defines will override)
 DATE=$(shell date +"%m%d%y")
