@@ -495,27 +495,6 @@ skipLevels:
 			previousScore = bestThread->rootMoves[j].score;
 			sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[j].pv[0], rootPos.is_chess960());
 		}
-/*
-		else if ( previousScore > PawnValueMg * 2  && previousScore < BishopValueMg * 2 )
->>>>>>> honey_revert_test
-		{
-			while (j+1 < rootMoves.size() && bestThread->rootMoves[j+1].score <  previousScore && previousScore + PawnValueMg / 2 > bestThread->rootMoves[j+1].score)
-			{
-				++j;
-				break;
-			}
-                        previousScore = bestThread->rootMoves[j].score;
-			while (j+1 < rootMoves.size() && bestThread->rootMoves[j+1].score > previousScore && previousScore + PawnValueMg  < bestThread->rootMoves[j+1].score)
->>>>>>> honey_revert_test
-			{
-				++j;
-				break;
-			}
-
-                        previousScore = bestThread->rootMoves[j].score;
->>>>>>> honey_revert_test
-			sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[j].pv[0], rootPos.is_chess960());
-		}*/
 		else
 		{
 			sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[0].pv[0], rootPos.is_chess960());
