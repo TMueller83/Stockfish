@@ -280,19 +280,19 @@ void MainThread::search() {
       {
          if (Options["Adaptive_Play"] == "Adapt_2000+")
 		 {
-			 uci_elo = 2600;
+             uci_elo = 2800;
              limitStrength = true;
              goto skipLevels;
-		 }
-		  if (Options["Adaptive_Play"] == "Adapt_2000-")
+		  }
+         if (Options["Adaptive_Play"] == "Adapt_2000-")
 		  {
-			  uci_elo = 2000;
-			  limitStrength = true;
-			  goto skipLevels;
+             uci_elo = 2100;
+             limitStrength = true;
+             goto skipLevels;
 		  }
 		 if (Options["UCI_LimitStrength"] && Options["Engine_Level"] == "None")
 		 {
-             uci_elo = (Options["UCI_Elo"]) ;
+			 uci_elo = (Options["UCI_Elo"]);
              limitStrength = true;
              goto skipLevels;
 		 }
@@ -343,10 +343,10 @@ skipLevels:
              uci_elo += rand;
 			 
 			 int NodesToSearch  = pow(1.0065, (std::min(std::max(uci_elo, 1000) - 999, 751))) * 8
-								+ pow(1.0052, (std::min(std::max(uci_elo, 1000) - 999, 1051))) * 8
-								- pow(1.0052, (std::min(std::max(uci_elo, 1000) - 999, 751))) * 8
-								+ pow(1.0048, (std::min(std::max(uci_elo, 1000) - 999, 1551))) * 8
-								- pow(1.0048, (std::min(std::max(uci_elo, 1000) - 999, 1051))) * 8
+                                + pow(1.0052, (std::min(std::max(uci_elo, 1000) - 999, 1051))) * 8
+                                - pow(1.0052, (std::min(std::max(uci_elo, 1000) - 999, 751))) * 8
+                                + pow(1.0048, (std::min(std::max(uci_elo, 1000) - 999, 1551))) * 8
+                                - pow(1.0048, (std::min(std::max(uci_elo, 1000) - 999, 1051))) * 8
                                 + pow(1.0044, (std::min(std::max(uci_elo, 1000) - 999, 1651))) * 8
                                 - pow(1.0044, (std::min(std::max(uci_elo, 1000) - 999, 1551))) * 8
                                 + pow(1.0046, (std::min(std::max(uci_elo, 1000) - 999, 1751))) * 8
@@ -413,7 +413,7 @@ skipLevels:
   // Check if there are threads with a better score than main thread
   if (    Options["MultiPV"] == 1
       && !Limits.depth
-      && !(Skill(Options["Skill Level"]).enabled() || Options["UCI_LimitStrength"] || (Options["Adaptive_Play"]))
+      && !(Skill(Options["Skill Level"]).enabled() || Options["UCI_LimitStrength"] || limitStrength)
       &&  rootMoves[0].pv[0] != MOVE_NONE)
   {
       std::map<Move, int64_t> votes;
@@ -446,33 +446,33 @@ skipLevels:
   if (bestThread != this || Skill(Options["Skill Level"]).enabled())
       sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << sync_endl;
 
-      if (Options["Adaptive_Play"] == "Adapt_2000-") //designed for under 2000 , will make bigger blunders
+  if (Options["Adaptive_Play"] == "Adapt_2000-") //designed for under 2000 , will make bigger blunders
   {
       limitStrength = true;
       uci_elo = 2000;
 	  size_t i = 0;
-	  if ( previousScore > -PawnValueMg/2)
+	  if ( previousScore > PawnValueMg && previousScore <= PawnValueMg * 3 )
 	  {
           while (i+1 < rootMoves.size() && bestThread->rootMoves[i+1].score > previousScore)
               ++i;
           previousScore = bestThread->rootMoves[i].score;
           sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[i].pv[0], rootPos.is_chess960());
 	  }
-	  else if ( previousScore > PawnValueMg/2  && previousScore < QueenValueMg )
+	  else if ( previousScore > PawnValueMg * 3  && previousScore <  BishopValueMg * 3 )
 	  {
-		  while (i+1 < rootMoves.size() && bestThread->rootMoves[i+1].score < previousScore)
+		  while (i+1 < rootMoves.size() && bestThread->rootMoves[i+1].score < previousScore && previousScore + PawnValueMg/2  > bestThread->rootMoves[i+1].score)
 		  {
 			  ++i;
 			  break;
 		  }
-		  previousScore = bestThread->rootMoves[i+1].score;
-		  i = 0;
-		  while (i+1 < rootMoves.size() && bestThread->rootMoves[i+1].score > previousScore)
+          previousScore = bestThread->rootMoves[i].score;
+		  while (i+1 < rootMoves.size() && bestThread->rootMoves[i+1].score > previousScore &&  previousScore + PawnValueMg/2 < bestThread->rootMoves[i+1].score)
+
 		  {
 			  ++i;
 			  break;
 		  }
-		  previousScore = bestThread->rootMoves[i].score;
+          previousScore = bestThread->rootMoves[i].score;
 		  sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[i].pv[0], rootPos.is_chess960());
 	  }
 	  else
@@ -487,35 +487,40 @@ skipLevels:
 		limitStrength = true;
         uci_elo = 2600;
 		size_t j = 0;
-		if ( previousScore > -PawnValueMg/2)
+		if ( previousScore > PawnValueMg /*&& previousScore <= PawnValueMg * 2 */)
+
 		{
 			while (j+1 < rootMoves.size() && bestThread->rootMoves[j+1].score > previousScore)
 			++j;
 			previousScore = bestThread->rootMoves[j].score;
 			sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[j].pv[0], rootPos.is_chess960());
 		}
-		else if ( previousScore > PawnValueMg/2   && previousScore < RookValueMg )
+/*
+		else if ( previousScore > PawnValueMg * 2  && previousScore < BishopValueMg * 2 )
+>>>>>>> honey_revert_test
 		{
-			while (j+1 < rootMoves.size() && bestThread->rootMoves[j+1].score < previousScore)
+			while (j+1 < rootMoves.size() && bestThread->rootMoves[j+1].score <  previousScore && previousScore + PawnValueMg / 2 > bestThread->rootMoves[j+1].score)
 			{
 				++j;
 				break;
 			}
-			previousScore = bestThread->rootMoves[j].score;
-			j = 0;
-			while (j+1 < rootMoves.size() && bestThread->rootMoves[j+1].score > previousScore)
+                        previousScore = bestThread->rootMoves[j].score;
+			while (j+1 < rootMoves.size() && bestThread->rootMoves[j+1].score > previousScore && previousScore + PawnValueMg  < bestThread->rootMoves[j+1].score)
+>>>>>>> honey_revert_test
 			{
 				++j;
 				break;
 			}
-			previousScore = bestThread->rootMoves[j].score;
+
+                        previousScore = bestThread->rootMoves[j].score;
+>>>>>>> honey_revert_test
 			sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[j].pv[0], rootPos.is_chess960());
-		}
+		}*/
 		else
 		{
 			sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[0].pv[0], rootPos.is_chess960());
 			if (bestThread->rootMoves[0].pv.size() > 1 || bestThread->rootMoves[0].extract_ponder_from_tt(rootPos))
-			std::cout << " ponder " << UCI::move(bestThread->rootMoves[0].pv[1], rootPos.is_chess960());
+				std::cout << " ponder " << UCI::move(bestThread->rootMoves[0].pv[1], rootPos.is_chess960());
 		}
 	}
   else
@@ -591,7 +596,7 @@ ss->pv = pv;
   // use behind the scenes to retrieve a set of possible moves.
   if (skill.enabled())
       multiPV = std::max(multiPV, (size_t)4);
-  if ((Options["Adaptive_Play"]) && !skill.enabled())
+  if (((Options["Adaptive_Play"] == "Adapt_2000-" ) || (Options["Adaptive_Play"] == "Adapt_2000+" )) && !skill.enabled())
 	  multiPV = rootMoves.size();
   else
       multiPV = std::min(multiPV, rootMoves.size());
@@ -729,11 +734,12 @@ ss->pv = pv;
               else if (bestValue >= beta)
                   beta = std::min(bestValue + delta, VALUE_INFINITE);
               else
-              {
+			  {
+#ifndef Sullivan  // commit 8fec88347 Tweak Late Move Reduction at root
                   ++rootMoves[pvIdx].bestMoveCount;
-                  break;
+#endif
+				  break;
               }
-
               delta += delta / 4 + 5;
 
               assert(alpha >= -VALUE_INFINITE && beta <= VALUE_INFINITE);
@@ -1415,8 +1421,6 @@ moves_loop: // When in check, search starts from here
           && !gameCycle
           &&  moveCount > 1 + 3 * rootNode
           &&  thisThread->selDepth * ONE_PLY > depth
-          &&  moveCount > 1 + 2 * rootNode
-          && (!rootNode || thisThread->best_move_count(move) == 0)
           && (  !captureOrPromotion
               || moveCountPruning
               || ss->staticEval + PieceValue[EG][pos.captured_piece()] <= alpha

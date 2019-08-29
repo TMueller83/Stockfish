@@ -25,9 +25,8 @@
 
 ### Executable name
 
-### Crystal-Honey bench nodes -----> 9312971 > based on commits up to 8/26/2019
-###  based on SF commits up to 8/26/2019
-
+### Crystal-Honey bench nodes -----> 9312971 > based on commits up to 8/29/2019
+###  based on SF commits up to 8/29/2019 ( not all SF commits will be merged)
 
 ####  Always leave the three lines below as is (any subsequent defines will override)
 DATE=$(shell date +"%m%d%y")
@@ -45,6 +44,7 @@ TESTv2 =
 ifeq ($(TEST),yes)
 CXXFLAGS += -DTest
 endif
+
 
 VERSION=sullivan
 
