@@ -454,6 +454,8 @@ skipLevels:
 
   if (Options["Adaptive_Play"] == "Adapt_2000-") //designed for under 2000 , will make bigger blunders
   {
+          limitStrength = true;
+          uci_elo = 2100;
 	  size_t i = 0;
 	  if ( previousScore > PawnValueMg && previousScore <= PawnValueMg * 3 )
 	  {
@@ -487,6 +489,8 @@ skipLevels:
   }
 	else if (Options["Adaptive_Play"] == "Adapt_2000+") ////designed for over 2000 , not as many or as big blunders
 	{
+                limitStrength = true;
+                uci_elo = 2800;
 		size_t j = 0;
 		if ( previousScore > PawnValueMg /*&& previousScore <= PawnValueMg * 2 */)
 		{
