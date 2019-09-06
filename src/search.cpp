@@ -240,6 +240,15 @@ void MainThread::search() {
 #ifdef Add_Features
     PRNG rng(now());
     double floatLevel   = 0;
+	int shallowBlue_adjust = 300; //to roughly anchor 1712 rating to CCRL Shallow BLue 2.0 rating of 1712
+	/*
+	 Rank Name                Rating   Δ     +    -     #     Σ    Σ%     W    L    D   W%    =%   OppR
+	 ---------------------------------------------------------------------------------------------------------
+	 1 Shallow Blue 2.0.0   1063   0.0   29   29   500  263.0  52.6  237  211   52  47.4  10.4  1045
+	 2 Honey-X5i-1700       1045  18.0   29   29   500  237.0  47.4  211  237   52  42.2  10.4  1063
+	 ---------------------------------------------------------------------------------------------------------
+	*/
+	int adaptiveElo = 0;
     aggressiveness      = Options["DC_Slider"];
     bruteForce          = Options["BruteForce"];
     cleanSearch         = Options["Clean Search"];
@@ -284,15 +293,24 @@ void MainThread::search() {
       }
       else
       {
-         if (Options["Adaptive_Play"] == "Adapt_2000+")
-		 {
-             uci_elo = 2800;
+          if (Options["Adaptive_Play"] == "Expert")
+          {
+             adaptiveElo = 3000;
+             uci_elo = adaptiveElo;
              limitStrength = true;
              goto skipLevels;
 		  }
-         if (Options["Adaptive_Play"] == "Adapt_2000-")
+         if (Options["Adaptive_Play"] == "Advanced")
+		 {
+             adaptiveElo = 2200;
+             uci_elo = adaptiveElo;
+             limitStrength = true;
+             goto skipLevels;
+		  }
+         if (Options["Adaptive_Play"] == "Novice")
 		  {
-             uci_elo = 2100;
+             adaptiveElo = 1575;
+             uci_elo = adaptiveElo;
              limitStrength = true;
              goto skipLevels;
 		  }
@@ -312,9 +330,9 @@ void MainThread::search() {
          if (Options["Engine_Level"] == "World_Champion")
                 uci_elo = 2900;
          else if (Options["Engine_Level"] == "Super_GM")
-                uci_elo = 2700;
+                uci_elo = 2800;
          else if (Options["Engine_Level"] == "GM")
-                uci_elo = 2600;
+                uci_elo = 2650;
          else if (Options["Engine_Level"] == "Deep_Thought")
                 uci_elo = 2500;
          else if (Options["Engine_Level"] == "SIM")
@@ -324,19 +342,19 @@ void MainThread::search() {
          else if (Options["Engine_Level"] == "Cray_Blitz")
                 uci_elo = 2200;
          else if (Options["Engine_Level"] == "Master")
-                uci_elo = 2125;
+                uci_elo = 2100;
          else if (Options["Engine_Level"] == "Expert")
-                uci_elo = 1975;
+                uci_elo = 1950;
          else if (Options["Engine_Level"] == "Class_A")
-                uci_elo = 1825;
+                uci_elo = 1800;
          else if (Options["Engine_Level"] == "Class_B")
-                uci_elo = 1675;
+                uci_elo = 1650;
          else if (Options["Engine_Level"] == "Class_C")
-                uci_elo = 1525;
+                uci_elo = 1500;
          else if (Options["Engine_Level"] == "Class_D")
-                uci_elo = 1375;
+                uci_elo = 1350;
          else if (Options["Engine_Level"] == "Boris")
-                uci_elo = 1225;
+                uci_elo = 1200;
          else if (Options["Engine_Level"] == "Novice")
                 uci_elo = 1000;
 skipLevels:
@@ -344,37 +362,31 @@ skipLevels:
          {
              int benchKnps = 1000 * (Options["Bench_KNPS"]);
              std::mt19937 gen(now());
-             std::uniform_int_distribution<int> dis(-5, 5);
+             std::uniform_int_distribution<int> dis(-0, 0);
              int rand = dis(gen);
-             uci_elo += rand;
+             uci_elo += rand + shallowBlue_adjust;
+             int NodesToSearch  =  pow(1.0072, (std::min(uci_elo - 1199,  351 ))) * 24
+                                 + pow(1.0050, (std::min(uci_elo - 1199,  851 ))) * 24
+                                 - pow(1.0050, (std::min(uci_elo - 1199,  351 ))) * 24
+                                 + pow(1.0042, (std::min(uci_elo - 1199, 1351 ))) * 24
+                                 - pow(1.0042, (std::min(uci_elo - 1199,  851 ))) * 24
+                                 + pow(1.0039, (std::min(uci_elo - 1199, 1426 ))) * 24
+                                 - pow(1.0039, (std::min(uci_elo - 1199, 1351 ))) * 24
+                                 + pow(1.0040, (std::max(uci_elo - 1199,    0 ))) * 24
+			                     - pow(1.0040, (std::min(uci_elo - 1199, 1426 ))) * 24;
 			 
-			 int NodesToSearch  = pow(1.0065, (std::min(std::max(uci_elo, 1000) - 999, 751))) * 8
-                                + pow(1.0052, (std::min(std::max(uci_elo, 1000) - 999, 1051))) * 8
-                                - pow(1.0052, (std::min(std::max(uci_elo, 1000) - 999, 751))) * 8
-                                + pow(1.0048, (std::min(std::max(uci_elo, 1000) - 999, 1551))) * 8
-                                - pow(1.0048, (std::min(std::max(uci_elo, 1000) - 999, 1051))) * 8
-                                + pow(1.0044, (std::min(std::max(uci_elo, 1000) - 999, 1651))) * 8
-                                - pow(1.0044, (std::min(std::max(uci_elo, 1000) - 999, 1551))) * 8
-                                + pow(1.0046, (std::min(std::max(uci_elo, 1000) - 999, 1751))) * 8
-                                - pow(1.0046, (std::min(std::max(uci_elo, 1000) - 999, 1651))) * 8
-                                + pow(1.0043, (std::min(std::max(uci_elo, 1000) - 999, 1851))) * 8
-			                    - pow(1.0043, (std::min(std::max(uci_elo, 1000) - 999, 1751))) * 8
-								+ pow(1.0046, (std::min(std::max(uci_elo, 1000) - 999, 2006))) * 8
-								- pow(1.0046, (std::min(std::max(uci_elo, 1000) - 999, 1851))) * 8
-                                + pow(1.0040, (std::max(std::max(uci_elo, 1000) - 999, 0))) * 8
-                                - pow(1.0040, (std::min(std::max(uci_elo, 1000) - 999, 2006))) * 8;
 
              Limits.nodes = NodesToSearch;
              Limits.nodes *= Time.optimum()/1000 + 1 ;
              if (uci_sleep)
                  std::this_thread::sleep_for (std::chrono::milliseconds(Time.optimum()) * double(1 - Limits.nodes/benchKnps));
-			 if (uci_elo < 1800)
-			 {
-             floatLevel = Options["UCI_LimitStrength"] ?
-				          clamp(std::pow((uci_elo - 796) / 25.42, 1 ), 0.0, 40.0):
-                          double(Options["Skill Level"]);
-             intLevel = int(floatLevel) +
-                        ((floatLevel - int(floatLevel)) * 1024 > rng.rand<unsigned>() % 1024  ? 1 : 0);
+             if (uci_elo < 1500)
+             {
+                 floatLevel = Options["UCI_LimitStrength"] ?
+                              clamp(std::pow((uci_elo - 945)  / 13.14, 1), 0.0, 40.0):
+                              double(Options["Skill Level"]);
+                 intLevel = int(floatLevel) +
+                            ((floatLevel - int(floatLevel)) * 1024 > rng.rand<unsigned>() % 1024  ? 1 : 0);
              }
          }
 #endif
@@ -452,60 +464,43 @@ skipLevels:
   if (bestThread != this || Skill(Options["Skill Level"]).enabled())
       sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << sync_endl;
 
-  if (Options["Adaptive_Play"] == "Adapt_2000-") //designed for under 2000 , will make bigger blunders
+  if (adaptiveElo)
   {
-          limitStrength = true;
-          uci_elo = 2100;
-	  size_t i = 0;
-	  if ( previousScore > PawnValueMg && previousScore <= PawnValueMg * 3 )
+      limitStrength = true;
+      size_t i = 0;
+      if ( previousScore > PawnValueMg * 2  && previousScore <= PawnValueMg * 4 )
 	  {
           while (i+1 < rootMoves.size() && bestThread->rootMoves[i+1].score > previousScore)
-              ++i;
           previousScore = bestThread->rootMoves[i].score;
+          ++i;
           sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[i].pv[0], rootPos.is_chess960());
 	  }
-	  else if ( previousScore > PawnValueMg * 3  && previousScore <  BishopValueMg * 3 )
-	  {
-		  while (i+1 < rootMoves.size() && bestThread->rootMoves[i+1].score < previousScore && previousScore + PawnValueMg/2  > bestThread->rootMoves[i+1].score)
-		  {
-			  ++i;
-			  break;
-		  }
-                  previousScore = bestThread->rootMoves[i].score;
-		  while (i+1 < rootMoves.size() && bestThread->rootMoves[i+1].score > previousScore &&  previousScore + PawnValueMg/2 < bestThread->rootMoves[i+1].score)
-		  {
-			  ++i;
-			  break;
-		  }
-                  previousScore = bestThread->rootMoves[i].score;
-		  sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[i].pv[0], rootPos.is_chess960());
-	  }
-	  else
+      else if ( previousScore > PawnValueMg * 4  && previousScore <  PawnValueMg * 7 )
+      {
+          while (i+1 < rootMoves.size() && bestThread->rootMoves[i+1].score < previousScore && previousScore
+				 + PawnValueMg/2  > bestThread->rootMoves[i+1].score)
+          {
+              ++i;
+              break;
+          }
+          previousScore = bestThread->rootMoves[i].score;
+          while (i+1 < rootMoves.size() && bestThread->rootMoves[i+1].score > previousScore &&  previousScore
+				 + PawnValueMg/2 < bestThread->rootMoves[i+1].score)
+          {
+              ++i;
+              previousScore = bestThread->rootMoves[i-1].score;
+
+          }
+          previousScore = bestThread->rootMoves[i].score;
+          sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[i].pv[0], rootPos.is_chess960());
+      }
+      else
       {
 			  sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[0].pv[0], rootPos.is_chess960());
-			  if (bestThread->rootMoves[0].pv.size() > 1 || bestThread->rootMoves[0].extract_ponder_from_tt(rootPos))
-			  std::cout << " ponder " << UCI::move(bestThread->rootMoves[0].pv[1], rootPos.is_chess960());
-       }
+              if (bestThread->rootMoves[0].pv.size() > 1 || bestThread->rootMoves[0].extract_ponder_from_tt(rootPos))
+              std::cout << " ponder " << UCI::move(bestThread->rootMoves[0].pv[1], rootPos.is_chess960());
+      }
   }
-	else if (Options["Adaptive_Play"] == "Adapt_2000+") ////designed for over 2000 , not as many or as big blunders
-	{
-                limitStrength = true;
-                uci_elo = 2800;
-		size_t j = 0;
-		if ( previousScore > PawnValueMg /*&& previousScore <= PawnValueMg * 2 */)
-		{
-			while (j+1 < rootMoves.size() && bestThread->rootMoves[j+1].score > previousScore)
-			++j;
-			previousScore = bestThread->rootMoves[j].score;
-			sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[j].pv[0], rootPos.is_chess960());
-		}
-		else
-		{
-			sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[0].pv[0], rootPos.is_chess960());
-			if (bestThread->rootMoves[0].pv.size() > 1 || bestThread->rootMoves[0].extract_ponder_from_tt(rootPos))
-				std::cout << " ponder " << UCI::move(bestThread->rootMoves[0].pv[1], rootPos.is_chess960());
-		}
-	}
   else
   {
   sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[0].pv[0], rootPos.is_chess960());
