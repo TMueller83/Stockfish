@@ -57,6 +57,9 @@ public:
   void idle_loop();
   void start_searching();
   void wait_for_search_finished();
+#ifndef Sullivan // commit 8fec88347 Tweak Late Move Reduction at root by @locutus2
+  int best_move_count(Move move);
+#endif
 
   Pawns::Table pawnsTable;
   Material::Table materialTable;
