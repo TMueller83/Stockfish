@@ -423,7 +423,11 @@ skipLevels:
   Thread* bestThread = this;
 
   // Check if there are threads with a better score than main thread
+#ifdef Sullivan  //joergoster 3240f204 - check all threads of rmate -in -x
+  if (   (Options["MultiPV"] == 1 || Limits.mate)
+#else
   if (    Options["MultiPV"] == 1
+#endif
       && !Limits.depth
       && !(Skill(Options["Skill Level"]).enabled() || Options["UCI_LimitStrength"] || limitStrength)
       &&  rootMoves[0].pv[0] != MOVE_NONE)
@@ -740,6 +744,10 @@ ss->pv = pv;
           && rootMoves[0].score >= VALUE_MATE_IN_MAX_PLY
           && VALUE_MATE - rootMoves[0].score <= 2 * Limits.mate)
           Threads.stop = true;
+#ifdef Sullivan  //joergoster 3240f204 - check all threads of rmate -in -x
+	  if (!mainThread)
+		  continue;
+#endif
 #ifdef Add_Features
         if (Options["FastPlay"])
         {
