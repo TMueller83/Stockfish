@@ -64,7 +64,7 @@ namespace {
 
 	
 #if (defined Sullivan && defined Add_Features && ReleaseVer)
-const string Version = "X5i";
+const string Version = "X5j";
 #elif (defined Sullivan && defined Add_Features)
 const string Version = "";
 #endif

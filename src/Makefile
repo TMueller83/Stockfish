@@ -34,8 +34,8 @@ DATE2=$(shell date +"%m%d")
 FEATURE1=
 
 ### Release versions , enter yes and release version below foor releases
-RELEASEVER = no
-RELVERSION = X5i
+RELEASEVER = yes
+RELVERSION = X5j
 
 ### TEST versions, enter yes and labels below to build named test exe's
 TEST = no
