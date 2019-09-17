@@ -172,7 +172,9 @@ const string engine_info(bool to_uci) {
 	   ss << (to_uci  ? "\nid author ": " by ")
        << "T. Romstad, M. Costalba, J. Kiiski, G. Linscott";
 #endif
-
+#if (defined Pi && defined Sullivan)
+	ss << (to_uci  ? "":"\nCompiled for Picochess by Scally");
+#endif
   return ss.str();
 }
 
