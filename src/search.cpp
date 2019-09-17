@@ -113,6 +113,8 @@ namespace {
     int level;
     Move best = MOVE_NONE;
   };
+  int adaptiveElo = 0;
+
 #ifdef Add_Features
 bool  bruteForce, cleanSearch, minOutput, uci_sleep, noNULL;
 bool limitStrength = false;
@@ -248,7 +250,6 @@ void MainThread::search() {
 	 2 Honey-X5i-1700       1045  18.0   29   29   500  237.0  47.4  211  237   52  42.2  10.4  1063
 	 ---------------------------------------------------------------------------------------------------------
 	*/
-	int adaptiveElo = 0;
     aggressiveness      = Options["DC_Slider"];
     bruteForce          = Options["BruteForce"];
     cleanSearch         = Options["Clean Search"];
@@ -578,8 +579,6 @@ ss->pv = pv;
   // use behind the scenes to retrieve a set of possible moves.
   if (skill.enabled())
       multiPV = std::max(multiPV, (size_t)4);
-  if (((Options["Adaptive_Play"] == "Adapt_2000-" ) || (Options["Adaptive_Play"] == "Adapt_2000+" )) && !skill.enabled())
-	  multiPV = rootMoves.size();
   else
       multiPV = std::min(multiPV, rootMoves.size());
 #ifdef Sullivan  //MichaelB7
