@@ -295,13 +295,13 @@ void UCI::loop(int argc, char* argv[]) {
         else if (token == "position")
         {
             position(pos, is, states);
-            if (Options["Clear_Search"])
+            if (Options["Clean_Search"])
                 Search::clear();
         }
         else if (token == "p")
         {
             position(pos, is, states);
-            if (Options["Clear_Search"])
+            if (Options["Clean_Search"])
                 Search::clear();
         }
 #else

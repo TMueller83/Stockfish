@@ -110,9 +110,9 @@ namespace {
   int adaptiveElo = 0;
 
 #ifdef Add_Features
-bool  bruteForce, cleanSearch, minOutput, uci_sleep, noNULL;
+bool  bruteForce, jekyll, minOutput, uci_sleep, noNULL;
 bool limitStrength = false;
-int   aggressiveness, attack, jekyll,  intLevel = 40, tactical, uci_elo, variety;
+int   aggressiveness, attack, intLevel = 40, tactical, uci_elo;
 #else
 int intLevel = 40;
 #endif
@@ -246,14 +246,12 @@ void MainThread::search() {
 	*/
     aggressiveness      = Options["DC_Slider"];
     bruteForce          = Options["BruteForce"];
-    cleanSearch         = Options["Clean Search"];
-    jekyll              = Options["Jekyll_&_Hyde"];
+    jekyll              = Options["Variety"];
     minOutput           = Options["Minimal_Output"];
     noNULL              = Options["No_Null_Moves"];
     tactical            = Options["Tactical"];
     uci_elo             = Options["Engine_Elo"];
     uci_sleep           = Options["UCI_Sleep"];
-    variety             = Options["Variety"];
 #endif
 
   Color us = rootPos.side_to_move();
@@ -534,7 +532,6 @@ void Thread::search() {
 
 #ifdef Add_Features
   TB::SevenManProbe = Options["7 Man Probing"];
-
 #endif
 
   std::memset(ss-7, 0, 10 * sizeof(Stack));
@@ -543,14 +540,9 @@ void Thread::search() {
      (ss-i)->continuationHistory = &this->continuationHistory[NO_PIECE][0]; // Use as sentinel
 ss->pv = pv;
 
-#ifdef Add_Features
-  if (cleanSearch)
-	  Search::clear();
-#endif
   bestValue = delta = alpha = -VALUE_INFINITE;
-
-
   size_t multiPV = Options["MultiPV"];
+
 #ifndef Add_Features
   // Pick integer skill levels, but non-deterministically round up or down
   // such that the average integer skill corresponds to the input floating point one.
@@ -564,12 +556,14 @@ ss->pv = pv;
   intLevel = int(floatLevel) +
              ((floatLevel - int(floatLevel)) * 1024 > rng.rand<unsigned>() % 1024  ? 1 : 0);
 #endif
+
 	Skill skill(intLevel);
 
 #ifdef Add_Features
     if (tactical) multiPV = pow(2, tactical);
 	if (aggressiveness) attack = aggressiveness;
 #endif
+
   // When playing with strength handicap enable MultiPV search that we will
   // use behind the scenes to retrieve a set of possible moves.
   if (skill.enabled())
@@ -1622,11 +1616,11 @@ moves_loop: // When in check, search starts from here
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
 			
 #ifdef Add_Features
-			if (jekyll && variety && bestValue > 100 && popcount(pos.pieces()) > 10)
+            if (jekyll && bestValue > 100 && popcount(pos.pieces()) > 7)
 			{
-				std::mt19937 gen2(now());
-				std::uniform_int_distribution<int> dis(0, 2 * variety * jekyll);
-				bestValue -= dis(gen2);
+                std::mt19937 gen2(now());
+                std::uniform_int_distribution<int> dis(0, 185 );
+                bestValue -= dis(gen2);
 			}
 #endif
 			
@@ -1744,12 +1738,12 @@ moves_loop: // When in check, search starts from here
                           DEPTH_NONE, MOVE_NONE, ss->staticEval);
 			
 #ifdef Add_Features
-            if (jekyll && variety && bestValue > 100 && popcount(pos.pieces()) > 10)
-			{
-                          std::mt19937 gen3(now());
-                          std::uniform_int_distribution<int> dis(0, 2 * variety * jekyll);
-                          bestValue -= dis(gen3);
-			}
+            if (jekyll && bestValue > 100 && popcount(pos.pieces()) > 7)
+            {
+                std::mt19937 gen3(now());
+                std::uniform_int_distribution<int> dis(0, 185 );
+                bestValue -= dis(gen3);
+            }
 #endif
 
             return bestValue;
@@ -1867,12 +1861,12 @@ moves_loop: // When in check, search starts from here
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
 	  
 #ifdef Add_Features
-	if (jekyll && variety && bestValue > 100 && popcount(pos.pieces()) > 10)
-	  {
+          if (jekyll && bestValue > 100 && popcount(pos.pieces()) > 7)
+          {
               std::mt19937 gen4(now());
-              std::uniform_int_distribution<int> dis(0, 2 * variety * jekyll);
+              std::uniform_int_distribution<int> dis(0, 185 );
               bestValue -= dis(gen4);
-	  }
+          }
 #endif
 
     return bestValue;
