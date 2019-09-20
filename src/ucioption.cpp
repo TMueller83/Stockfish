@@ -72,13 +72,10 @@ bool CaseInsensitiveLess::operator() (const string& s1, const string& s2) const 
 
 
 /// init() initializes the UCI options to their hard-coded default values
-
 void init(OptionsMap& o) {
-
     // at most 2^32 clusters.
     constexpr int MaxHashMB = Is64Bit ? 131072 : 2048;
     o["Debug Log File"]           << Option("", on_logger);
-    o["Clear_Hash"]               << Option(on_clear_hash);
 #ifdef Add_Features
     o["Use_Book_1"] 	          << Option(false);
     o["Book_File_1"] 	          << Option("", on_book_file1);
@@ -115,38 +112,22 @@ void init(OptionsMap& o) {
     o["Hash"]                     << Option(16, 1, MaxHashMB, on_hash_size);
     o["Ponder"]                   << Option(false);
 #ifdef Add_Features
+    o["Clear_Hash"]               << Option(on_clear_hash);
+    o["Clean_Search"]             << Option(false);
     o["7 Man Probing"]            << Option(false);
     o["BruteForce"] 	          << Option(false);
-    o["Clean Search"]             << Option(false);
+    o["No_Null_Moves"]            << Option(false);
     o["Dynamic_Contempt"]         << Option(true);
     o["FastPlay"]                 << Option(false);
     o["Minimal_Output"]           << Option(false);
-    o["No_Null_Moves"]            << Option(false);
-/* NEW Adaptive Play! -  Easy for under 1400 Elo players, Medium for under 2000 Elo PLayers  and Hard for over 2000 players*/
-	o["Adaptive_Play"]            << Option("Off var Novice var Advanced var Expert var Off", "Off");
-    o["UCI_LimitStrength"]        << Option(false);
-/* Expanded Range (1000 to 2900 Elo) and roughly in sync with CCRL 40/4, anchored to ShalleoBlue at Elo 1712*/
-    o["UCI_Elo"]                  << Option(1750, 1000, 2900);
-    o["UCI_Sleep"]                    << Option(false);
-    // A separate weaker play level from the predefined levels below. The difference
-    // between both of the methods and the "skill level" is that the engine is only weakened
-    // by the reduction in nodes searched, thus reducing the move horizon visibility naturally
-    o["Engine_Level"]             << Option("None var World_Champion var Super_GM "
-                                            "var GM var Deep_Thought var SIM var Cray_Blitz "
-                                            "var IM var Master var Expert var Class_A "
-                                            "var Class_B var Class_C var Class_D var Boris "
-                                            "var Novice var None", "None");
-    // Score percentage evalaution output, similair to Lc0 output is now the default
-    o["Score_Output"]             << Option("ScorPct-GUI var CentiPawn var ScorPct var ScorPct-GUI"
-                                         ,"ScorPct-GUI");
-#endif
+    o["Variety"]                  << Option(false);
 #if (defined Add_Features && defined Sullivan)
     o["DC_Slider"]                << Option(65, -180, 180);
 #elif (defined Add_Features && Stockfish)
-	o["DC_Slider"]                << Option(0, -180, 180);
+    o["DC_Slider"]                << Option(0, -180, 180);
 #endif
 #ifdef Sullivan
-	o["MultiPV"]                  << Option(1, 1, 256);
+    o["MultiPV"]                  << Option(1, 1, 256);
 #else
     o["MultiPV"]                  << Option(1, 1, 500);
 #endif
@@ -155,18 +136,32 @@ void init(OptionsMap& o) {
 #elif (defined Add_Features)
     o["Bench_KNPS"]               << Option (1500, 500, 6000);//used for UCI Play By Elo
 #endif
+    // Score percentage evalaution output, similair to Lc0 output is now the default
+    o["Score_Output"]             << Option("ScorPct-GUI var CentiPawn var ScorPct var ScorPct-GUI"
+											,"ScorPct-GUI");
 #ifdef Add_Features
-    o["Jekyll_&_Hyde"]            << Option(0, 0, 15);
-    o["Tactical"]                 << Option(0, 0,  8);
-    o["Variety"]                  << Option(0, 0, 15);
+    o["Tactical"]                 << Option(0, 0, 8);
 #endif
-
 #ifdef Add_Features
     o["Slow Mover"]               << Option(100, 10, 1000);
 #else
     o["Slow Mover"]               << Option(84, 10, 1000);
 #endif
-
+/* NEW Adaptive Play! -  Easy for under 1400 Elo players, Medium for under 2000 Elo PLayers  and Hard for over 2000 players*/
+    o["Adaptive_Play"]            << Option("Off var Novice var Advanced var Expert var Off", "Off");
+    o["UCI_LimitStrength"]        << Option(false);
+    o["UCI_Sleep"]                << Option(false);
+/* Expanded Range (1000 to 2900 Elo) and roughly in sync with CCRL 40/4, anchored to ShalleoBlue at Elo 1712*/
+    o["UCI_Elo"]                  << Option(1750, 1000, 2900);
+    // A separate weaker play level from the predefined levels below. The difference
+    // between both of the methods and the "skill level" is that the engine is only weakened
+    // by the reduction in nodes searched, thus reducing the move horizon visibility naturally
+    o["Engine_Level"]             << Option("None var World_Champion var Super_GM "
+                                            "var GM var Deep_Thought var SIM var Cray_Blitz "
+                                            "var IM var Master var Expert var Class_A "
+                                            "var Class_B var Class_C var Class_D var Boris "
+                                            "var Novice var None", "None");
+#endif
     o["nodestime"]                << Option(0, 0, 10000);
     o["UCI_Chess960"]             << Option(false);
     o["UCI_AnalyseMode"]          << Option(false);
@@ -183,7 +178,6 @@ void init(OptionsMap& o) {
 
 /// operator<<() is used to print all the options default values in chronological
 /// insertion order (the idx field) and in the format defined by the UCI protocol.
-
 std::ostream& operator<<(std::ostream& os, const OptionsMap& om) {
 
   for (size_t idx = 0; idx < om.size(); ++idx)
@@ -209,7 +203,6 @@ std::ostream& operator<<(std::ostream& os, const OptionsMap& om) {
 
 
 /// Option class constructors and conversion operators
-
 Option::Option(const char* v, OnChange f) : type("string"), min(0), max(0), on_change(f)
 { defaultValue = currentValue = v; }
 
@@ -245,7 +238,6 @@ bool Option::operator==(const char* s) const {
 
 
 /// operator<<() inits options and assigns idx in the correct printing order
-
 void Option::operator<<(const Option& o) {
 
   static size_t insert_order = 0;
@@ -258,7 +250,6 @@ void Option::operator<<(const Option& o) {
 /// operator=() updates currentValue and triggers on_change() action. It's up to
 /// the GUI to check for option's limits, but we could receive the new value
 /// from the user by console window, so let's check the bounds anyway.
-
 Option& Option::operator=(const string& v) {
 
   assert(!type.empty());
