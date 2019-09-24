@@ -24,8 +24,8 @@
 ### ==========================================================================
 
 ### Executable name
-### Honey bench nodes -----> 4458734 > based on commits up to 9/16/2019
-### stockfish bench nodes -> 4272173 > based on commits up to 9/16/2019
+### Honey bench nodes -----> 4816397 > based on commits up to 9/24/2019
+### stockfish bench nodes -> 3618154 > based on commits up to 9/24/2019
 
 ####  Always leave the three lines below as is (any subsequent defines will override)
 DATE=$(shell date +"%m%d%y")
@@ -33,8 +33,8 @@ DATE2=$(shell date +"%m%d")
 FEATURE1=
 
 ### Release versions , enter yes and release version below foor releases
-RELEASEVER = yes
-RELVERSION = X5j
+RELEASEVER = no
+RELVERSION = X5k
 
 ### TEST versions, enter yes and labels below to build named test exe's
 TEST = no
