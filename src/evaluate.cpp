@@ -357,7 +357,7 @@ constexpr Score MobilityBonus[][32] = {
 
             // Bonus for rook on an open or semi-open file
             if (pos.is_on_semiopen_file(Us, s))
-                score += RookOnFile[bool(pos.is_on_semiopen_file(Them, s))];
+                score += RookOnFile[pos.is_on_semiopen_file(Them, s)];
 
             // Penalty when trapped by the king, even more if the king cannot castle
             else if (mob <= 3)
@@ -670,7 +670,7 @@ constexpr Score MobilityBonus[][32] = {
             || (pos.pieces(PAWN) & (s + Up)))
             bonus = bonus / 2;
 
-        score += bonus - PassedFile * std::min(f, ~f);
+        score += bonus - PassedFile * map_to_queenside(f);
     }
 
     if (T)

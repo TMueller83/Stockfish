@@ -96,6 +96,12 @@ namespace {
     int d = depth / ONE_PLY;
     return d > 17 ? -8 : 22 * d * d + 151 * d - 140;
   }
+	
+	// Add a small random component to draw evaluations to avoid 3fold-blindness
+	Value value_draw(Depth depth, Thread* thisThread) {
+		return depth < 4 * ONE_PLY ? VALUE_DRAW
+		: VALUE_DRAW + Value(2 * (thisThread->nodes & 1) - 1);
+	}
 
   // Skill structure is used to implement strength limit
   struct Skill {
@@ -853,27 +859,24 @@ namespace {
 
     if (!rootNode)
     {
-        // Check if we have an upcoming move which draws by repetition, or
-        // if the opponent had an alternative move earlier to this position.
-        if (pos.has_game_cycle(ss->ply))
-        {
-            if (VALUE_DRAW >= beta)
-            {
-                tte->save(posKey, VALUE_DRAW, ttPv, BOUND_EXACT,
-                          depth, MOVE_NONE, VALUE_NONE);
-
-                return VALUE_DRAW;
-            }
-            alpha = std::max(alpha, VALUE_DRAW);
-        }
+		// Check if we have an upcoming move which draws by repetition, or
+		// if the opponent had an alternative move earlier to this position.
+		if (   pos.rule50_count() >= 3
+			&& alpha < VALUE_DRAW
+			&& !rootNode
+			&& pos.has_game_cycle(ss->ply))
+		{
+			alpha = value_draw(depth, pos.this_thread());
+			if (alpha >= beta)
+				return alpha;
+		}
 
 		// Step 2. Check for aborted search and immediate draw
-		if (pos.is_draw(ss->ply))
-			return VALUE_DRAW;
-		
-		if (Threads.stop.load(std::memory_order_relaxed) || ss->ply >= MAX_PLY)
-			return ss->ply >= MAX_PLY && !inCheck ? evaluate(pos)
-			: VALUE_DRAW;
+		if (   Threads.stop.load(std::memory_order_relaxed)
+			|| pos.is_draw(ss->ply)
+			|| ss->ply >= MAX_PLY)
+			return (ss->ply >= MAX_PLY && !inCheck) ? evaluate(pos)
+			: value_draw(depth, pos.this_thread());
 
         // Step 3. Mate distance pruning. Even if we mate at the next move our score
         // would be at best mate_in(ss->ply+1), but if alpha is already bigger because
@@ -1006,6 +1009,9 @@ namespace {
         ss->staticEval = eval = tte->eval();
         if (eval == VALUE_NONE)
             ss->staticEval = eval = evaluate(pos);
+
+        if (eval == VALUE_DRAW)
+            eval = value_draw(depth, thisThread);
 
         // Can ttValue be used as a better position evaluation?
         if (    ttValue != VALUE_NONE
@@ -1414,13 +1420,10 @@ moves_loop: // When in check, search starts from here
               // Decrease reduction for moves that escape a capture. Filter out
               // castling moves, because they are coded as "king captures rook" and
               // hence break make_move(). (~5 Elo)
-/*<<<<<<< HEAD
-              else if (type_of(move) == NORMAL
-                       && !pos.see_ge(make_move(to_sq(move), from_sq(move))))
-=======*/
+
               else if (    type_of(move) == NORMAL
                        && !pos.see_ge(reverse_move(move)))
-//>>>>>>> 843a6c43053ceb9cc79d29bf7c0d3a5d236e057e
+
                   r -= 2 * ONE_PLY;
               ss->statScore =  thisThread->mainHistory[us][from_to(move)]
                              + (*contHist[0])[movedPiece][to_sq(move)]
