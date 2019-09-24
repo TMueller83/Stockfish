@@ -198,7 +198,7 @@ const string engine_info(bool to_uci) {
   return ss.str();
 }
 
-#ifdef Add_Features  // By S Nicolet, slightly modified here
+// By S Nicolet, slightly modified here
 /// compiler_info() returns a string trying to describe the compiler we use
 
 const std::string compiler_info() {
@@ -268,7 +268,6 @@ const std::string compiler_info() {
 
 	return compiler;
 }
-#endif
 
 /// Debug functions used mainly to collect run-time statistics
 static std::atomic<int64_t> hits[2], means[2];
