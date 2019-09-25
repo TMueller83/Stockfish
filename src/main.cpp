@@ -55,7 +55,6 @@ int main(int argc, char* argv[]) {
    polybook3.init(Options["Book_File_3"]);
    polybook4.init(Options["Book_File_4"]);
 #endif
-  Search::init();
   Threads.set(Options["Threads"]);
   Search::clear(); // After threads are up
 

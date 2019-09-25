@@ -47,8 +47,8 @@ CXXFLAGS += -DTest
 endif
 
 ### Uncomment the line below for Honey, comment out for Stockfish
-	VERSION=sullivan
-	SHARK=shark
+###	VERSION=sullivan
+###	SHARK=shark
 
 ### Uncomment for use with Raspberry Pi -  a slower NPS UCI option setting used in Play
 ### by Elo and personalities
