@@ -315,6 +315,9 @@ void UCI::loop(int argc, char* argv[]) {
         else if (token == "bench") bench(pos, is, states);
         else if (token == "d")     sync_cout << pos << sync_endl;
         else if (token == "eval")  sync_cout << Eval::trace(pos) << sync_endl;
+#ifdef Add_Features
+        else if (token == "c++") sync_cout << compiler_info() << sync_endl;
+#endif
         else
             sync_cout << "Unknown command: " << cmd << sync_endl;
 #ifdef Add_Features
