@@ -380,8 +380,8 @@ void MainThread::search() {
 skipLevels:
          if (limitStrength)
          {
-			 if ((Options["Variety"]) && (Options["Adaptive_Play"] == "None"))
-				 uci_elo += std::min(100 + (uci_elo/10),350);
+             if ((Options["Variety"]) && (Options["Adaptive_Play"] == "None"))
+                 uci_elo += std::min(100 + (uci_elo/10),350);
              int benchKnps = 1000 * (Options["Bench_KNPS"]);
              std::mt19937 gen(now());
              std::uniform_int_distribution<int> dis(-0, 0);
