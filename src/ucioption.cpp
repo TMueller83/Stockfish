@@ -148,7 +148,7 @@ void init(OptionsMap& o) {
     o["Slow Mover"]               << Option(84, 10, 1000);
 #endif
 /* NEW Adaptive Play! -  Easy for under 1400 Elo players, Medium for under 2000 Elo PLayers  and Hard for over 2000 players*/
-    o["Adaptive_Play"]            << Option("Off var Novice var Advanced var Expert var Off", "Off");
+    o["Adaptive_Play"]            << Option("Off var Novice var Intermediate var Advanced var Expert var Master var SIM var Off", "Off");
     o["UCI_LimitStrength"]        << Option(false);
     o["UCI_Sleep"]                << Option(false);
 /* Expanded Range (1000 to 2900 Elo) and roughly in sync with CCRL 40/4, anchored to ShalleoBlue at Elo 1712*/
