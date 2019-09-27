@@ -292,27 +292,48 @@ void MainThread::search() {
       }
       else
       {
-          if (Options["Adaptive_Play"] == "Expert")
-          {
-             adaptiveElo = 3000;
+         if (Options["Adaptive_Play"] == "SIM")
+         {
+             adaptiveElo = 2750;
              uci_elo = adaptiveElo;
              limitStrength = true;
              goto skipLevels;
-		  }
+         }
+         if (Options["Adaptive_Play"] == "Master")
+         {
+             adaptiveElo = 2400;
+             uci_elo = adaptiveElo;
+             limitStrength = true;
+             goto skipLevels;
+         }
+         if (Options["Adaptive_Play"] == "Expert")
+         {
+             adaptiveElo = 2050;
+             uci_elo = adaptiveElo;
+             limitStrength = true;
+             goto skipLevels;
+         }
          if (Options["Adaptive_Play"] == "Advanced")
-		 {
-             adaptiveElo = 2200;
+         {
+             adaptiveElo = 1700;
              uci_elo = adaptiveElo;
              limitStrength = true;
              goto skipLevels;
-		  }
+         }
+         if (Options["Adaptive_Play"] == "Intermediate")
+         {
+             adaptiveElo = 1350;
+             uci_elo = adaptiveElo;
+             limitStrength = true;
+             goto skipLevels;
+         }
          if (Options["Adaptive_Play"] == "Novice")
-		  {
-             adaptiveElo = 1575;
+         {
+             adaptiveElo = 1000;
              uci_elo = adaptiveElo;
              limitStrength = true;
              goto skipLevels;
-		  }
+         }
 		 if (Options["UCI_LimitStrength"] && Options["Engine_Level"] == "None")
 		 {
 			 uci_elo = (Options["UCI_Elo"]);
@@ -359,6 +380,8 @@ void MainThread::search() {
 skipLevels:
          if (limitStrength)
          {
+             if ((Options["Variety"]) && (Options["Adaptive_Play"] == "None"))
+                 uci_elo += std::min(100 + (uci_elo/10),350);
              int benchKnps = 1000 * (Options["Bench_KNPS"]);
              std::mt19937 gen(now());
              std::uniform_int_distribution<int> dis(-0, 0);
@@ -471,36 +494,38 @@ skipLevels:
   {
       limitStrength = true;
       size_t i = 0;
-      if ( previousScore > PawnValueMg * 2  && previousScore <= PawnValueMg * 4 )
+      if ( previousScore >= -PawnValueMg && previousScore <= PawnValueMg * 4 )
 	  {
           while (i+1 < rootMoves.size() && bestThread->rootMoves[i+1].score > previousScore)
-          previousScore = bestThread->rootMoves[i].score;
           ++i;
+          previousScore = bestThread->rootMoves[i].score;
+          sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << sync_endl;
           sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[i].pv[0], rootPos.is_chess960());
 	  }
       else if ( previousScore > PawnValueMg * 4  && previousScore <  PawnValueMg * 7 )
       {
-          while (i+1 < rootMoves.size() && bestThread->rootMoves[i+1].score < previousScore && previousScore
-				 + PawnValueMg/2  > bestThread->rootMoves[i+1].score)
-          {
+          while (i+1 < rootMoves.size() && bestThread->rootMoves[i+1].score < previousScore
+                && previousScore + PawnValueMg/2  > bestThread->rootMoves[i+1].score)
+		  {
               ++i;
               break;
           }
           previousScore = bestThread->rootMoves[i].score;
-          while (i+1 < rootMoves.size() && bestThread->rootMoves[i+1].score > previousScore &&  previousScore
-				 + PawnValueMg/2 < bestThread->rootMoves[i+1].score)
+          while (i+1 < rootMoves.size() && bestThread->rootMoves[i+1].score > previousScore
+                && previousScore + PawnValueMg/2  < bestThread->rootMoves[i+1].score)
           {
               ++i;
               previousScore = bestThread->rootMoves[i-1].score;
 
           }
           previousScore = bestThread->rootMoves[i].score;
+          sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << sync_endl;
           sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[i].pv[0], rootPos.is_chess960());
       }
       else
       {
-			  sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[0].pv[0], rootPos.is_chess960());
-              if (bestThread->rootMoves[0].pv.size() > 1 || bestThread->rootMoves[0].extract_ponder_from_tt(rootPos))
+          sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[0].pv[0], rootPos.is_chess960());
+          if (bestThread->rootMoves[0].pv.size() > 1 || bestThread->rootMoves[0].extract_ponder_from_tt(rootPos))
               std::cout << " ponder " << UCI::move(bestThread->rootMoves[0].pv[1], rootPos.is_chess960());
       }
   }
