@@ -25,8 +25,8 @@
 
 ### Executable name
 
-### Crystal-Honey bench nodes -----> 6705948 > based on commits up to 9/24/2019
-###  based on SF commits up to 9/24/2019 ( not all SF commits will be merged)
+### Crystal-Honey bench nodes -----> 6705948 > based on commits up to 9/26/2019
+###  based on SF commits up to 9/26/2019 ( not all SF commits will be merged)
 
 ####  Always leave the three lines below as is (any subsequent defines will override)
 DATE=$(shell date +"%m%d%y")
