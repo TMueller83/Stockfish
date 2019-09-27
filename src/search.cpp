@@ -1256,11 +1256,11 @@ moves_loop: // When in check, search starts from here
 
       // Check extension (~2 Elo)
 #ifdef Sullivan
-      else if (    givesCheck)  //MichaelB7
+       if (    givesCheck  && !extension )  //MichaelB7
 		  extension = ONE_PLY;
 
      // MichaelB7 Passed pawn extension
-     else if ( move == ss->killers[0]
+      if ( move == ss->killers[0] && !extension
 			  && (pos.promotion_pawn_push(move)
 				  || (pos.advanced_pawn_push(move)
 				  && pos.pawn_passed(us, to_sq(move)))))
@@ -1272,9 +1272,6 @@ moves_loop: // When in check, search starts from here
           extension = ONE_PLY;
 #endif
 
-      // Castling extension
-      else if (type_of(move) == CASTLING)
-          extension = ONE_PLY;
       // Shuffle extension
       else if (   PvNode
                && pos.rule50_count() > 18
@@ -1292,7 +1289,11 @@ moves_loop: // When in check, search starts from here
                && pos.pawn_passed(us, to_sq(move)))
           extension = ONE_PLY;
 #endif
-		
+
+      // Castling extension
+      if (type_of(move) == CASTLING)
+          extension = ONE_PLY;
+
       // Calculate new depth for this move
       newDepth = depth - ONE_PLY + extension;
 
@@ -1411,13 +1412,8 @@ moves_loop: // When in check, search starts from here
               // Decrease reduction for moves that escape a capture. Filter out
               // castling moves, because they are coded as "king captures rook" and
               // hence break make_move(). (~5 Elo)
-/*<<<<<<< HEAD
-              else if (type_of(move) == NORMAL
-                       && !pos.see_ge(make_move(to_sq(move), from_sq(move))))
-=======*/
               else if (    type_of(move) == NORMAL
                        && !pos.see_ge(reverse_move(move)))
-//>>>>>>> 8aecf2698184babce57ccfd2ba5948342e29c325
                   r -= 2 * ONE_PLY;
               ss->statScore =  thisThread->mainHistory[us][from_to(move)]
                              + (*contHist[0])[movedPiece][to_sq(move)]
