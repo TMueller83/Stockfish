@@ -121,7 +121,8 @@ void init(OptionsMap& o) {
     o["FastPlay"]                 << Option(false);
     o["Minimal_Output"]           << Option(false);
     o["Variety"]                  << Option(false);
-#if (defined Add_Features && defined Sullivan)
+    o["Adaptive_Play"]            << Option(false); //Adaptive Play change - now simple on/off check box
+#if (defined Add_Features && defined Sullivan)  // leaving in, since it makes it easier to tweak annually
     o["DC_Slider"]                << Option(65, -180, 180);
 #elif (defined Add_Features && Stockfish)
     o["DC_Slider"]                << Option(0, -180, 180);
@@ -147,8 +148,6 @@ void init(OptionsMap& o) {
 #else
     o["Slow Mover"]               << Option(84, 10, 1000);
 #endif
-/* NEW Adaptive Play! -  Easy for under 1400 Elo players, Medium for under 2000 Elo PLayers  and Hard for over 2000 players*/
-    o["Adaptive_Play"]            << Option("Off var Novice var Intermediate var Advanced var Expert var Master var SIM var Off", "Off");
     o["UCI_LimitStrength"]        << Option(false);
     o["UCI_Sleep"]                << Option(false);
 /* Expanded Range (1000 to 2900 Elo) and roughly in sync with CCRL 40/4, anchored to ShalleoBlue at Elo 1712*/
@@ -170,7 +169,7 @@ void init(OptionsMap& o) {
     o["Syzygy50MoveRule"]         << Option(true);
     o["SyzygyProbeLimit"]         << Option(7, 0, 7);
 #ifndef Add_Features
-	//Stockfish method of play by Elo, a very nice  implementation.
+	//Stockfish method of play by Elo, a very nice implementation.
 	o["UCI_LimitStrength"]        << Option(false);
 	o["UCI_Elo"]                  << Option(1350, 1350, 2850);
 #endif
