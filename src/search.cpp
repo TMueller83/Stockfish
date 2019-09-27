@@ -113,7 +113,6 @@ namespace {
     int level;
     Move best = MOVE_NONE;
   };
-  int adaptiveElo = 0;
 
 #ifdef Add_Features
 bool  bruteForce, jekyll, minOutput, uci_sleep, noNULL;
@@ -292,48 +291,6 @@ void MainThread::search() {
       }
       else
       {
-         if (Options["Adaptive_Play"] == "SIM")
-         {
-             adaptiveElo = 2750;
-             uci_elo = adaptiveElo;
-             limitStrength = true;
-             goto skipLevels;
-         }
-         if (Options["Adaptive_Play"] == "Master")
-         {
-             adaptiveElo = 2400;
-             uci_elo = adaptiveElo;
-             limitStrength = true;
-             goto skipLevels;
-         }
-         if (Options["Adaptive_Play"] == "Expert")
-         {
-             adaptiveElo = 2050;
-             uci_elo = adaptiveElo;
-             limitStrength = true;
-             goto skipLevels;
-         }
-         if (Options["Adaptive_Play"] == "Advanced")
-         {
-             adaptiveElo = 1700;
-             uci_elo = adaptiveElo;
-             limitStrength = true;
-             goto skipLevels;
-         }
-         if (Options["Adaptive_Play"] == "Intermediate")
-         {
-             adaptiveElo = 1350;
-             uci_elo = adaptiveElo;
-             limitStrength = true;
-             goto skipLevels;
-         }
-         if (Options["Adaptive_Play"] == "Novice")
-         {
-             adaptiveElo = 1000;
-             uci_elo = adaptiveElo;
-             limitStrength = true;
-             goto skipLevels;
-         }
 		 if (Options["UCI_LimitStrength"] && Options["Engine_Level"] == "None")
 		 {
 			 uci_elo = (Options["UCI_Elo"]);
@@ -379,9 +336,11 @@ void MainThread::search() {
                 uci_elo = 1000;
 skipLevels:
          if (limitStrength)
-         {
-             if ((Options["Variety"]) && (Options["Adaptive_Play"] == "None"))
-                 uci_elo += std::min(100 + (uci_elo/10),350);
+         {  //note varietry strength is capped around ~2150-2200 due to its robustness
+             if ((Options["Variety"]))  //note varietry strength is capped around ~2150-2200 due to its robustness
+                 uci_elo += std::min(330 - uci_elo/17 + std::max((uci_elo - 1700)/2,0) ,500); // so to use variety without a huge amount of Elo
+             if  (Options["Adaptive_Play"])  // this brings adaptive play to within 150 of desired Elo strength
+				 uci_elo += 310;
              int benchKnps = 1000 * (Options["Bench_KNPS"]);
              std::mt19937 gen(now());
              std::uniform_int_distribution<int> dis(-0, 0);
@@ -490,7 +449,7 @@ skipLevels:
   if (bestThread != this || Skill(Options["Skill Level"]).enabled())
       sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << sync_endl;
 
-  if (adaptiveElo)
+  if  (Options["Adaptive_Play"])
   {
       limitStrength = true;
       size_t i = 0;
@@ -1652,7 +1611,7 @@ moves_loop: // When in check, search starts from here
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
 			
 #ifdef Add_Features
-            if (jekyll && bestValue > 100 && popcount(pos.pieces()) > 7)
+            if (jekyll && popcount(pos.pieces()) > 7)
 			{
                 std::mt19937 gen2(now());
                 std::uniform_int_distribution<int> dis(0, 185 );
@@ -1760,7 +1719,7 @@ moves_loop: // When in check, search starts from here
                           DEPTH_NONE, MOVE_NONE, ss->staticEval);
 			
 #ifdef Add_Features
-            if (jekyll && bestValue > 100 && popcount(pos.pieces()) > 7)
+            if (jekyll && popcount(pos.pieces()) > 7)
             {
                 std::mt19937 gen3(now());
                 std::uniform_int_distribution<int> dis(0, 185 );
@@ -1887,7 +1846,7 @@ moves_loop: // When in check, search starts from here
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
 	  
 #ifdef Add_Features
-          if (jekyll && bestValue > 100 && popcount(pos.pieces()) > 7)
+          if (jekyll && popcount(pos.pieces()) > 7)
           {
               std::mt19937 gen4(now());
               std::uniform_int_distribution<int> dis(0, 185 );
