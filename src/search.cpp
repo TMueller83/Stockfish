@@ -98,9 +98,14 @@ namespace {
   }
 
   // Add a small random component to draw evaluations to avoid 3fold-blindness
+#ifdef Sullivan
   Value value_draw(Depth depth, Thread* thisThread) {
     return depth < 4 * ONE_PLY ? VALUE_DRAW
                                : VALUE_DRAW + Value(2 * (thisThread->nodes & 1) - 1);
+#else
+  Value value_draw(Thread* thisThread) {
+    return VALUE_DRAW + Value(2 * (thisThread->nodes & 1) - 1);
+#endif
   }
 
   // Skill structure is used to implement strength limit
@@ -813,8 +818,11 @@ namespace {
         && !rootNode
         && pos.has_game_cycle(ss->ply))
     {
+#ifdef Sullivan
         alpha = value_draw(depth, pos.this_thread());
-
+#else
+        alpha = value_draw(pos.this_thread());
+#endif
         if (alpha >= beta)
             return alpha;
     }
@@ -865,8 +873,11 @@ namespace {
             || ss->ply >= MAX_PLY)
 
             return (ss->ply >= MAX_PLY && !inCheck) ? evaluate(pos)
+#ifdef Sullivan
                                                     : value_draw(depth, pos.this_thread());
-
+#else
+                                                    : value_draw(pos.this_thread());
+#endif
         // Step 3. Mate distance pruning. Even if we mate at the next move our score
         // would be at best mate_in(ss->ply+1), but if alpha is already bigger because
         // a shorter mate was found upward in the tree then there is no need to search
@@ -1011,8 +1022,11 @@ namespace {
             ss->staticEval = eval = evaluate(pos);
 
         if (eval == VALUE_DRAW)
+#ifdef Sullivan
             eval = value_draw(depth, thisThread);
-
+#else
+            eval = value_draw(thisThread);
+#endif
         // Can ttValue be used as a better position evaluation?
         if (    ttValue != VALUE_NONE
             && (tte->bound() & (ttValue > eval ? BOUND_LOWER : BOUND_UPPER)))

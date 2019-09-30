@@ -124,10 +124,11 @@ constexpr Score MobilityBonus[][32] = {
   // which piece type attacks which one. Attacks on lesser pieces which are
   // pawn-defended are not considered.
   constexpr Score ThreatByMinor[PIECE_TYPE_NB] = {
+
 #ifdef Shark
     S(0, 0), S(0, 31), S(39, 42), S(57, 44), S(68, 112), S(62, 120)
 #else
-    S(0, 0), S(6, 28), S(39, 42), S(57, 44), S(68, 112), S(62, 120)
+    S(0, 0), S(6, 32), S(59, 41), S(79, 56), S(90, 119), S(79, 161)
 #endif
   };
 
@@ -548,6 +549,7 @@ constexpr Score MobilityBonus[][32] = {
     {
         b = (defended | weak) & (attackedBy[Us][KNIGHT] | attackedBy[Us][BISHOP]);
         while (b)
+#ifdef Shark
         {
             Square s = pop_lsb(&b);
             score += ThreatByMinor[type_of(pos.piece_on(s))];
@@ -555,8 +557,12 @@ constexpr Score MobilityBonus[][32] = {
                 score += ThreatByRank * (int)relative_rank(Them, s);
         }
 
+#else
+            score += ThreatByMinor[type_of(pos.piece_on(pop_lsb(&b)))];
+#endif
         b = weak & attackedBy[Us][ROOK];
         while (b)
+#ifdef Shark
         {
             Square s = pop_lsb(&b);
             score += ThreatByRook[type_of(pos.piece_on(s))];
@@ -564,6 +570,9 @@ constexpr Score MobilityBonus[][32] = {
             	score += ThreatByRank * (int)relative_rank(Them, s);
 
         }
+#else
+            score += ThreatByRook[type_of(pos.piece_on(pop_lsb(&b)))];
+#endif
 
         if (weak & attackedBy[Us][KING])
             score += ThreatByKing;
