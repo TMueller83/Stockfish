@@ -24,13 +24,15 @@
 ### ==========================================================================
 
 ### Executable name
-### Honey bench nodes -----> 4689874 > based on commits up to 9/27/2019
-### stockfish bench nodes -> 3728191 > based on commits up to 9/27/2019
+### Honey bench nodes -----> 4689874 > based on commits up to 9/29/2019
+### Shark bench nodes -----> 5044679 > based on commits up to 9/29/2019
+### stockfish bench nodes -> 3728191 > based on commits up to 9/29/2019
+
 
 ####  Always leave the three lines below as is (any subsequent defines will override)
 DATE=$(shell date +"%m%d%y")
 DATE2=$(shell date +"%m%d")
-FEATURE1=
+FEATURE1=add_features
 
 ### Release versions , enter yes and release version below foor releases
 RELEASEVER = no
@@ -46,6 +48,7 @@ endif
 
 ### Uncomment the line below for Honey, comment out for Stockfish
 	VERSION=sullivan
+	SHARK=shark
 
 ### Uncomment for use with Raspberry Pi -  a slower NPS UCI option setting used in Play
 ### by Elo and personalities
@@ -69,36 +72,43 @@ ifeq ($(RASPBERRY),Pi)
 CXXFLAGS += -DPi
 endif
 
-ifeq ($(VERSION),sullivan)
+ifeq ($(SHARK),shark)
+	NAME=Shark
 	CXXFLAGS += -DSullivan
+    CXXFLAGS += -DShark
+else ifeq ($(VERSION),sullivan)
+    NAME=Honey
+    CXXFLAGS += -DSullivan
+endif
 	ifeq ($(RELEASEVER),no)
 		ifeq ($(TEST),no)
 			ifeq ($(COMP),mingw)
-				EXE = Honey-dev-$(DATE).exe
+				EXE = $(NAME)-dev-$(DATE).exe
 			else
-				EXE = Honey-dev-$(DATE)
+				EXE = $(NAME)-dev-$(DATE)
 			endif
 		endif
 		ifeq ($(TEST),yes)
-			EXE = Honey-$(TESTv1)-$(TESTv2)
+			EXE = $(NAME)-$(TESTv1)-$(TESTv2)
 		endif
 	endif
 	ifeq ($(RELEASEVER),yes)
         CXXFLAGS += -DReleaseVer
 		ifeq ($(COMP),mingw)
-			EXE = Honey-$(RELVERSION).exe
+			EXE = $(NAME)-$(RELVERSION).exe
 		else
-			EXE = Honey-$(RELVERSION)
+			EXE = $(NAMe)-$(RELVERSION)
 		endif
 	endif
-endif
+
 
 ### Note:  For building cur-dev stockfish with the features added.
 ifneq ($(VERSION),sullivan)
+NAME=stockfish
 	ifeq ($(COMP),mingw)
-		EXE = stockfish-$(DATE).exe
+		EXE = $(NAME)-$(DATE).exe
 	else
-		EXE = stockfish-$(DATE)
+		EXE = $(NAME)-$(DATE)
 	endif
 endif
 

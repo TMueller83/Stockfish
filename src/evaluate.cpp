@@ -77,7 +77,11 @@ namespace {
   constexpr Value SpaceThreshold = Value(12222);
 
   // KingAttackWeights[PieceType] contains king attack weights by piece type
+#ifdef Shark
+  constexpr int KingAttackWeights[PIECE_TYPE_NB] = { 0, 0, 77, 55, 44, 10 };
+#else
   constexpr int KingAttackWeights[PIECE_TYPE_NB] = { 0, 0, 81, 52, 44, 10 };
+#endif
 
   // Penalties for enemy's safe checks
 
@@ -110,17 +114,29 @@ constexpr Score MobilityBonus[][32] = {
 
   // RookOnFile[semiopen/open] contains bonuses for each rook when there is
   // no (friendly) pawn on the rook file.
+#ifdef Shark
+  constexpr Score RookOnFile[] = { S(18, 7), S(44, 20) };
+#else
   constexpr Score RookOnFile[] = { S(21, 4), S(47, 25) };
+#endif
 
   // ThreatByMinor/ByRook[attacked PieceType] contains bonuses according to
   // which piece type attacks which one. Attacks on lesser pieces which are
   // pawn-defended are not considered.
   constexpr Score ThreatByMinor[PIECE_TYPE_NB] = {
+#ifdef Shark
+    S(0, 0), S(0, 31), S(39, 42), S(57, 44), S(68, 112), S(62, 120)
+#else
     S(0, 0), S(6, 28), S(39, 42), S(57, 44), S(68, 112), S(62, 120)
+#endif
   };
 
   constexpr Score ThreatByRook[PIECE_TYPE_NB] = {
+#ifdef Shark
+    S(0, 0), S(0, 24), S(38, 71), S(38, 61), S(0, 38), S(51, 38)
+#else
     S(0, 0), S(3, 44), S(38, 71), S(38, 61), S(0, 38), S(51, 38)
+#endif
   };
 
   // PassedRank[Rank] contains a bonus according to the rank of a passed pawn
@@ -141,7 +157,12 @@ constexpr Score MobilityBonus[][32] = {
   constexpr Score PassedFile         = S( 11,  8);
   constexpr Score PawnlessFlank      = S( 17, 95);
   constexpr Score RestrictedPiece    = S(  7,  7);
+#ifdef Shark
+  constexpr Score RookOnPawn         = S( 10, 22);
+  constexpr Score RookOnQueenFile    = S( 9,  6);
+#else
   constexpr Score RookOnQueenFile    = S(  7,  6);
+#endif
   constexpr Score SliderOnQueen      = S( 59, 18);
   constexpr Score ThreatByKing       = S( 24, 89);
   constexpr Score ThreatByPawnPush   = S( 48, 39);
@@ -286,8 +307,8 @@ constexpr Score MobilityBonus[][32] = {
         attackedBy2[Us] |= attackedBy[Us][ALL_PIECES] & b;
         attackedBy[Us][Pt] |= b;
         attackedBy[Us][ALL_PIECES] |= b;
-		if (b & kingRing[Them])
 
+        if (b & kingRing[Them])
         {
             kingAttackersCount[Us]++;
             kingAttackersWeight[Us] += KingAttackWeights[Pt];
@@ -346,6 +367,12 @@ constexpr Score MobilityBonus[][32] = {
 
         if (Pt == ROOK)
         {
+#ifdef Shark
+            // Bonus for aligning rook with enemy pawns on the same rank/file
+            if (relative_rank(Us, s) >= RANK_5)
+                score += RookOnPawn * popcount(pos.pieces(Them, PAWN) & PseudoAttacks[ROOK][s]);
+#endif
+
             // Bonus for rook on the same file as a queen
             if (file_bb(s) & pos.pieces(QUEEN))
                 score += RookOnQueenFile;
@@ -468,9 +495,13 @@ constexpr Score MobilityBonus[][32] = {
 
 
     // Transform the kingDanger units into a Score, and subtract it from the evaluation
+#ifdef Shark
+    if (kingDanger > 88)
+        score -= make_score(kingDanger * kingDanger / 3584, kingDanger / 14);
+#else
     if (kingDanger > 100)
         score -= make_score(kingDanger * kingDanger / 4096, kingDanger / 16);
-
+#endif
 
     // Penalty when our king is on a pawnless flank
     if (!(pos.pieces(PAWN) & KingFlank[file_of(ksq)]))

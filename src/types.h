@@ -178,7 +178,19 @@ enum Value : int {
   VALUE_MATE_IN_MAX_PLY  =  VALUE_MATE - 2 * MAX_PLY,
   VALUE_MATED_IN_MAX_PLY = -VALUE_MATE + 2 * MAX_PLY,
 
-#ifdef Sullivan  // Ed Schröder
+#ifdef Shark
+  #define PVM 102/100
+  #define PVE 100/100
+  #define NVM 102/100
+  #define NVE 100/100
+  #define BVM 102/100
+  #define BVE 100/100
+  #define RVM 98/100
+  #define RVE 100/100
+  #define QVM 100/100
+  #define QVE 100/100
+
+#elif (defined Sullivan) // Ed Schröder
   #define PVM 100/100
   #define PVE 100/100
   #define NVM 100/100
@@ -189,6 +201,7 @@ enum Value : int {
   #define RVE 100/100
   #define QVM 102/100
   #define QVE 101/100
+
 #else
   #define PVM 100/100
   #define PVE 100/100
@@ -208,7 +221,12 @@ enum Value : int {
     RookValueMg   = 1289*RVM,  RookValueEg   = 1378*RVE,
     QueenValueMg  = 2529*QVM,  QueenValueEg  = 2687*QVE,
 	
-    MidgameLimit  = 15258, EndgameLimit  = 3915
+    MidgameLimit  = 15258*PVM, EndgameLimit  = 3915*PVE
+
+
+
+
+
 
 };
 
