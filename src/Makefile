@@ -24,9 +24,9 @@
 ### ==========================================================================
 
 ### Executable name
-### Honey bench nodes -----> 4673691 > based on commits up to 9/30/2019
-### Shark bench nodes -----> 4718290 > based on commits up to 9/30/2019
-### stockfish bench nodes -> 4062526 > based on commits up to 9/30/2019
+### Honey bench nodes -----> 4689874 > based on commits up to 9/29/2019
+### Shark bench nodes -----> 5044679 > based on commits up to 9/29/2019
+### stockfish bench nodes -> 3728191 > based on commits up to 9/29/2019
 
 
 ####  Always leave the three lines below as is (any subsequent defines will override)
@@ -46,10 +46,9 @@ ifeq ($(TEST),yes)
 CXXFLAGS += -DTest
 endif
 
-### Uncomment the line below for Honey, comment out both for Stockfish
+### Uncomment the line below for Honey, comment out for Stockfish
 	VERSION=sullivan
-### Uncomment both lines for the engine Shark
-###	SHARK=shark
+	SHARK=shark
 
 ### Uncomment for use with Raspberry Pi -  a slower NPS UCI option setting used in Play
 ### by Elo and personalities
