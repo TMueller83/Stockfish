@@ -152,6 +152,7 @@ void init(OptionsMap& o) {
     o["UCI_Sleep"]                << Option(false);
 /* Expanded Range (1000 to 2900 Elo) and roughly in sync with CCRL 40/4, anchored to ShalleoBlue at Elo 1712*/
     o["UCI_Elo"]                  << Option(1750, 1000, 2900);
+    o["FIDE_Ratings"]             << Option(true);
     // A separate weaker play level from the predefined levels below. The difference
     // between both of the methods and the "skill level" is that the engine is only weakened
     // by the reduction in nodes searched, thus reducing the move horizon visibility naturally

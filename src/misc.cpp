@@ -64,7 +64,7 @@ namespace {
 
 	
 #if (defined Sullivan && defined Add_Features && ReleaseVer)
-const string Version = "X5j";
+const string Version = "X5k";
 #elif (defined Sullivan && defined Add_Features)
 const string Version = "";
 #endif
@@ -155,7 +155,7 @@ const string engine_info(bool to_uci) {
 	if (Version.empty())
 	{
 		date >> month >> day;
-		ss << setw(2) << (1 + months.find(month) / 4) <<setw(2) << day  << "-" << "";
+		ss << setw(2) << (1 + months.find(month) / 4) <<setw(2) << day  << "-" << "FIDE_Elo";
 	}
 
 #else

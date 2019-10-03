@@ -241,14 +241,15 @@ void MainThread::search() {
 #ifdef Add_Features
     PRNG rng(now());
     double floatLevel   = 0;
-	int shallowBlue_adjust = 300; //to roughly anchor 1712 rating to CCRL Shallow BLue 2.0 rating of 1712
-	/*
-	 Rank Name                Rating   Δ     +    -     #     Σ    Σ%     W    L    D   W%    =%   OppR
-	 ---------------------------------------------------------------------------------------------------------
-	 1 Shallow Blue 2.0.0   1063   0.0   29   29   500  263.0  52.6  237  211   52  47.4  10.4  1045
-	 2 Honey-X5i-1700       1045  18.0   29   29   500  237.0  47.4  211  237   52  42.2  10.4  1063
-	 ---------------------------------------------------------------------------------------------------------
-	*/
+    int shallowBlue_adjust = 135; //to roughly anchor 1712 rating to CCRL Shallow BLue 2.0 rating of 1712
+	// Dowm from teh intial  setting of 300 ina just a few monnths
+ /* Reset on 10/02/2019
+    500 game(s) loaded
+    Rank Name                Rating   Δ     +    -     #     Σ    Σ%     W    L    D   W%    =%   OppR
+    ---------------------------------------------------------------------------------------------------------
+    1 Honey-CCRL-1712      1059   0.0   29   29   500  256.5  51.3  235  222   43  47.0   8.6  1049
+    2 Shallow Blue 2.0.0   1049   9.5   29   29   500  243.5  48.7  222  235   43  44.4   8.6  1059
+    ---------------------------------------------------------------------------------------------------------*/
     aggressiveness      = Options["DC_Slider"];
     bruteForce          = Options["BruteForce"];
     jekyll              = Options["Variety"];
@@ -337,34 +338,41 @@ void MainThread::search() {
 skipLevels:
          if (limitStrength)
          {  //note varietry strength is capped around ~2150-2200 due to its robustness
-             if ((Options["Variety"]))  //note varietry strength is capped around ~2150-2200 due to its robustness
-                 uci_elo += std::min(330 - uci_elo/17 + std::max((uci_elo - 1700)/2,0) ,500); // so to use variety without a huge amount of Elo
-             if  (Options["Adaptive_Play"])  // this brings adaptive play to within 150 of desired Elo strength
-				 uci_elo += 310;
              int benchKnps = 1000 * (Options["Bench_KNPS"]);
              std::mt19937 gen(now());
              std::uniform_int_distribution<int> dis(-0, 0);
              int rand = dis(gen);
-             uci_elo += rand + shallowBlue_adjust;
-             int NodesToSearch  =  pow(1.0072, (std::min(uci_elo - 1199,  351 ))) * 24
-                                 + pow(1.0050, (std::min(uci_elo - 1199,  851 ))) * 24
-                                 - pow(1.0050, (std::min(uci_elo - 1199,  351 ))) * 24
-                                 + pow(1.0042, (std::min(uci_elo - 1199, 1351 ))) * 24
-                                 - pow(1.0042, (std::min(uci_elo - 1199,  851 ))) * 24
-                                 + pow(1.0039, (std::min(uci_elo - 1199, 1426 ))) * 24
-                                 - pow(1.0039, (std::min(uci_elo - 1199, 1351 ))) * 24
-                                 + pow(1.0040, (std::max(uci_elo - 1199,    0 ))) * 24
-			                     - pow(1.0040, (std::min(uci_elo - 1199, 1426 ))) * 24;
+             uci_elo = uci_elo + rand + shallowBlue_adjust;
+             sync_cout << "Elo " << uci_elo << sync_endl;// for debug
+             int ccrlELo = uci_elo;
+			 if (Options["FIDE_Ratings"])
+				 uci_elo = (((uci_elo * 10) / 7) - 1200);  //shallowBlue adj was only required to get CCRL rating correct
+			 if ((Options["Variety"]))  //note varietry strength is capped around ~2150-2200 due to its robustness
+				 uci_elo += 50 + std::max((uci_elo - 1700)/3,0); // so to use variety without a huge amount of Elo
+			 if  (Options["Adaptive_Play"])  // this brings adaptive play to within 150 of desired Elo strength
+				 uci_elo += 100 + std::max((uci_elo - 1700)/3,0);
+			 uci_elo = std::min(uci_elo, 3200);
+			 sync_cout << "Elo " << uci_elo << sync_endl;//for debug
+             int NodesToSearch  =  pow(1.0072, (std::min(uci_elo - 1199,  351 ))) * 48
+                                 + pow(1.0050, (std::min(uci_elo - 1199,  851 ))) * 48
+                                 - pow(1.0050, (std::min(uci_elo - 1199,  351 ))) * 48
+                                 + pow(1.0042, (std::min(uci_elo - 1199, 1351 ))) * 48
+                                 - pow(1.0042, (std::min(uci_elo - 1199,  851 ))) * 48
+                                 + pow(1.0039, (std::min(uci_elo - 1199, 1426 ))) * 48
+                                 - pow(1.0039, (std::min(uci_elo - 1199, 1351 ))) * 48
+                                 + pow(1.0040, (std::max(uci_elo - 1199,    0 ))) * 48
+			                     - pow(1.0040, (std::min(uci_elo - 1199, 1426 ))) * 48;
 			 
 
              Limits.nodes = NodesToSearch;
              Limits.nodes *= Time.optimum()/1000 + 1 ;
              if (uci_sleep)
                  std::this_thread::sleep_for (std::chrono::milliseconds(Time.optimum()) * double(1 - Limits.nodes/benchKnps));
-             if (uci_elo < 1500)
+             uci_elo =  ccrlELo - shallowBlue_adjust;
+             if (uci_elo < 1500 )
              {
                  floatLevel = Options["UCI_LimitStrength"] ?
-                              clamp(std::pow((uci_elo - 945)  / 13.14, 1), 0.0, 40.0):
+                              clamp(std::pow((uci_elo - 993 )  / 13.16, 1), 0.0, 40.0):
                               double(Options["Skill Level"]);
                  intLevel = int(floatLevel) +
                             ((floatLevel - int(floatLevel)) * 1024 > rng.rand<unsigned>() % 1024  ? 1 : 0);
@@ -451,7 +459,6 @@ skipLevels:
 
   if  (Options["Adaptive_Play"])
   {
-      limitStrength = true;
       size_t i = 0;
       if ( previousScore >= -PawnValueMg && previousScore <= PawnValueMg * 4 )
 	  {
