@@ -24,9 +24,9 @@
 ### ==========================================================================
 
 ### Executable name
-### Honey bench nodes -----> 4689874 > based on commits up to 9/29/2019
-### Shark bench nodes -----> 5044679 > based on commits up to 9/29/2019
-### stockfish bench nodes -> 3728191 > based on commits up to 9/29/2019
+### Honey bench nodes -----> 4532946 > based on commits up to 10/03/2019
+### Shark bench nodes -----> 5044679 > based on commits up to 10/03/2019
+### stockfish bench nodes -> 4012371 > based on commits up to 10/03/2019
 
 
 ####  Always leave the three lines below as is (any subsequent defines will override)

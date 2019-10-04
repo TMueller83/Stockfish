@@ -72,11 +72,18 @@ namespace {
 
     constexpr Color     Them = (Us == WHITE ? BLACK : WHITE);
     constexpr Direction Up   = (Us == WHITE ? NORTH : SOUTH);
-
+#ifdef Shark
     Bitboard neighbours, stoppers, support, phalanx;
+#else
+    Bitboard neighbours, stoppers, support, phalanx, opposed;
+#endif
     Bitboard lever, leverPush;
     Square s;
+#ifdef Shark
     bool opposed, backward, passed, doubled;
+#else
+    bool backward, passed, doubled;
+#endif
     Score score = SCORE_ZERO;
     const Square* pl = pos.squares<PAWN>(Us);
 
@@ -95,9 +102,9 @@ namespace {
         assert(pos.piece_on(s) == make_piece(Us, PAWN));
 
         Rank r = relative_rank(Us, s);
-
+#ifdef Shark
         e->pawnAttacksSpan[Us] |= pawn_attack_span(Us, s);
-
+#endif
         // Flag the pawn
         opposed    = theirPawns & forward_file_bb(Us, s);
         stoppers   = theirPawns & passed_pawn_span(Us, s);
@@ -114,7 +121,19 @@ namespace {
         // pawns will be excluded when the pawn is scored.
         backward =  !(neighbours & forward_ranks_bb(Them, s))
                   && (stoppers & (leverPush | (s + Up)));
-
+#ifdef Shark
+#else
+        // Span of backward pawns and span behind opposing pawns are not included
+        // in the pawnAttacksSpan bitboard.
+        if (!backward || phalanx)
+        {
+            if (opposed)
+                e->pawnAttacksSpan[Us] |=  pawn_attack_span(Us, s) &
+                                           ~pawn_attack_span(Us, frontmost_sq(Them, opposed));
+			else
+                e->pawnAttacksSpan[Us] |= pawn_attack_span(Us, s);
+        }
+#endif
         // A pawn is passed if one of the three following conditions is true:
         // (a) there is no stoppers except some levers
         // (b) the only stoppers are the leverPush, but we outnumber them
@@ -133,7 +152,11 @@ namespace {
         // Score this pawn
         if (support | phalanx)
         {
+#ifdef Shark
             int v =  Connected[r] * (2 + bool(phalanx) - opposed)
+#else
+            int v =  Connected[r] * (2 + bool(phalanx) - bool(opposed))
+#endif
                    + 21 * popcount(support);
 
             score += make_score(v, v * (r - 2) / 4);
