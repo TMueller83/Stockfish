@@ -24,24 +24,28 @@
 ### ==========================================================================
 
 ### Executable name
-### Honey bench nodes --------> 5044679 > based on commits up to 10/03/2019
-### Honey-fd bench nodes -----> 4922406 > based on commits up to 10/03/2019
-### stockfish bench nodes ----> 4012371 > based on commits up to 10/03/2019
-
+### Honey bench nodes --------> 5073387 > based on commits up to 10/06/2019
+### Honey-fd bench nodes -----> 5023714 > based on commits up to 10/06/2019
+### stockfish bench nodes ----> 4131643 > based on commits up to 10/06/2019
+### stockfish-fd bench nodes -> 3932340 > based on commits up to 10/06/2019
 
 ####  Always leave the three lines below as is (any subsequent defines will override)
 DATE=$(shell date +"%m%d%y")
 DATE2=$(shell date +"%m%d")
 FEATURE1=add_features
 
+### Uncomment the line below for Honey, comment out for Stockfish
+	VERSION=sullivan
+
 ### Release versions , enter yes and release version below foor releases
 RELEASEVER = no
 RELVERSION = X5k
+
 ### Fortress Detection code that will help in positions such as this:
 ### 3r4/3r4/2p1k3/p1pbPp1p/Pp1p1PpP/1P1P2R1/2P4R/2K1Q3 w - - 0 6, bm Rxg4
 ### Fortress Detection code by Joe Ellis:
 ### https://github.com/jhellis3/Stockfish/tree/game_cycle
-FORTRESS_DETECT = no
+###	FORTRESS_DETECT = yes
 
 ### TEST versions, enter yes and labels below to build named test exe's
 TEST = no
@@ -50,9 +54,6 @@ TESTv2 =
 ifeq ($(TEST),yes)
 CXXFLAGS += -DTest
 endif
-
-### Uncomment the line below for Honey, comment out for Stockfish
-	VERSION=sullivan
 
 ### Uncomment for use with Raspberry Pi -  a slower NPS UCI option setting used in Play
 ### by Elo and personalities
