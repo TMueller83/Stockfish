@@ -117,7 +117,11 @@ void init(OptionsMap& o) {
     o["7 Man Probing"]            << Option(false);
     o["BruteForce"] 	          << Option(false);
     o["No_Null_Moves"]            << Option(false);
+#ifdef Fortress
+    o["Dynamic_Contempt"]         << Option(false);
+#else
     o["Dynamic_Contempt"]         << Option(true);
+#endif
     o["FastPlay"]                 << Option(false);
     o["Minimal_Output"]           << Option(false);
     o["Variety"]                  << Option(false);

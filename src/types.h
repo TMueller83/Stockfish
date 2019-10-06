@@ -178,7 +178,7 @@ enum Value : int {
   VALUE_MATE_IN_MAX_PLY  =  VALUE_MATE - 2 * MAX_PLY,
   VALUE_MATED_IN_MAX_PLY = -VALUE_MATE + 2 * MAX_PLY,
 
-#ifdef Shark
+#ifdef Sullivan
   #define PVM 102/100
   #define PVE 100/100
   #define NVM 102/100
@@ -189,18 +189,6 @@ enum Value : int {
   #define RVE 100/100
   #define QVM 100/100
   #define QVE 100/100
-
-#elif (defined Sullivan) // Ed Schröder
-  #define PVM 100/100
-  #define PVE 100/100
-  #define NVM 100/100
-  #define NVE 100/100
-  #define BVM 100/100
-  #define BVE 101/100
-  #define RVM 100/100
-  #define RVE 100/100
-  #define QVM 102/100
-  #define QVE 101/100
 
 #else
   #define PVM 100/100

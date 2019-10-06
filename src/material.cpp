@@ -101,7 +101,7 @@ namespace {
             v +=  QuadraticOurs[pt1][pt2] * pieceCount[Us][pt2]
                 + QuadraticTheirs[pt1][pt2] * pieceCount[Them][pt2];
 
-#ifdef Shark
+#ifdef Sullivan
         bonus += pieceCount[Us][pt1] * (100 * v / 116);
 #else
         bonus += pieceCount[Us][pt1] * v;

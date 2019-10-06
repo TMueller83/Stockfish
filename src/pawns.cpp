@@ -72,14 +72,14 @@ namespace {
 
     constexpr Color     Them = (Us == WHITE ? BLACK : WHITE);
     constexpr Direction Up   = (Us == WHITE ? NORTH : SOUTH);
-#ifdef Shark
+#ifdef Sullivan
     Bitboard neighbours, stoppers, support, phalanx;
 #else
     Bitboard neighbours, stoppers, support, phalanx, opposed;
 #endif
     Bitboard lever, leverPush;
     Square s;
-#ifdef Shark
+#ifdef Sullivan
     bool opposed, backward, passed, doubled;
 #else
     bool backward, passed, doubled;
@@ -102,7 +102,7 @@ namespace {
         assert(pos.piece_on(s) == make_piece(Us, PAWN));
 
         Rank r = relative_rank(Us, s);
-#ifdef Shark
+#ifdef Sullivan
         e->pawnAttacksSpan[Us] |= pawn_attack_span(Us, s);
 #endif
         // Flag the pawn
@@ -121,7 +121,7 @@ namespace {
         // pawns will be excluded when the pawn is scored.
         backward =  !(neighbours & forward_ranks_bb(Them, s))
                   && (stoppers & (leverPush | (s + Up)));
-#ifdef Shark
+#ifdef Sullivan
 #else
         // Span of backward pawns and span behind opposing pawns are not included
         // in the pawnAttacksSpan bitboard.
@@ -152,7 +152,7 @@ namespace {
         // Score this pawn
         if (support | phalanx)
         {
-#ifdef Shark
+#ifdef Sullivan
             int v =  Connected[r] * (2 + bool(phalanx) - opposed)
 #else
             int v =  Connected[r] * (2 + bool(phalanx) - bool(opposed))

@@ -144,9 +144,8 @@ const string engine_info(bool to_uci) {
     const string months("Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec");
     string month, day, year;
     stringstream ss, date(__DATE__); // From compiler, format is "Sep 21 2008"
-#ifdef Shark
-    ss << "Shark " << Version << setfill('0');
-#elif (defined Sullivan)
+
+#ifdef Sullivan
     ss << "Honey " << Version << setfill('0');
 #else
     ss << "Stockfish " << Version << setfill('0');

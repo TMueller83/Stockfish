@@ -24,9 +24,9 @@
 ### ==========================================================================
 
 ### Executable name
-### Honey bench nodes -----> 4532946 > based on commits up to 10/03/2019
-### Shark bench nodes -----> 5044679 > based on commits up to 10/03/2019
-### stockfish bench nodes -> 4012371 > based on commits up to 10/03/2019
+### Honey bench nodes --------> 5044679 > based on commits up to 10/03/2019
+### Honey-fd bench nodes -----> 4922406 > based on commits up to 10/03/2019
+### stockfish bench nodes ----> 4012371 > based on commits up to 10/03/2019
 
 
 ####  Always leave the three lines below as is (any subsequent defines will override)
@@ -37,18 +37,22 @@ FEATURE1=add_features
 ### Release versions , enter yes and release version below foor releases
 RELEASEVER = no
 RELVERSION = X5k
+### Fortress Detection code that will help in positions such as this:
+### 3r4/3r4/2p1k3/p1pbPp1p/Pp1p1PpP/1P1P2R1/2P4R/2K1Q3 w - - 0 6, bm Rxg4
+### Fortress Detection code by Joe Ellis:
+### https://github.com/jhellis3/Stockfish/tree/game_cycle
+FORTRESS_DETECT = yes
 
 ### TEST versions, enter yes and labels below to build named test exe's
-TEST = yes
+TEST = no
 TESTv1 = $(DATE2)
-TESTv2 = FIDE_Elo
+TESTv2 =
 ifeq ($(TEST),yes)
 CXXFLAGS += -DTest
 endif
 
 ### Uncomment the line below for Honey, comment out for Stockfish
 	VERSION=sullivan
-	SHARK=shark
 
 ### Uncomment for use with Raspberry Pi -  a slower NPS UCI option setting used in Play
 ### by Elo and personalities
@@ -69,15 +73,14 @@ endif
 ###  to reduce NPS setting using "setoption" command, to enable more similiar play when
 ###  playimg at reduced strength on hardware
 ifeq ($(RASPBERRY),Pi)
-CXXFLAGS += -DPi
+	CXXFLAGS += -DPi
 endif
-
-ifeq ($(SHARK),shark)
-	NAME=Shark
-	CXXFLAGS += -DSullivan
-    CXXFLAGS += -DShark
-else ifeq ($(VERSION),sullivan)
-    NAME=Honey
+ifeq ($(FORTRESS_DETECT),yes)
+    CXXFLAGS += -DFortress
+	SUFFIX=-fd
+endif
+ifeq ($(VERSION),sullivan)
+    NAME=Honey$(SUFFIX)
     CXXFLAGS += -DSullivan
 endif
 	ifeq ($(RELEASEVER),no)
@@ -104,7 +107,7 @@ endif
 
 ### Note:  For building cur-dev stockfish with the features added.
 ifneq ($(VERSION),sullivan)
-NAME=stockfish
+NAME=stockfish$(SUFFIX)
 	ifeq ($(COMP),mingw)
 		EXE = $(NAME)-$(DATE).exe
 	else
