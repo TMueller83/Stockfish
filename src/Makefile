@@ -41,7 +41,7 @@ RELVERSION = X5k
 ### 3r4/3r4/2p1k3/p1pbPp1p/Pp1p1PpP/1P1P2R1/2P4R/2K1Q3 w - - 0 6, bm Rxg4
 ### Fortress Detection code by Joe Ellis:
 ### https://github.com/jhellis3/Stockfish/tree/game_cycle
-FORTRESS_DETECT = yes
+FORTRESS_DETECT = no
 
 ### TEST versions, enter yes and labels below to build named test exe's
 TEST = no
