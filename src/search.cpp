@@ -843,13 +843,13 @@ namespace {
     Depth extension, newDepth;
     Value bestValue, value, ttValue, eval, maxValue;
 #ifdef Fortress
-    bool ttHit, ttPv, inCheck, givesCheck, improving, doLMR, gameCycle;
+    bool ttHit, ttPv, inCheck, givesCheck, improving, doLMR, priorCapture, gameCycle;
 #else
-    bool ttHit, ttPv, inCheck, givesCheck, improving, doLMR;
+    bool ttHit, ttPv, inCheck, givesCheck, improving, doLMR, priorCapture;
 #endif
     bool captureOrPromotion, doFullDepthSearch, moveCountPruning, ttCapture;
 
-    Piece movedPiece, priorCapture;
+    Piece movedPiece;
     int moveCount, captureCount, quietCount, singularLMR;
 
     // Step 1. Initialize node
@@ -1200,7 +1200,7 @@ if (   Threads.stop.load(std::memory_order_relaxed) || ss->ply >= MAX_PLY)
                 probCutCount++;
 
                 ss->currentMove = move;
-                ss->continuationHistory = &thisThread->continuationHistory[!!priorCapture][pos.moved_piece(move)][to_sq(move)];
+                ss->continuationHistory = &thisThread->continuationHistory[priorCapture][pos.moved_piece(move)][to_sq(move)];
 
                 assert(depth >= 5);
 
@@ -1438,7 +1438,7 @@ moves_loop: // When in check, search starts from here
 
       // Update the current move (this must be done after singular extension search)
       ss->currentMove = move;
-      ss->continuationHistory = &thisThread->continuationHistory[!!priorCapture][movedPiece][to_sq(move)];
+      ss->continuationHistory = &thisThread->continuationHistory[priorCapture][movedPiece][to_sq(move)];
 
       // Step 15. Make the move
       pos.do_move(move, st, givesCheck);
@@ -1719,11 +1719,10 @@ moves_loop: // When in check, search starts from here
     Move ttMove, move, bestMove;
     Depth ttDepth;
     Value bestValue, value, ttValue, futilityValue, futilityBase, oldAlpha;
-    Piece priorCapture;
 #ifdef Fortress
-    bool ttHit, pvHit, inCheck, givesCheck, evasionPrunable, gameCycle;
+    bool ttHit, pvHit, inCheck, givesCheck, evasionPrunable, priorCapture, gameCycle;
 #else
-    bool ttHit, pvHit, inCheck, givesCheck, evasionPrunable;
+    bool ttHit, pvHit, inCheck, givesCheck, evasionPrunable, priorCapture;
 #endif
     int moveCount;
 
@@ -1911,7 +1910,7 @@ moves_loop: // When in check, search starts from here
       }
 
       ss->currentMove = move;
-      ss->continuationHistory = &thisThread->continuationHistory[!!priorCapture][pos.moved_piece(move)][to_sq(move)];
+      ss->continuationHistory = &thisThread->continuationHistory[priorCapture][pos.moved_piece(move)][to_sq(move)];
 
       // Make and search the move
       pos.do_move(move, st, givesCheck);

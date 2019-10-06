@@ -37,15 +37,15 @@ FEATURE1=add_features
 ### Uncomment the line below for Honey, comment out for Stockfish
 	VERSION=sullivan
 
-### Release versions , enter yes and release version below foor releases
-RELEASEVER = no
-RELVERSION = X5k
-
 ### Fortress Detection code that will help in positions such as this:
 ### 3r4/3r4/2p1k3/p1pbPp1p/Pp1p1PpP/1P1P2R1/2P4R/2K1Q3 w - - 0 6, bm Rxg4
 ### Fortress Detection code by Joe Ellis:
 ### https://github.com/jhellis3/Stockfish/tree/game_cycle
 ###	FORTRESS_DETECT = yes
+
+### Release versions , enter yes and release version below foor releases
+RELEASEVER = no
+RELVERSION = X5k
 
 ### TEST versions, enter yes and labels below to build named test exe's
 TEST = no
