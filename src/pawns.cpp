@@ -74,10 +74,12 @@ namespace {
     constexpr Direction Up   = (Us == WHITE ? NORTH : SOUTH);
 #ifdef Sullivan
     Bitboard neighbours, stoppers, support, phalanx;
+    Bitboard lever, leverPush;
 #else
     Bitboard neighbours, stoppers, support, phalanx, opposed;
+    Bitboard lever, leverPush, blocked;
 #endif
-    Bitboard lever, leverPush;
+
     Square s;
 #ifdef Sullivan
     bool opposed, backward, passed, doubled;
@@ -91,11 +93,17 @@ namespace {
     Bitboard theirPawns = pos.pieces(Them, PAWN);
 
     Bitboard doubleAttackThem = pawn_double_attacks_bb<Them>(theirPawns);
-
+#ifdef Sullivan
     e->passedPawns[Us] = e->pawnAttacksSpan[Us] = 0;
+#else
+    e->passedPawns[Us] = 0;
+#endif
     e->kingSquares[Us] = SQ_NONE;
+#ifdef Sullivan
     e->pawnAttacks[Us] = pawn_attacks_bb<Us>(ourPawns);
-
+#else
+    e->pawnAttacks[Us] = e->pawnAttacksSpan[Us] = pawn_attacks_bb<Us>(ourPawns);
+#endif
     // Loop through all pawns of the current color and score each pawn
     while ((s = *pl++) != SQ_NONE)
     {
@@ -107,6 +115,9 @@ namespace {
 #endif
         // Flag the pawn
         opposed    = theirPawns & forward_file_bb(Us, s);
+#ifndef Sullivan
+        blocked    = theirPawns & (s + Up);
+#endif
         stoppers   = theirPawns & passed_pawn_span(Us, s);
 
         lever      = theirPawns & PawnAttacks[Us][s];
@@ -115,24 +126,20 @@ namespace {
         neighbours = ourPawns   & adjacent_files_bb(s);
         phalanx    = neighbours & rank_bb(s);
         support    = neighbours & rank_bb(s - Up);
-
+#ifdef Sullivan
         // A pawn is backward when it is behind all pawns of the same color on
         // the adjacent files and cannot safely advance. Phalanx and isolated
         // pawns will be excluded when the pawn is scored.
         backward =  !(neighbours & forward_ranks_bb(Them, s))
                   && (stoppers & (leverPush | (s + Up)));
-#ifdef Sullivan
 #else
-        // Span of backward pawns and span behind opposing pawns are not included
-        // in the pawnAttacksSpan bitboard.
-        if (!backward || phalanx)
-        {
-            if (opposed)
-                e->pawnAttacksSpan[Us] |=  pawn_attack_span(Us, s) &
-                                           ~pawn_attack_span(Us, frontmost_sq(Them, opposed));
-			else
-                e->pawnAttacksSpan[Us] |= pawn_attack_span(Us, s);
-        }
+        // the adjacent files and cannot safely advance.
+        backward =  !(neighbours & forward_ranks_bb(Them, s + Up))
+                  && (stoppers & (leverPush | blocked));
+
+        // Compute additional span if pawn is not backward nor blocked
+        if (!backward && !blocked)
+            e->pawnAttacksSpan[Us] |= pawn_attack_span(Us, s);
 #endif
         // A pawn is passed if one of the three following conditions is true:
         // (a) there is no stoppers except some levers
@@ -141,7 +148,11 @@ namespace {
         passed =   !(stoppers ^ lever)
                 || (   !(stoppers ^ leverPush)
                     && popcount(phalanx) >= popcount(leverPush))
-                || (   stoppers == square_bb(s + Up) && r >= RANK_5
+#ifdef Sullivan
+               || (   stoppers == square_bb(s + Up) && r >= RANK_5
+#else
+               || (   stoppers == blocked && r >= RANK_5
+#endif
                     && (shift<Up>(support) & ~(theirPawns | doubleAttackThem)));
 
         // Passed pawns will be properly scored later in evaluation when we have
