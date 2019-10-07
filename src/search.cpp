@@ -625,7 +625,11 @@ void Thread::search() {
           if (rootDepth >= 4)
           {
               Value previousScore = rootMoves[pvIdx].previousScore;
-              delta = Value(23);
+#if ((defined Sullivan) || (defined Fortress))
+              delta = Value(23 + abs(previousScore) / 256);
+#else
+              delta = Value(21 + abs(previousScore) / 128);
+#endif
               alpha = std::max(previousScore - delta,-VALUE_INFINITE);
               beta  = std::min(previousScore + delta, VALUE_INFINITE);
 
