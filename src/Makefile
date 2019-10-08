@@ -24,10 +24,14 @@
 ### ==========================================================================
 
 ### Executable name
-### Honey bench nodes --------> 4463909 > based on commits up to 10/07/2019
-### Honey-fd bench nodes -----> 5140806 > based on commits up to 10/07/2019
-### stockfish bench nodes ----> 4043748 > based on commits up to 10/07/2019
-### stockfish-fd bench nodes -> 4566109 > based on commits up to 10/07/2019
+### Bluefish bench nodes ------> 4027058 > based on commits up to 10/07/2019 v
+### Bluefish-FD bench nodes ---> 3691675 > based on commits up to 10/07/2019 v
+### Blue-Honey bench nodes ----> 4650358 > based on commits up to 10/07/2019 v
+### Blue-Honey-FD bench nodes -> 5590202 > based on commits up to 10/07/2019 v
+### Honey bench nodes ---------> 4388419 > based on commits up to 10/07/2019 v
+### Honey-FD bench nodes ------> 5594531 > based on commits up to 10/07/2019 v
+### stockfish bench nodes -----> 4043748 > based on commits up to 10/07/2019 v
+### stockfish-FD bench nodes --> 4566109 > based on commits up to 10/07/2019 v
 
 ####  Always leave the three lines below as is (any subsequent defines will override)
 DATE=$(shell date +"%m%d%y")
@@ -35,7 +39,7 @@ DATE2=$(shell date +"%m%d")
 FEATURE1=add_features
 
 ### Uncomment the line below for Honey, comment out for Stockfish
-	VERSION=sullivan
+###	VERSION=sullivan
 
 ### Fortress Detection code that will help in positions such as this:
 ### 3r4/3r4/2p1k3/p1pbPp1p/Pp1p1PpP/1P1P2R1/2P4R/2K1Q3 w - - 0 6, bm Rxg4
@@ -43,9 +47,13 @@ FEATURE1=add_features
 ### https://github.com/jhellis3/Stockfish/tree/game_cycle
 ###	FORTRESS_DETECT = yes
 
+### Bluefish evaluation by Eelco de Groot
+### http://talkchess.com/forum3/viewtopic.php?f=2&t=71929
+###	BLUEFISH = yes
+
 ### Release versions , enter yes and release version below foor releases
-RELEASEVER = no
-RELVERSION = X5k
+RELEASEVER = yes
+RELVERSION = X6
 
 ### TEST versions, enter yes and labels below to build named test exe's
 TEST = no
@@ -68,7 +76,7 @@ endif
 ifeq ($(FEATURE1),add_features)
 	CXXFLAGS += -DAdd_Features
 	FILES = with_c_book
-	SUFFIX1 =
+	SUF =
 endif
 
 ###  to reduce NPS setting using "setoption" command, to enable more similiar play when
@@ -78,12 +86,16 @@ ifeq ($(RASPBERRY),Pi)
 endif
 ifeq ($(FORTRESS_DETECT),yes)
     CXXFLAGS += -DFortress
-	SUFFIX=-fd
+	SUF=-FD
 endif
+
 ifeq ($(VERSION),sullivan)
-    NAME=Honey$(SUFFIX)
+    NAME=$(PRE)Honey$(SUF)
     CXXFLAGS += -DSullivan
-endif
+	ifeq ($(BLUEFISH),yes)
+		CXXFLAGS += -DBlue
+		PRE=Blue-
+	endif
 	ifeq ($(RELEASEVER),no)
 		ifeq ($(TEST),no)
 			ifeq ($(COMP),mingw)
@@ -101,20 +113,26 @@ endif
 		ifeq ($(COMP),mingw)
 			EXE = $(NAME)-$(RELVERSION).exe
 		else
-			EXE = $(NAMe)-$(RELVERSION)
+			EXE = $(NAME)-$(RELVERSION)
 		endif
 	endif
-
+endif
 
 ### Note:  For building cur-dev stockfish with the features added.
 ifneq ($(VERSION),sullivan)
-NAME=stockfish$(SUFFIX)
-	ifeq ($(COMP),mingw)
-		EXE = $(NAME)-$(DATE).exe
+	ifeq ($(BLUEFISH),yes)
+		CXXFLAGS += -DBlue
+		PRE=Blue
 	else
-		EXE = $(NAME)-$(DATE)
+		PRE=Stock
 	endif
-endif
+	NAME=$(PRE)fish$(SUF)
+		ifeq ($(COMP),mingw)
+			EXE = $(NAME)-$(DATE).exe
+		else
+			EXE = $(NAME)-$(DATE)
+		endif
+	endif
 
 ### Installation dir definitions
 PREFIX = /opt/local
@@ -535,6 +553,8 @@ build: config-sanity
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) all
 	strip $(EXE)
 	cp $(EXE) /Users/michaelbyrne/cluster.mfb
+#	$(EXE) bench >/dev/null
+#	wait
 	rm -f *.o syzygy/*.o
 
 profile-build: config-sanity objclean profileclean
@@ -554,6 +574,8 @@ profile-build: config-sanity objclean profileclean
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) profileclean
 	strip $(EXE)
 	cp $(EXE) /Users/michaelbyrne/cluster.mfb
+#	$(EXE) bench >/dev/null
+#	wait
 	rm -f *.o syzygy/*.o llvm-profdata
 #	touch * syzygy/*
 #	cp $(EXE) /opt/picochess/engines/armv7l
@@ -633,7 +655,7 @@ clang-profile-make:
 	all
 
 clang-profile-use:
-	llvm-profdata-mp-7.0 merge -output=stockfish.profdata *.profraw
+	/opt/local/bin/llvm-profdata-mp-7.0 merge -output=stockfish.profdata *.profraw
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
 	EXTRACXXFLAGS='-fprofile-instr-use=stockfish.profdata -Wno-profile-instr-out-of-date' \
 	EXTRALDFLAGS='-fprofile-use ' \

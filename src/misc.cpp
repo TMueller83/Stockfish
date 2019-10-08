@@ -64,18 +64,21 @@ namespace {
 
 	
 #if (defined Sullivan && defined Add_Features && ReleaseVer)
-const string Version = "X5k";
+const string Version = "X6";
 #elif (defined Sullivan && defined Add_Features)
 const string Version = "";
 #endif
 
-
 #if (defined Stockfish && defined Add_Features)
 const string Version = "";
-#elif (defined Stockfish)
-const string Version = "";
 #endif
-
+	
+#ifdef Fortress
+const string Suffix = "FD ";
+#else
+const string Suffix = "";
+#endif
+	
 /// Our fancy logging facility. The trick here is to replace cin.rdbuf() and
 /// cout.rdbuf() with two Tie objects that tie cin and cout to a file stream. We
 /// can toggle the logging of std::cout and std:cin at runtime whilst preserving
@@ -146,9 +149,15 @@ const string engine_info(bool to_uci) {
     stringstream ss, date(__DATE__); // From compiler, format is "Sep 21 2008"
 
 #ifdef Sullivan
-    ss << "Honey " << Version << setfill('0');
+#ifdef Blue
+    ss << "Blue-Honey " << Version << Suffix << setfill('0');
 #else
-    ss << "Stockfish " << Version << setfill('0');
+    ss << "Honey " << Version << Suffix << setfill('0');
+#endif
+#elif (defined Blue)
+    ss << "Bluefish " << Version << Suffix << setfill('0');
+#else
+    ss << "Stockfish " << Version << Suffix << setfill('0');
 #endif
 #if (defined Sullivan && defined Test)
 	if (Version.empty())
