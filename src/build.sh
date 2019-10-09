@@ -15,8 +15,8 @@ set ARCH = "ARCH=x86-64-modern"
 set COMP = "COMP=gcc"
 #set COMP = "COMP=clang"
 
-#set BUILD = "build"
-set  BUILD = "profile-build"
+set BUILD = "build"
+#set  BUILD = "profile-build"
 
 ### build honey
 make clean && make -j $BUILD $ARCH $COMP VERSION=sullivan
@@ -39,12 +39,13 @@ wait
 make clean && make -j $BUILD $ARCH $COMP BLUEFISH=yes FORTRESS_DETECT=yes
 wait
 
-### build stockfish with features
-make clean && make -j $BUILD $ARCH $COMP
-wait
 ### build stockfish with fortress detection
 make clean && make -j $BUILD $ARCH $COMP FORTRESS_DETECT=yes
 wait
+### build stockfish with features
+make -j $BUILD $ARCH $COMP
+wait
+
 set end_time=`date +%s`
 #echo $end_time
 echo execution time was `expr $end_time - $start_time` seconds

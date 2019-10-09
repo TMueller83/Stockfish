@@ -552,7 +552,7 @@ help:
 build: config-sanity
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) all
 	strip $(EXE)
-	cp $(EXE) /Users/michaelbyrne/cluster.mfb
+#	cp $(EXE) /Users/michaelbyrne/cluster.mfb
 #	$(EXE) bench >/dev/null
 #	wait
 	rm -f *.o syzygy/*.o

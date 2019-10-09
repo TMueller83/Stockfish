@@ -341,13 +341,13 @@ string UCI::value(Value v) {
   assert(-VALUE_INFINITE < v && v < VALUE_INFINITE);
 
   stringstream ss;
-#ifdef Sullivan
+#ifdef Add_Features
   const float vs = (float)v;
   constexpr float sf = 2.15; // scoring percentage factor
   constexpr float vf = 0.31492; // centipawn value factor
 #endif
   if (abs(v) < VALUE_MATE - MAX_PLY)
-#ifdef Sullivan
+#ifdef Add_Features
   // Score percentage evalaution output, similair to Lc0 output.
   // For use with GUIs that divide centipawn scores by 100, e.g, xBoard, Arena, Fritz, etc.
   if ( Options["Score_Output"] == "ScorPct-GUI")

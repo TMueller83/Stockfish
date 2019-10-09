@@ -94,7 +94,7 @@ void init(OptionsMap& o) {
     o["Best_Move_4"]              << Option(true, on_best_book_move4);
     o["Book_Depth_4"]             << Option(127, 1, 127, on_book_depth4);
 #endif
-#ifdef Sullivan
+#if ((defined Sullivan) || (defined Blue))
     o["W_Contempt"]               << Option(  22, -150, 150);
     o["B_Contempt"]               << Option(  12, -150, 150);
 #else
@@ -131,7 +131,7 @@ void init(OptionsMap& o) {
 #elif (defined Add_Features && Stockfish)
     o["DC_Slider"]                << Option(0, -180, 180);
 #endif
-#ifdef Sullivan
+#ifdef Add_Features
     o["MultiPV"]                  << Option(1, 1, 256);
 #else
     o["MultiPV"]                  << Option(1, 1, 500);
