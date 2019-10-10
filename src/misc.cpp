@@ -29,7 +29,18 @@
 #define NOMINMAX
 #endif
 
+//kludge to fix windows error when using "Blue"
+//at some point I will change 'Blue
+#ifdef Blue
+#undef Blue
+#define BlueAgain
+#endif
 #include <windows.h>
+#ifdef BlueAgain
+#define Blue
+#endif
+
+
 // The needed Windows API for processor groups could be missed from old Windows
 // versions, so instead of calling them directly (forcing the linker to resolve
 // the calls at compile time), try to load them at runtime. To do this we need

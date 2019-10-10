@@ -43,7 +43,7 @@ wait
 make clean && make -j $BUILD $ARCH $COMP FORTRESS_DETECT=yes
 wait
 ### build stockfish with features
-make -j $BUILD $ARCH $COMP
+make clean && make $BUILD $ARCH $COMP
 wait
 
 set end_time=`date +%s`
