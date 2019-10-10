@@ -24,8 +24,8 @@
 ### ==========================================================================
 
 ### Executable name
-### Bluefish bench nodes ------> 4027058 > based on commits up to 10/07/2019 v
-### Bluefish-FD bench nodes ---> 3691675 > based on commits up to 10/07/2019 v
+### Bluefish bench nodes ------> 3809356 > based on commits up to 10/07/2019 v
+### Bluefish-FD bench nodes ---> 4462555 > based on commits up to 10/07/2019 v
 ### Blue-Honey bench nodes ----> 4650358 > based on commits up to 10/07/2019 v
 ### Blue-Honey-FD bench nodes -> 5590202 > based on commits up to 10/07/2019 v
 ### Honey bench nodes ---------> 4388419 > based on commits up to 10/07/2019 v

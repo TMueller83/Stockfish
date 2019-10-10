@@ -12,8 +12,8 @@ set start_time=`date +%s`
 set ARCH = "ARCH=x86-64-modern"
 #set  ARCH = "ARCH=x86-64-bmi2"
 
-set COMP = "COMP=gcc"
-#set COMP = "COMP=clang"
+#set COMP = "COMP=gcc"
+set COMP = "COMP=clang"
 
 set BUILD = "build"
 #set  BUILD = "profile-build"
@@ -49,3 +49,13 @@ wait
 set end_time=`date +%s`
 #echo $end_time
 echo execution time was `expr $end_time - $start_time` seconds
+
+#make -j profile-build ARCH=x86-64-modern VERSION=sullivan && wait
+#make -j profile-build ARCH=x86-64-modern VERSION=sullivan FORTRESS_DETECT=yes && wait
+#make -j profile-build ARCH=x86-64-modern VERSION=sullivan BLUEFISH=yes && wait
+#make -j profile-build ARCH=x86-64-modern VERSION=sullivan BLUEFISH=yes FORTRESS_DETECT=yes && wait
+#make -j profile-build ARCH=x86-64-modern BLUEFISH=yes && wait
+#make -j profile-build ARCH=x86-64-modern BLUEFISH=yes FORTRESS_DETECT=yes && wait
+#make -j profile-build ARCH=x86-64-modern FORTRESS_DETECT=yes && wait
+#make -j profile-build ARCH=x86-64-modern
+
