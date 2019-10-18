@@ -537,7 +537,7 @@ void Thread::search() {
   std::memset(ss-7, 0, 10 * sizeof(Stack));
   for (int i = 7; i > 0; i--)
 
-      (ss-i)->continuationHistory = &this->continuationHistory[0][NO_PIECE][0]; // Use as a sentinel
+      (ss-i)->continuationHistory = &this->continuationHistory[0][0][NO_PIECE][0]; // Use as a sentinel
 
   ss->pv = pv;
 
@@ -663,7 +663,6 @@ void Thread::search() {
           while (true )
           {
               Depth adjustedDepth = std::max(1, rootDepth - failedHighCnt);
-
               bestValue = ::search<PV>(rootPos, ss, alpha, beta, adjustedDepth, false);
 
               // Bring the best move to the front. It is critical that sorting
@@ -836,9 +835,10 @@ namespace {
         return qsearch<NT>(pos, ss, alpha, beta);
 
     assert(-VALUE_INFINITE <= alpha && alpha < beta && beta <= VALUE_INFINITE);
-    //assert(PvNode || (alpha == beta - 1));
+    assert(PvNode || (alpha == beta - 1));
     assert(0 < depth && depth < MAX_PLY);
     assert(!(PvNode && cutNode));
+
     Move pv[MAX_PLY+1], capturesSearched[32], quietsSearched[64];
 	  StateInfo st;
     TTEntry* tte;
@@ -1138,6 +1138,7 @@ if (   Threads.stop.load(std::memory_order_relaxed) || ss->ply >= MAX_PLY)
 #else  /// commit 0e295feev NMP Tweaks by VoyageOne
         &&  eval >= ss->staticEval
         &&  ss->staticEval >= beta - 33 * depth + 299 - improving * 30
+
 #endif
         && !excludedMove
 #ifdef Sullivan  //authored by Jörg Oster originally, in corchess by Ivan Ilvec
@@ -1153,7 +1154,8 @@ if (   Threads.stop.load(std::memory_order_relaxed) || ss->ply >= MAX_PLY)
         Depth R = (835 + 70 * depth) / 256 + std::min(int(eval - beta) / 185, 3);
 
         ss->currentMove = MOVE_NULL;
-        ss->continuationHistory = &thisThread->continuationHistory[0][NO_PIECE][0];
+        ss->continuationHistory = &thisThread->continuationHistory[0][0][NO_PIECE][0];
+
         pos.do_null_move(st);
         Value nullValue = -search<NonPV>(pos, ss+1, -beta, -beta+1, depth-R, !cutNode);
         pos.undo_null_move();
@@ -1190,6 +1192,7 @@ if (   Threads.stop.load(std::memory_order_relaxed) || ss->ply >= MAX_PLY)
 #ifdef Add_Features
         && !bruteForce
 #endif
+
         &&  depth >= 5
         &&  abs(beta) < VALUE_MATE_IN_MAX_PLY)
     {
@@ -1204,7 +1207,7 @@ if (   Threads.stop.load(std::memory_order_relaxed) || ss->ply >= MAX_PLY)
                 probCutCount++;
 
                 ss->currentMove = move;
-                ss->continuationHistory = &thisThread->continuationHistory[priorCapture][pos.moved_piece(move)][to_sq(move)];
+                ss->continuationHistory = &thisThread->continuationHistory[inCheck][priorCapture][pos.moved_piece(move)][to_sq(move)];
 
                 assert(depth >= 5);
 
@@ -1323,6 +1326,7 @@ moves_loop: // When in check, search starts from here
           {
               extension = 1;
               singularLMR++;
+
               if (value < singularBeta - std::min(4 * depth, 36))
                   singularLMR++;
           }
@@ -1354,6 +1358,7 @@ moves_loop: // When in check, search starts from here
       else if (    givesCheck
                && (pos.is_discovery_check_on_king(~us, move) || pos.see_ge(move)))
           extension = 1;
+
 #endif
 
       // Shuffle extension
@@ -1372,6 +1377,7 @@ moves_loop: // When in check, search starts from here
                && pos.advanced_pawn_push(move)
                && pos.pawn_passed(us, to_sq(move)))
           extension = 1;
+
 #endif
 
       // Castling extension
@@ -1399,6 +1405,7 @@ moves_loop: // When in check, search starts from here
 #else
               !captureOrPromotion
 #endif
+
               && !givesCheck
               && (!pos.advanced_pawn_push(move) || pos.non_pawn_material(~us) > BishopValueMg))
           {
@@ -1407,7 +1414,6 @@ moves_loop: // When in check, search starts from here
                   continue;
 
               // Reduced depth of the next LMR search
-
               int lmrDepth = std::max(newDepth - reduction(improving, depth, moveCount), 0);
 
               // Countermoves based pruning (~20 Elo)
@@ -1442,7 +1448,7 @@ moves_loop: // When in check, search starts from here
 
       // Update the current move (this must be done after singular extension search)
       ss->currentMove = move;
-      ss->continuationHistory = &thisThread->continuationHistory[priorCapture][movedPiece][to_sq(move)];
+      ss->continuationHistory = &thisThread->continuationHistory[inCheck][priorCapture][movedPiece][to_sq(move)];
 
       // Step 15. Make the move
       pos.do_move(move, st, givesCheck);
@@ -1473,9 +1479,11 @@ moves_loop: // When in check, search starts from here
           // Reduction if other threads are searching this position.
           if (th.marked())
               r++;
+
           // Decrease reduction if position is or has been on the PV
           if (ttPv)
               r -= 2;
+
           // Decrease reduction if opponent's move count is high (~10 Elo)
           if ((ss-1)->moveCount > 15)
               r--;
@@ -1499,6 +1507,7 @@ moves_loop: // When in check, search starts from here
               else if (    type_of(move) == NORMAL
                        && !pos.see_ge(reverse_move(move)))
                   r -= 2;
+
               ss->statScore =  thisThread->mainHistory[us][from_to(move)]
                              + (*contHist[0])[movedPiece][to_sq(move)]
                              + (*contHist[1])[movedPiece][to_sq(move)]
@@ -1528,7 +1537,6 @@ moves_loop: // When in check, search starts from here
           }
 
           Depth d = clamp(newDepth - r, 1, newDepth);
-
 
           value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, d, true);
 
@@ -1723,6 +1731,7 @@ moves_loop: // When in check, search starts from here
     Move ttMove, move, bestMove;
     Depth ttDepth;
     Value bestValue, value, ttValue, futilityValue, futilityBase, oldAlpha;
+
 #ifdef Fortress
     bool ttHit, pvHit, inCheck, givesCheck, evasionPrunable, priorCapture, gameCycle;
 #else
@@ -1914,7 +1923,7 @@ moves_loop: // When in check, search starts from here
       }
 
       ss->currentMove = move;
-      ss->continuationHistory = &thisThread->continuationHistory[priorCapture][pos.moved_piece(move)][to_sq(move)];
+      ss->continuationHistory = &thisThread->continuationHistory[inCheck][priorCapture][pos.moved_piece(move)][to_sq(move)];
 
       // Make and search the move
       pos.do_move(move, st, givesCheck);

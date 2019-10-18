@@ -157,7 +157,7 @@ constexpr Score MobilityBonus[][32] = {
 #if ((defined Sullivan) || (defined Blue))
   constexpr Score Outpost            = S( 18,  6);
 #else
-  constexpr Score Outpost            = S( 16,  5);
+  constexpr Score Outpost            = S( 32, 10);
 #endif
   constexpr Score PassedFile         = S( 11,  8);
   constexpr Score PawnlessFlank      = S( 17, 95);
@@ -336,10 +336,17 @@ constexpr Score MobilityBonus[][32] = {
             // Bonus if piece is on an outpost square or can reach one
             bb = OutpostRanks & attackedBy[Us][PAWN] & ~pe->pawn_attacks_span(Them);
             if (bb & s)
-                score += Outpost * (Pt == KNIGHT ? 4 : 2);
-
+#if ((defined Sullivan) || (defined Blue))
+            score += Outpost * (Pt == KNIGHT ? 4 : 2);
+			
             else if (bb & b & ~pos.pieces(Us))
                 score += Outpost * (Pt == KNIGHT ? 2 : 1);
+#else
+                score += Outpost * (Pt == KNIGHT ? 2 : 1);
+
+            else if (Pt == KNIGHT && bb & b & ~pos.pieces(Us))
+                score += Outpost;
+#endif
 
             // Knight and Bishop bonus for being right behind a pawn
             if (shift<Down>(pos.pieces(PAWN)) & s)

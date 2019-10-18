@@ -95,13 +95,11 @@ namespace {
     Bitboard doubleAttackThem = pawn_double_attacks_bb<Them>(theirPawns);
 #ifdef Sullivan
     e->passedPawns[Us] = e->pawnAttacksSpan[Us] = 0;
-#else
-    e->passedPawns[Us] = 0;
-#endif
     e->kingSquares[Us] = SQ_NONE;
-#ifdef Sullivan
     e->pawnAttacks[Us] = pawn_attacks_bb<Us>(ourPawns);
 #else
+    e->passedPawns[Us] = 0;
+    e->kingSquares[Us] = SQ_NONE;
     e->pawnAttacks[Us] = e->pawnAttacksSpan[Us] = pawn_attacks_bb<Us>(ourPawns);
 #endif
     // Loop through all pawns of the current color and score each pawn
@@ -112,10 +110,10 @@ namespace {
         Rank r = relative_rank(Us, s);
 #ifdef Sullivan
         e->pawnAttacksSpan[Us] |= pawn_attack_span(Us, s);
-#endif
+        opposed    = theirPawns & forward_file_bb(Us, s);
+#else
         // Flag the pawn
         opposed    = theirPawns & forward_file_bb(Us, s);
-#ifndef Sullivan
         blocked    = theirPawns & (s + Up);
 #endif
         stoppers   = theirPawns & passed_pawn_span(Us, s);
@@ -133,6 +131,7 @@ namespace {
         backward =  !(neighbours & forward_ranks_bb(Them, s))
                   && (stoppers & (leverPush | (s + Up)));
 #else
+
         // the adjacent files and cannot safely advance.
         backward =  !(neighbours & forward_ranks_bb(Them, s + Up))
                   && (stoppers & (leverPush | blocked));
@@ -163,6 +162,7 @@ namespace {
         // Score this pawn
         if (support | phalanx)
         {
+
 #ifdef Sullivan
             int v =  Connected[r] * (2 + bool(phalanx) - opposed)
 #else
@@ -174,10 +174,12 @@ namespace {
         }
 
         else if (!neighbours)
-            score -= Isolated + WeakUnopposed * !opposed;
+            score -=   Isolated
+                     + WeakUnopposed * !opposed;
 
         else if (backward)
-            score -= Backward + WeakUnopposed * !opposed;
+            score -=   Backward
+                     + WeakUnopposed * !opposed;
 
         if (!support)
             score -=   Doubled * doubled
