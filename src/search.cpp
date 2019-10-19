@@ -1202,12 +1202,17 @@ if (   Threads.stop.load(std::memory_order_relaxed) || ss->ply >= MAX_PLY)
                && probCutCount < 2 + 2 * cutNode)
             if (move != excludedMove && pos.legal(move))
             {
+                assert(pos.capture_or_promotion(move));
+                assert(depth >= 5);
+
+                captureOrPromotion = true;
                 probCutCount++;
 
                 ss->currentMove = move;
-                ss->continuationHistory = &thisThread->continuationHistory[inCheck][priorCapture][pos.moved_piece(move)][to_sq(move)];
-
-                assert(depth >= 5);
+                ss->continuationHistory = &thisThread->continuationHistory[inCheck]
+                                                                          [captureOrPromotion]
+                                                                          [pos.moved_piece(move)]
+                                                                          [to_sq(move)];
 
                 pos.do_move(move, st);
 
@@ -1238,8 +1243,8 @@ if (   Threads.stop.load(std::memory_order_relaxed) || ss->ply >= MAX_PLY)
 moves_loop: // When in check, search starts from here
 
     const PieceToHistory* contHist[] = { (ss-1)->continuationHistory, (ss-2)->continuationHistory,
-                                          nullptr, (ss-4)->continuationHistory,
-                                          nullptr, (ss-6)->continuationHistory };
+                                          nullptr                   , (ss-4)->continuationHistory,
+                                          nullptr                   , (ss-6)->continuationHistory };
 
     Move countermove = thisThread->counterMoves[pos.piece_on(prevSq)][prevSq];
 
@@ -1249,7 +1254,7 @@ moves_loop: // When in check, search starts from here
                                       countermove,
                                       ss->killers);
 
-    value = bestValue; // Workaround a bogus 'uninitialized' warning under gcc
+    value = bestValue;
     moveCountPruning = false;
     ttCapture = ttMove && pos.capture_or_promotion(ttMove);
 
@@ -1446,7 +1451,10 @@ moves_loop: // When in check, search starts from here
 
       // Update the current move (this must be done after singular extension search)
       ss->currentMove = move;
-      ss->continuationHistory = &thisThread->continuationHistory[inCheck][priorCapture][movedPiece][to_sq(move)];
+      ss->continuationHistory = &thisThread->continuationHistory[inCheck]
+                                                                [captureOrPromotion]
+                                                                [movedPiece]
+                                                                [to_sq(move)];
 
       // Step 15. Make the move
       pos.do_move(move, st, givesCheck);
@@ -1731,10 +1739,11 @@ moves_loop: // When in check, search starts from here
     Value bestValue, value, ttValue, futilityValue, futilityBase, oldAlpha;
 
 #ifdef Fortress
-    bool ttHit, pvHit, inCheck, givesCheck, evasionPrunable, priorCapture, gameCycle;
+    bool ttHit, pvHit, inCheck, givesCheck, captureOrPromotion, evasionPrunable, gameCycle;
 #else
-    bool ttHit, pvHit, inCheck, givesCheck, evasionPrunable, priorCapture;
+    bool ttHit, pvHit, inCheck, givesCheck, captureOrPromotion, evasionPrunable;
 #endif
+
     int moveCount;
 
     if (PvNode)
@@ -1748,7 +1757,6 @@ moves_loop: // When in check, search starts from here
     (ss+1)->ply = ss->ply + 1;
     bestMove = MOVE_NONE;
     inCheck = pos.checkers();
-    priorCapture = pos.captured_piece();
     moveCount = 0;
 	  
 #ifdef Fortress
@@ -1854,8 +1862,8 @@ moves_loop: // When in check, search starts from here
         ss->staticEval = bestValue = ss->staticEval * std::max(0, (100 - pos.rule50_count())) / 100;
 #endif
     const PieceToHistory* contHist[] = { (ss-1)->continuationHistory, (ss-2)->continuationHistory,
-                                          nullptr, (ss-4)->continuationHistory,
-                                          nullptr, (ss-6)->continuationHistory };
+                                          nullptr                   , (ss-4)->continuationHistory,
+                                          nullptr                   , (ss-6)->continuationHistory };
 
     // Initialize a MovePicker object for the current position, and prepare
     // to search the moves. Because the depth is <= 0 here, only captures,
@@ -1872,6 +1880,7 @@ moves_loop: // When in check, search starts from here
       assert(is_ok(move));
 
       givesCheck = pos.gives_check(move);
+      captureOrPromotion = pos.capture_or_promotion(move);
 
       moveCount++;
 
@@ -1921,7 +1930,10 @@ moves_loop: // When in check, search starts from here
       }
 
       ss->currentMove = move;
-      ss->continuationHistory = &thisThread->continuationHistory[inCheck][priorCapture][pos.moved_piece(move)][to_sq(move)];
+      ss->continuationHistory = &thisThread->continuationHistory[inCheck]
+                                                                [captureOrPromotion]
+                                                                [pos.moved_piece(move)]
+                                                                [to_sq(move)];
 
       // Make and search the move
       pos.do_move(move, st, givesCheck);
