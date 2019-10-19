@@ -571,7 +571,7 @@ void Thread::search() {
       multiPV = std::max(multiPV, (size_t)4);
   else
       multiPV = std::min(multiPV, rootMoves.size());
-#ifdef Sullivan  //MichaelB7
+#if ((defined Sullivan) || (defined Bluef) || (defined Fortress))//MichaelB7
   int w_ct = int(Options["W_Contempt"]) * PawnValueEg / 100; // From centipawns
   int b_ct = int(Options["B_Contempt"]) * PawnValueEg / 100; // From centipawns
   int ct = (us == WHITE ) ? w_ct : b_ct ;
@@ -625,11 +625,9 @@ void Thread::search() {
           if (rootDepth >= 4)
           {
               Value previousScore = rootMoves[pvIdx].previousScore;
-#if ((defined Sullivan) || (defined Fortress))
-              delta = Value(23 + abs(previousScore) / 256);
-#else
+
               delta = Value(21 + abs(previousScore) / 128);
-#endif
+
               alpha = std::max(previousScore - delta,-VALUE_INFINITE);
               beta  = std::min(previousScore + delta, VALUE_INFINITE);
 

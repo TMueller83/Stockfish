@@ -19,31 +19,31 @@ set BUILD = "build"
 #set  BUILD = "profile-build"
 
 ### build honey
-make clean && make -j $BUILD $ARCH $COMP VERSION=sullivan
+#make clean && make -j $BUILD $ARCH $COMP VERSION=sullivan
 wait
 ### build honey with fortress detection
-make clean && make -j $BUILD $ARCH $COMP VERSION=sullivan FORTRESS_DETECT=yes
+#make clean && make -j $BUILD $ARCH $COMP VERSION=sullivan FORTRESS_DETECT=yes
 wait
 
 ### build honey-blue
-make clean && make -j $BUILD $ARCH $COMP VERSION=sullivan BLUEFISH=yes
+#make clean && make -j $BUILD $ARCH $COMP VERSION=sullivan BLUEFISH=yes
 wait
 ### build honey-blue with fortress detection
-make clean && make -j $BUILD $ARCH $COMP VERSION=sullivan BLUEFISH=yes FORTRESS_DETECT=yes
+#make clean && make -j $BUILD $ARCH $COMP VERSION=sullivan BLUEFISH=yes FORTRESS_DETECT=yes
 wait
 
 ### build bluefish with added features
-make clean && make -j $BUILD $ARCH $COMP BLUEFISH=yes
+#make clean && make -j $BUILD $ARCH $COMP BLUEFISH=yes
 wait
 ### build bluefish with fortress detection and added features
-make clean && make -j $BUILD $ARCH $COMP BLUEFISH=yes FORTRESS_DETECT=yes
+#make clean && make -j $BUILD $ARCH $COMP BLUEFISH=yes FORTRESS_DETECT=yes
 wait
 
 ### build stockfish with fortress detection
-make clean && make -j $BUILD $ARCH $COMP FORTRESS_DETECT=yes
+#make clean && make -j $BUILD $ARCH $COMP FORTRESS_DETECT=yes
 wait
 ### build stockfish with features
-make clean && make $BUILD $ARCH $COMP
+#make clean && make $BUILD $ARCH $COMP
 wait
 
 set end_time=`date +%s`
@@ -58,4 +58,11 @@ echo execution time was `expr $end_time - $start_time` seconds
 #make -j profile-build ARCH=x86-64-modern BLUEFISH=yes FORTRESS_DETECT=yes && wait
 #make -j profile-build ARCH=x86-64-modern FORTRESS_DETECT=yes && wait
 #make -j profile-build ARCH=x86-64-modern
-
+mke VERSION=sullivan && wait
+mke VERSION=sullivan FORTRESS_DETECT=yes && wait
+mke VERSION=sullivan BLUEFISH=yes && wait
+mke VERSION=sullivan BLUEFISH=yes FORTRESS_DETECT=yes && wait
+mke BLUEFISH=yes && wait
+mke BLUEFISH=yes FORTRESS_DETECT=yes && wait
+mke FORTRESS_DETECT=yes && wait
+#make -j profile-build ARCH=x86-64-modern

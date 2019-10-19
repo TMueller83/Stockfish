@@ -23,15 +23,15 @@
 ### Section 1. General Configuration
 ### ==========================================================================
 
-### Executable name
-### Bluefish bench nodes ------> 3809356 > based on commits up to 10/07/2019 v
-### Bluefish-FD bench nodes ---> 4462555 > based on commits up to 10/07/2019 v
-### Blue-Honey bench nodes ----> 4650358 > based on commits up to 10/07/2019 v
-### Blue-Honey-FD bench nodes -> 5590202 > based on commits up to 10/07/2019 v
-### Honey bench nodes ---------> 4388419 > based on commits up to 10/07/2019 v
-### Honey-FD bench nodes ------> 5594531 > based on commits up to 10/07/2019 v
-### stockfish bench nodes -----> 4043748 > based on commits up to 10/07/2019 v
-### stockfish-FD bench nodes --> 4566109 > based on commits up to 10/07/2019 v
+### Executable name  (note 4 new positions were added to bench om 10/17/2019)
+### Bluefish bench nodes ------> 5359818 > based on commits up to 10/17/2019 v
+### Bluefish-FD bench nodes ---> 5303659 > based on commits up to 10/17/2019 v
+### Blue-Honey bench nodes ----> 5503074 > based on commits up to 10/17/2019 v
+### Blue-Honey-FD bench nodes -> 6677680 > based on commits up to 10/17/2019 v
+### Honey bench nodes ---------> 5896976 > based on commits up to 10/17/2019 v
+### Honey-FD bench nodes ------> 6161075 > based on commits up to 10/17/2019 v
+### stockfish bench nodes -----> 4590210 > based on commits up to 10/17/2019 v
+### stockfish-FD bench nodes --> 4762702 > based on commits up to 10/17/2019 v
 
 ####  Always leave the three lines below as is (any subsequent defines will override)
 DATE=$(shell date +"%m%d%y")
@@ -93,7 +93,7 @@ ifeq ($(VERSION),sullivan)
     NAME=$(PRE)Honey$(SUF)
     CXXFLAGS += -DSullivan
 	ifeq ($(BLUEFISH),yes)
-		CXXFLAGS += -DBlue
+		CXXFLAGS += -DBluef
 		PRE=Blue-
 	endif
 	ifeq ($(RELEASEVER),no)
@@ -121,7 +121,7 @@ endif
 ### Note:  For building cur-dev stockfish with the features added.
 ifneq ($(VERSION),sullivan)
 	ifeq ($(BLUEFISH),yes)
-		CXXFLAGS += -DBlue
+		CXXFLAGS += -DBluef
 		PRE=Blue
 	else
 		PRE=Stock

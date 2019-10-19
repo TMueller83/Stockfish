@@ -178,7 +178,7 @@ enum Value : int {
   VALUE_MATE_IN_MAX_PLY  =  VALUE_MATE - 2 * MAX_PLY,
   VALUE_MATED_IN_MAX_PLY = -VALUE_MATE + 2 * MAX_PLY,
 
-#ifdef Bliue
+#ifdef Bluef
   #define PVM 78/100
   #define PVE 78/100
   #define NVM 78/100

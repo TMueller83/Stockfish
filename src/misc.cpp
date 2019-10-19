@@ -29,16 +29,7 @@
 #define NOMINMAX
 #endif
 
-//kludge to fix windows error when using "Blue"
-//at some point I will change 'Blue
-#ifdef Blue
-#undef Blue
-#define BlueAgain
-#endif
 #include <windows.h>
-#ifdef BlueAgain
-#define Blue
-#endif
 
 
 // The needed Windows API for processor groups could be missed from old Windows
@@ -160,12 +151,12 @@ const string engine_info(bool to_uci) {
     stringstream ss, date(__DATE__); // From compiler, format is "Sep 21 2008"
 
 #ifdef Sullivan
-#ifdef Blue
+#ifdef Bluef
     ss << "Blue-Honey " << Version << Suffix << setfill('0');
 #else
     ss << "Honey " << Version << Suffix << setfill('0');
 #endif
-#elif (defined Blue)
+#elif (defined Bluef)
     ss << "Bluefish " << Version << Suffix << setfill('0');
 #else
     ss << "Stockfish " << Version << Suffix << setfill('0');
