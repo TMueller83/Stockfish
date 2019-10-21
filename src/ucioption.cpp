@@ -94,7 +94,7 @@ void init(OptionsMap& o) {
     o["Best_Move_4"]              << Option(true, on_best_book_move4);
     o["Book_Depth_4"]             << Option(127, 1, 127, on_book_depth4);
 #endif
-#if ((defined Sullivan) || (defined Bluef) || (defined Fortress))
+#if ((defined Sullivan) || (defined Blau) || (defined Fortress))
     o["W_Contempt"]               << Option(  22, -150, 150);
     o["B_Contempt"]               << Option(  12, -150, 150);
 #else

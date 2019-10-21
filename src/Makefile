@@ -92,7 +92,7 @@ ifeq ($(VERSION),sullivan)
     NAME=$(PRE)Honey$(SUF)
     CXXFLAGS += -DSullivan
 	ifeq ($(BLUEFISH),yes)
-		CXXFLAGS += -DBluef
+		CXXFLAGS += -DBlau
 		PRE=Blue-
 	endif
 	ifeq ($(RELEASEVER),no)
@@ -120,7 +120,7 @@ endif
 ### Note:  For building cur-dev stockfish with the features added.
 ifneq ($(VERSION),sullivan)
 	ifeq ($(BLUEFISH),yes)
-		CXXFLAGS += -DBluef
+		CXXFLAGS += -DBlau
 		PRE=Blue
 	else
 		PRE=Stock

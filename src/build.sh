@@ -1,70 +1,49 @@
-#!/bin/csh
+#!/bin/bash
 ###  modify as appropriate for you system
-### alias mke="make -j profile-build ARCH=x86-64-modern"
 ### all builds have added features, 4 opening books can be used, adaptive ply,
 ### play by FIDE Elo ratings or CCRL Elo ratings
 ###
 
+### time the compile process
 echo on
-set start_time=`date +%s`
-#echo $start_time
+start=`date +%s`
 
-set ARCH = "ARCH=x86-64-modern"
-#set  ARCH = "ARCH=x86-64-bmi2"
+#ARCH="ARCH=general-32"
+#ARCH="ARCH=x86-32-old"
+#ARCH="ARCH=x86-32"
+#ARCH="ARCH=general-64"
+#ARCH="ARCH=x86_64"
+ARCH="ARCH=x86-64-modern"
+#ARCH="ARCH=x86-64-bmi2"
+#ARCH="ARCH=armv7"
+#ARCH="ARCH=ppc-32"
+#ARCH="ARCH=ppc-64comp"
 
-#set COMP = "COMP=gcc"
-set COMP = "COMP=clang"
+#COMP="COMP=clang"
+COMP="COMP=gcc"
+#COMP="COMP=mingw"
+#COMP="COMP=icc"
 
-set BUILD = "build"
-#set  BUILD = "profile-build"
+#BUILD="build"
+BUILD="profile-build"
 
-### build honey
-make clean && make -j $BUILD $ARCH $COMP VERSION=sullivan
-wait
-### build honey with fortress detection
-make clean && make -j $BUILD $ARCH $COMP VERSION=sullivan FORTRESS_DETECT=yes
-wait
+#make function
+function mke() {
+make -j $BUILD $ARCH $COMP "$@"
+}
 
-### build honey-blue
-make clean && make -j $BUILD $ARCH $COMP VERSION=sullivan BLUEFISH=yes
-wait
-### build honey-blue with fortress detection
-make clean && make -j $BUILD $ARCH $COMP VERSION=sullivan BLUEFISH=yes FORTRESS_DETECT=yes
-wait
+mke VERSION=sullivan && wait
+mke VERSION=sullivan FORTRESS_DETECT=yes && wait
+mke VERSION=sullivan BLUEFISH=yes && wait
+mke VERSION=sullivan BLUEFISH=yes FORTRESS_DETECT=yes && wait
+mke BLUEFISH=yes && wait
+mke BLUEFISH=yes FORTRESS_DETECT=yes && wait
+mke FORTRESS_DETECT=yes && wait
+mke
 
-### build bluefish with added features
-make clean && make -j $BUILD $ARCH $COMP BLUEFISH=yes
-wait
-### build bluefish with fortress detection and added features
-make clean && make -j $BUILD $ARCH $COMP BLUEFISH=yes FORTRESS_DETECT=yes
-wait
-
-### build stockfish with fortress detection
-make clean && make -j $BUILD $ARCH $COMP FORTRESS_DETECT=yes
-wait
-#### build stockfish with features
-make clean && make $BUILD $ARCH $COMP
-wait
-
-set end_time=`date +%s`
-#echo $end_time
-echo execution time was `expr $end_time - $start_time` seconds
-
-#make -j profile-build ARCH=x86-64-modern VERSION=sullivan && wait
-#make -j profile-build ARCH=x86-64-modern VERSION=sullivan FORTRESS_DETECT=yes && wait
-#make -j profile-build ARCH=x86-64-modern VERSION=sullivan BLUEFISH=yes && wait
-#make -j profile-build ARCH=x86-64-modern VERSION=sullivan BLUEFISH=yes FORTRESS_DETECT=yes && wait
-#make -j profile-build ARCH=x86-64-modern BLUEFISH=yes && wait
-#make -j profile-build ARCH=x86-64-modern BLUEFISH=yes FORTRESS_DETECT=yes && wait
-#make -j profile-build ARCH=x86-64-modern FORTRESS_DETECT=yes && wait
-#make -j profile-build ARCH=x86-64-modern
-################################## for personal use below with alias and gcc
-#mke VERSION=sullivan && wait
-#mke VERSION=sullivan FORTRESS_DETECT=yes && wait
-#mke VERSION=sullivan BLUEFISH=yes && wait
-#mke VERSION=sullivan BLUEFISH=yes FORTRESS_DETECT=yes && wait
-#mke BLUEFISH=yes && wait
-#mke BLUEFISH=yes FORTRESS_DETECT=yes && wait
-#mke FORTRESS_DETECT=yes && wait
-#mke
+end=`date +%s`
+runtime=$((end-start))
+echo ""
+echo Compile time $runtime seconds...
+echo ""
 

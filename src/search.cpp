@@ -571,7 +571,7 @@ void Thread::search() {
       multiPV = std::max(multiPV, (size_t)4);
   else
       multiPV = std::min(multiPV, rootMoves.size());
-#if ((defined Sullivan) || (defined Bluef) || (defined Fortress))//MichaelB7
+#if ((defined Sullivan) || (defined Blau) || (defined Fortress))//MichaelB7
   int w_ct = int(Options["W_Contempt"]) * PawnValueEg / 100; // From centipawns
   int b_ct = int(Options["B_Contempt"]) * PawnValueEg / 100; // From centipawns
   int ct = (us == WHITE ) ? w_ct : b_ct ;

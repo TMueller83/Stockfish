@@ -151,12 +151,12 @@ const string engine_info(bool to_uci) {
     stringstream ss, date(__DATE__); // From compiler, format is "Sep 21 2008"
 
 #ifdef Sullivan
-#ifdef Bluef
+#ifdef Blau
     ss << "Blue-Honey " << Version << Suffix << setfill('0');
 #else
     ss << "Honey " << Version << Suffix << setfill('0');
 #endif
-#elif (defined Bluef)
+#elif (defined Blau)
     ss << "Bluefish " << Version << Suffix << setfill('0');
 #else
     ss << "Stockfish " << Version << Suffix << setfill('0');
