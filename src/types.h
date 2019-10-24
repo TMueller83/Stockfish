@@ -178,19 +178,30 @@ enum Value : int {
   VALUE_MATE_IN_MAX_PLY  =  VALUE_MATE - 2 * MAX_PLY,
   VALUE_MATED_IN_MAX_PLY = -VALUE_MATE + 2 * MAX_PLY,
 
-#ifdef Bluef
-  #define PVM 78/100
+#ifdef Blau
+  #define PVM 80/100
   #define PVE 78/100
-  #define NVM 78/100
+  #define NVM 80/100
   #define NVE 78/100
-  #define BVM 78/100
+  #define BVM 80/100
   #define BVE 78/100
-  #define RVM 78/100
+  #define RVM 76/100
   #define RVE 78/100
   #define QVM 78/100
   #define QVE 78/100
 
-
+#elif ((defined Sullivan) && (defined Blau))
+  #define PVM 91/100
+  #define PVE 89/100
+  #define NVM 91/100
+  #define NVE 89/100
+  #define BVM 91/100
+  #define BVE 89/100
+  #define RVM 87/100
+  #define RVE 89/100
+  #define QVM 89/100
+  #define QVE 89/100
+	
 #elif (defined Sullivan)
   #define PVM 102/100
   #define PVE 100/100
@@ -223,11 +234,6 @@ enum Value : int {
     QueenValueMg  = 2529*QVM,  QueenValueEg  = 2687*QVE,
 	
     MidgameLimit  = 15258*PVM, EndgameLimit  = 3915*PVE
-
-
-
-
-
 
 };
 
