@@ -52,7 +52,7 @@ FEATURE1=add_features
 
 ### Release versions , enter yes and release version below foor releases
 RELEASEVER = yes
-RELVERSION = X6
+RELVERSION = X6a
 
 ### TEST versions, enter yes and labels below to build named test exe's
 TEST = no

@@ -66,7 +66,7 @@ namespace {
 
 	
 #if (defined Sullivan && defined Add_Features && ReleaseVer)
-const string Version = "X6 ";
+const string Version = "X6a ";
 #elif (defined Sullivan && defined Add_Features)
 const string Version = "";
 #endif
