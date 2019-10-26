@@ -134,7 +134,7 @@ namespace {
 
         // the adjacent files and cannot safely advance.
         backward =  !(neighbours & forward_ranks_bb(Them, s + Up))
-                  && (stoppers & (leverPush | blocked));
+                  && (leverPush | blocked);
 
         // Compute additional span if pawn is not backward nor blocked
         if (!backward && !blocked)

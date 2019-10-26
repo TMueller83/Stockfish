@@ -24,14 +24,14 @@
 ### ==========================================================================
 
 ### Executable name  (Note: 4 new bench positions were added om 10/17/2019)
-### Bluefish bench nodes ------> 5399775 > based on commits up to 10/23/2019 v
-### Bluefish-FD bench nodes ---> 5809944 > based on commits up to 10/23/2019 v
-### Blue-Honey bench nodes ----> 6161491 > based on commits up to 10/23/2019 v
-### Blue-Honey-FD bench nodes -> 7584616 > based on commits up to 10/23/2019 v
-### Honey bench nodes ---------> 5689402 > based on commits up to 10/23/2019 v
-### Honey-FD bench nodes ------> 8054027 > based on commits up to 10/23/2019 v
-### stockfish bench nodes -----> 5115841 > based on commits up to 10/23/2019 v
-### stockfish-FD bench nodes --> 4890533 > based on commits up to 10/23/2019 v
+### Bluefish bench nodes ------> 5399775 > based on commits up to 10/25/2019 v
+### Bluefish-FD bench nodes ---> 5809944 > based on commits up to 10/25/2019 v
+### Blue-Honey bench nodes ----> 6161491 > based on commits up to 10/25/2019 v
+### Blue-Honey-FD bench nodes -> 7584616 > based on commits up to 10/25/2019 v
+### Honey bench nodes ---------> 5689402 > based on commits up to 10/25/2019 v
+### Honey-FD bench nodes ------> 8054027 > based on commits up to 10/25/2019 v
+### stockfish bench nodes -----> 5115841 > based on commits up to 10/25/2019 v
+### stockfish-FD bench nodes --> 4890533 > based on commits up to 10/25/2019 v
 
 ####  Always leave the three lines below as is (any subsequent defines will override)
 DATE=$(shell date +"%m%d%y")
@@ -413,7 +413,7 @@ ifeq ($(optimize),yes)
 			CXXFLAGS += -fno-gcse -mthumb -march=armv7-a -mfloat-abi=softfp
 		endif
 	endif
-	
+
 	ifeq ($(comp),$(filter $(comp),gcc clang icc))
 		ifeq ($(KERNEL),Darwin)
 			CXXFLAGS += -mdynamic-no-pic
