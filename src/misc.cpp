@@ -102,6 +102,13 @@ public:
     if (!fname.empty() && !l.file.is_open())
     {
         l.file.open(fname, ifstream::out);
+
+        if (!l.file.is_open())
+        {
+            cerr << "Unable to open debug log file " << fname << endl;
+            exit(EXIT_FAILURE);
+        }
+
         cin.rdbuf(&l.in);
         cout.rdbuf(&l.out);
     }
@@ -127,7 +134,7 @@ const string engine_info(bool to_uci) {
   string month, day, year;
   stringstream ss, date(__DATE__); // From compiler, format is "Sep 21 2008"
 
-  ss << "CorChess 3.1 " << Version << setfill('0');
+  ss << "CorChess 4.0 " << Version << setfill('0');
 
   if (Version.empty())
   {
@@ -168,7 +175,7 @@ void dbg_print() {
 
 std::ostream& operator<<(std::ostream& os, SyncCout sc) {
 
-  static Mutex m;
+  static std::mutex m;
 
   if (sc == IO_LOCK)
       m.lock();
