@@ -63,7 +63,11 @@ public:
 
   Pawns::Table pawnsTable;
   Material::Table materialTable;
+#if defined (Sullivan) || (Blau)
+  size_t pvIdx, pvLast, shuffleExts, extension;
+#else
   size_t pvIdx, pvLast, shuffleExts;
+#endif
   int selDepth, nmpMinPly;
 
   Color nmpColor;

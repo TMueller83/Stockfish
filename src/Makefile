@@ -24,12 +24,12 @@
 ### ==========================================================================
 
 ### Executable name  (Note: 4 new bench positions were added om 10/17/2019)
-### Bluefish bench nodes ------> 5399775 > based on commits up to 10/28/2019 v
-### Bluefish-FD bench nodes ---> 5809944 > based on commits up to 10/28/2019 v
-### Blue-Honey bench nodes ----> 5883378 > based on commits up to 10/28/2019 v
-### Blue-Honey-FD bench nodes -> 6780874 > based on commits up to 10/28/2019 v
-### Honey bench nodes ---------> 5666289 > based on commits up to 10/28/2019 v
-### Honey-FD bench nodes ------> 6692075 > based on commits up to 10/28/2019 v
+### Bluefish bench nodes ------> 5596789 > based on commits up to 10/28/2019 v
+### Bluefish-FD bench nodes ---> 6068065 > based on commits up to 10/28/2019 v
+### Blue-Honey bench nodes ----> 5648217 > based on commits up to 10/28/2019 v
+### Blue-Honey-FD bench nodes -> 7524132 > based on commits up to 10/28/2019 v
+### Honey bench nodes ---------> 5676502 > based on commits up to 10/28/2019 v
+### Honey-FD bench nodes ------> 6810740 > based on commits up to 10/28/2019 v
 ### stockfish-FD bench nodes --> 4890533 > based on commits up to 10/28/2019 v
 ### stockfish bench nodes -----> 5115841 > based on commits up to 10/28/2019 v
 
@@ -52,13 +52,13 @@ FEATURE1=add_features
 ###	BLUEFISH = yes
 
 ### Release versions , enter yes and release version below foor releases
-RELEASEVER = yes
+RELEASEVER = no
 RELVERSION = X6a
 
 ### TEST versions, enter yes and labels below to build named test exe's
-TEST = no
+TEST = yes
 TESTv1 = $(DATE2)
-TESTv2 =
+TESTv2 = makefix2
 ifeq ($(TEST),yes)
 CXXFLAGS += -DTest
 endif

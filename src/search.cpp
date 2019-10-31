@@ -176,7 +176,12 @@ int intLevel = 40;
   Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth = 0);
 
   Value value_to_tt(Value v, int ply);
+
+#if defined (Sullivan) || (Blau)
   Value value_from_tt(Value v, int ply, int r50c);
+#else
+  Value value_from_tt(Value v, int ply);
+#endif
   void update_pv(Move* pv, Move move, Move* childPv);
   void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus);
   void update_quiet_stats(const Position& pos, Stack* ss, Move move, int bonus);
@@ -524,7 +529,6 @@ void Thread::search() {
   Stack stack[MAX_PLY+10], *ss = stack+7;
   Move  pv[MAX_PLY+1];
   Value bestValue, alpha, beta, delta;
-  beta = VALUE_INFINITE;
   Move  lastBestMove = MOVE_NONE;
   Depth lastBestMoveDepth = 0;
   MainThread* mainThread = (this == Threads.main() ? Threads.main() : nullptr);
@@ -543,6 +547,8 @@ void Thread::search() {
   ss->pv = pv;
 
   bestValue = delta = alpha = -VALUE_INFINITE;
+  beta = VALUE_INFINITE;
+
   size_t multiPV = Options["MultiPV"];
 
 #ifndef Add_Features
@@ -626,7 +632,7 @@ void Thread::search() {
           if (rootDepth >= 4)
           {
               Value previousScore = rootMoves[pvIdx].previousScore;
-#if ((defined Sullivan) || (defined Blau))
+#if defined (Sullivan) || (Blau)
               delta = Value(20 + abs(previousScore) / 64);
 #else
               delta = Value(21 + abs(previousScore) / 128);
@@ -699,8 +705,8 @@ void Thread::search() {
               {
                   beta = (alpha + beta) / 2;
                   alpha = std::max(bestValue - delta, -VALUE_INFINITE);
-                  failedHighCnt = 0;
 
+                  failedHighCnt = 0;
                   if (mainThread)
                       mainThread->stopOnPonderhit = false;
               }
@@ -736,17 +742,15 @@ void Thread::search() {
          lastBestMoveDepth = rootDepth;
       }
 
-      if (!mainThread)
-          continue;
       // Have we found a "mate in x"?
       if (   Limits.mate
-          && rootMoves[0].score >= VALUE_MATE_IN_MAX_PLY
-          && VALUE_MATE - rootMoves[0].score <= 2 * Limits.mate)
-          Threads.stop = true;
-#ifdef Sullivan  //joergoster 3240f204 - check all threads of rmate -in -x
+             && bestValue >= VALUE_MATE_IN_MAX_PLY
+             && VALUE_MATE - bestValue <= 2 * Limits.mate)
+         Threads.stop = true;
+
 	  if (!mainThread)
 		  continue;
-#endif
+
 #ifdef Add_Features
         if (Options["FastPlay"])
         {
@@ -806,7 +810,28 @@ void Thread::search() {
 
 
 namespace {
+#if defined (Sullivan) || (Blau)
+  static TTEntry *probeTT(const Position &pos, Stack* ss, Key posKey,
+                          bool &ttHit, Value &ttValue, Move &ttMove) {
 
+    TTEntry *tte = TT.probe(posKey, ttHit);
+    ttValue = tte->value();
+    // Disregard TT hit if mate score is shorter than remaining 50 MR plies.
+    if (   ttHit
+        && ttValue != VALUE_NONE
+        && std::abs(ttValue) >= VALUE_MATE_IN_MAX_PLY
+        && VALUE_MATE - std::abs(ttValue) >= 100 - pos.rule50_count())
+        ttHit = false;
+    if (   ttHit
+        && ttValue != VALUE_NONE
+		&& std::abs(ttValue) >= VALUE_MATE_IN_MAX_PLY
+        && pos.count<ALL_PIECES>() < 8)
+        ttHit = true;
+    ttValue = ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
+    ttMove = ttHit ? tte->move() : MOVE_NONE;
+    return tte;
+  }
+#endif
   // search<>() is the main search function for both PV and non-PV nodes
 
   template <NodeType NT>
@@ -817,7 +842,11 @@ namespace {
 #ifndef Fortress
     // Check if we have an upcoming move which draws by repetition, or
     // if the opponent had an alternative move earlier to this position.
+#if defined (Sullivan) || (Blau)
+    if (   pos.rule50_count() >= 5
+#else
     if (   pos.rule50_count() >= 3
+#endif
         && alpha < VALUE_DRAW
         && !rootNode
         && pos.has_game_cycle(ss->ply))
@@ -879,7 +908,7 @@ namespace {
 	  excludedMove = ss->excludedMove;
 	  posKey = pos.key() ^ Key(excludedMove << 16); // Isn't a very good hash
 	  tte = TT.probe(posKey, ttHit);
-	  ttValue = ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
+      ttValue = ttHit ? value_from_tt(tte->value(), ss->ply) : VALUE_NONE;
 	  ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
 	  : ttHit    ? tte->move() : MOVE_NONE;
 	  ttPv = PvNode || (ttHit && tte->is_pv());
@@ -954,19 +983,32 @@ if (   Threads.stop.load(std::memory_order_relaxed) || ss->ply >= MAX_PLY)
     // Step 4. Transposition table lookup. We don't want the score of a partial
     // search to overwrite a previous full search TT value, so we use a different
     // position key in case of an excluded move.
+    int piecesCount = pos.count<ALL_PIECES>();
 #ifndef Fortress
     excludedMove = ss->excludedMove;
     posKey = pos.key() ^ Key(excludedMove << 16); // Isn't a very good hash
+#if defined (Sullivan) || (Blau)
+    tte = probeTT(pos, ss, posKey, ttHit, ttValue, ttMove);
+#else
     tte = TT.probe(posKey, ttHit);
+#endif
+#if defined (Sullivan) || (Blau)
     ttValue = ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
+#else
+    ttValue = ttHit ? value_from_tt(tte->value(), ss->ply) : VALUE_NONE;
+#endif
     ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
             : ttHit    ? tte->move() : MOVE_NONE;
+
     ttPv = PvNode || (ttHit && tte->is_pv());
 #endif
 
     // At non-PV nodes we check for an early TT cutoff
     if (  !PvNode
         && ttHit
+#if defined (Sullivan) || (Blau)
+		&& (pos.rule50_count() < 92 || (piecesCount < 8  && TB::Cardinality ))
+#endif
 #ifdef Fortress
         && !gameCycle
 #endif
@@ -1001,10 +1043,10 @@ if (   Threads.stop.load(std::memory_order_relaxed) || ss->ply >= MAX_PLY)
     // Step 5. Tablebases probe
     if (!rootNode && TB::Cardinality)
     {
-        int piecesCount = pos.count<ALL_PIECES>();
+        piecesCount = pos.count<ALL_PIECES>();
 
         if (    piecesCount <= TB::Cardinality
-#if defined (Add_Features) || (Sullivan) //MB less probing with 7 MAN EGTB
+#if defined (Add_Features) || (Sullivan) || (Blau) //MB less probing with 7 MAN EGTB
 		&&  (piecesCount < TB::Cardinality
 		|| (depth >= TB::ProbeDepth && (TB::Cardinality < 7 || TB::SevenManProbe)))
 #else
@@ -1118,7 +1160,7 @@ if (   Threads.stop.load(std::memory_order_relaxed) || ss->ply >= MAX_PLY)
 #endif
         &&  depth < 7
 #ifdef Fortress
-		&&  !gameCycle
+        &&  !gameCycle
 #endif
         &&  eval - futility_margin(depth, improving) >= beta
         &&  eval < VALUE_KNOWN_WIN) // Do not return unproven wins
@@ -1145,8 +1187,7 @@ if (   Threads.stop.load(std::memory_order_relaxed) || ss->ply >= MAX_PLY)
         && thisThread->selDepth + 3 > thisThread->rootDepth
 #endif
         &&  pos.non_pawn_material(us)
-        && (ss->ply >= thisThread->nmpMinPly || us != thisThread->nmpColor)
-)
+        && (ss->ply >= thisThread->nmpMinPly || us != thisThread->nmpColor))
     {
         assert(eval - beta >= 0);
 
@@ -1192,7 +1233,6 @@ if (   Threads.stop.load(std::memory_order_relaxed) || ss->ply >= MAX_PLY)
 #ifdef Add_Features
         && !bruteForce
 #endif
-
         &&  depth >= 5
         &&  abs(beta) < VALUE_MATE_IN_MAX_PLY)
     {
@@ -1237,8 +1277,16 @@ if (   Threads.stop.load(std::memory_order_relaxed) || ss->ply >= MAX_PLY)
     {
         search<NT>(pos, ss, alpha, beta, depth - 7, cutNode);
 
+#if defined (Sullivan) || (Blau)
+        tte = probeTT(pos, ss, posKey, ttHit, ttValue, ttMove);
+#else
         tte = TT.probe(posKey, ttHit);
-        ttValue = ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
+#endif
+#if defined (Sullivan) || (Blau)
+		ttValue = ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
+#else
+        ttValue = ttHit ? value_from_tt(tte->value(), ss->ply) : VALUE_NONE;
+#endif
         ttMove = ttHit ? tte->move() : MOVE_NONE;
     }
 
@@ -1299,9 +1347,10 @@ moves_loop: // When in check, search starts from here
       givesCheck = pos.gives_check(move);
 
       // Step 13. Extensions (~70 Elo)
+
 #ifdef Fortress
 		if (   gameCycle
-			&& (depth < 5 || PvNode))
+                       && (depth < 5 || PvNode))
 		extension = (2 - (ss->ply % 2 == 0 && !PvNode));
 #endif
       // Singular extension search (~60 Elo). If all moves but one fail low on a
@@ -1313,7 +1362,7 @@ moves_loop: // When in check, search starts from here
           &&  move == ttMove
           && !rootNode
 #ifdef Fortress
-		  &&  !gameCycle
+          &&  !gameCycle
 #endif
           && !excludedMove // Avoid recursive singular search
        /* &&  ttValue != VALUE_NONE Already implicit in the next condition */
@@ -1345,16 +1394,20 @@ moves_loop: // When in check, search starts from here
       }
 
       // Check extension (~2 Elo)
-#ifdef Sullivan
-       if (    givesCheck  && !extension )  //MichaelB7
+
+#if defined (Sullivan) || (Blau)
+
+       if (    givesCheck
+               && !extension
+               && ++thisThread->extension < thisThread->nodes.load(std::memory_order_relaxed) / 4 ) //MichaelB7
 		  extension = 1;
 
      // MichaelB7 Passed pawn extension
       if ( move == ss->killers[0] && !extension
 			  && (pos.promotion_pawn_push(move)
-				  || (pos.advanced_pawn_push(move)
-				  && pos.pawn_passed(us, to_sq(move)))))
-		  extension = 1;
+                          || (pos.advanced_pawn_push(move)
+                          && pos.pawn_passed(us, to_sq(move)))))
+          extension = 1;
 		  
 #else
       else if (    givesCheck
@@ -1364,17 +1417,20 @@ moves_loop: // When in check, search starts from here
 #endif
 
       // Shuffle extension
-      else if (   PvNode
-#ifdef Sullivan
+#if defined (Sullivan) || (Blau)
+      else if (   PvNode && piecesCountShuff > 15
                && pos.rule50_count() > 24
 #else
+      else if (   PvNode
                && pos.rule50_count() > 18
 #endif
                && depth < 3
-#ifdef Sullivan
+#if defined (Sullivan) || (Blau)
                && thisThread->selDepth < 102
-#endif
+               && ++thisThread->shuffleExts < thisThread->nodes.load(std::memory_order_relaxed) / 4)
+#else
                && ++thisThread->shuffleExts < thisThread->nodes.load(std::memory_order_relaxed) / 4)  // To avoid too many extensions
+#endif
           extension = 1;
 #ifdef Sullivan  //see above for Passed pawn extension
 #else
@@ -1531,10 +1587,6 @@ moves_loop: // When in check, search starts from here
                   && thisThread->mainHistory[us][from_to(move)] >= 0)
                   ss->statScore = 0;
 
-              // Reset statScore to 0 if negative and most stats shows >= 0
-              if (ss->statScore < 0 && (*contHist[0])[movedPiece][to_sq(move)] >= 0 && (*contHist[1])[movedPiece][to_sq(move)] >= 0 && thisThread->mainHistory[us][from_to(move)] >= 0)
-                  ss->statScore = 0;
-
               // Decrease/increase reduction by comparing opponent's stat score (~10 Elo)
               if (ss->statScore >= -99 && (ss-1)->statScore < -116)
                   r--;
@@ -1642,7 +1694,7 @@ moves_loop: // When in check, search starts from here
                   alpha = value;
               else
               {
-                 //assert(value >= beta); // Fail high
+                  assert(value >= beta); // Fail high
                   ss->statScore = 0;
 				   break;
               }
@@ -1711,7 +1763,6 @@ moves_loop: // When in check, search starts from here
 
     return bestValue;
   }
-
 
   // qsearch() is the quiescence search function, which is called by the main search
   // function with zero depth, or recursively with further decreasing depth per call.
@@ -1787,15 +1838,27 @@ moves_loop: // When in check, search starts from here
                                                   : DEPTH_QS_NO_CHECKS;
     // Transposition table lookup
     posKey = pos.key();
+#if defined (Sullivan) || (Blau)
+   tte = probeTT(pos, ss, posKey, ttHit, ttValue, ttMove);
+   int piecesCountqs = pos.count<ALL_PIECES>();
+#else
     tte = TT.probe(posKey, ttHit);
+#endif
+#if defined (Sullivan) || (Blau)
     ttValue = ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
+#else
+    ttValue = ttHit ? value_from_tt(tte->value(), ss->ply) : VALUE_NONE;
+#endif
     ttMove = ttHit ? tte->move() : MOVE_NONE;
     pvHit = ttHit && tte->is_pv();
 
     if (  !PvNode
         && ttHit
+#if defined (Sullivan) || (Blau)
+        && (pos.rule50_count() < 92 || (piecesCountqs < 8  && TB::Cardinality ))
+#endif
 #ifdef Fortress
-		&&  !gameCycle
+        &&  !gameCycle
 #endif
         && tte->depth() >= ttDepth
         && ttValue != VALUE_NONE // Only in case of TT access race
@@ -1997,12 +2060,20 @@ moves_loop: // When in check, search starts from here
   // value_from_tt() is the inverse of value_to_tt(): It adjusts a mate score
   // from the transposition table (which refers to the plies to mate/be mated
   // from current position) to "plies to mate/be mated from the root".
-
+#if defined (Sullivan) || (Blau)
   Value value_from_tt(Value v, int ply, int r50c) {
-
+#else
+  Value value_from_tt(Value v, int ply) {
+#endif
+#if defined (Sullivan) || (Blau)
     return  v == VALUE_NONE             ? VALUE_NONE
           : v >= VALUE_MATE_IN_MAX_PLY  ? VALUE_MATE - v > 99 - r50c ? VALUE_MATE_IN_MAX_PLY  : v - ply
           : v <= VALUE_MATED_IN_MAX_PLY ? VALUE_MATE + v > 99 - r50c ? VALUE_MATED_IN_MAX_PLY : v + ply : v;
+#else
+    return  v == VALUE_NONE             ? VALUE_NONE
+          : v >= VALUE_MATE_IN_MAX_PLY  ? v - ply
+          : v <= VALUE_MATED_IN_MAX_PLY ? v + ply : v;
+#endif
   }
 
 
