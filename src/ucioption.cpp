@@ -96,7 +96,7 @@ void init(OptionsMap& o) {
 #endif
 #if ((defined Sullivan) || (defined Blau) || (defined Fortress))
     o["W_Contempt"]               << Option(  22, -150, 150);
-    o["B_Contempt"]               << Option(  12, -150, 150);
+    o["B_Contempt"]               << Option(  22, -150, 150);
 #else
     o["Contempt"]                 << Option(  24, -100, 100);
 #endif
@@ -127,7 +127,7 @@ void init(OptionsMap& o) {
     o["Variety"]                  << Option(false);
     o["Adaptive_Play"]            << Option(false); //Adaptive Play change - now simple on/off check box
 #if (defined Add_Features && defined Sullivan)  // leaving in, since it makes it easier to tweak annually
-    o["DC_Slider"]                << Option(65, -180, 180);
+    o["DC_Slider"]                << Option(0, -180, 180);
 #elif (defined Add_Features && Stockfish)
     o["DC_Slider"]                << Option(0, -180, 180);
 #endif

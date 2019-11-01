@@ -50,6 +50,8 @@
 namespace Search {
 
   LimitsType Limits;
+  bool adaptive       = Options["Adaptive_Play"];
+
 }
 
 namespace Tablebases {
@@ -119,7 +121,7 @@ namespace {
   };
 
 #ifdef Add_Features
-bool  bruteForce, jekyll, minOutput, uci_sleep, noNULL;
+bool  bruteForce, fide, jekyll, minOutput, uci_sleep, noNULL;
 bool limitStrength = false;
 int   aggressiveness, attack, intLevel = 40, tactical, uci_elo;
 #else
@@ -268,6 +270,8 @@ void MainThread::search() {
     tactical            = Options["Tactical"];
     uci_elo             = Options["Engine_Elo"];
     uci_sleep           = Options["UCI_Sleep"];
+	fide                = Options["FIDE_Ratings"];
+	
 #endif
 
   Color us = rootPos.side_to_move();
@@ -355,11 +359,11 @@ skipLevels:
              uci_elo = uci_elo + rand + shallowBlue_adjust;
              //sync_cout << "Elo " << uci_elo << sync_endl;// for debug
              int ccrlELo = uci_elo;
-			 if (Options["FIDE_Ratings"])
+			 if (fide)
 				 uci_elo = (((uci_elo * 10) / 7) - 1200);  //shallowBlue adj was only required to get CCRL rating correct
-			 if ((Options["Variety"]) && uci_elo >= 1500)  //note varietry strength is capped around ~2150-2200 due to its robustness
+			 if (jekyll && uci_elo >= 1500)  //note varietry strength is capped around ~2150-2200 due to its robustness
 				 uci_elo += 50 + std::max((uci_elo - 1500)/3,0); // so to use variety without a huge amount of Elo
-			 if  ((Options["Adaptive_Play"]) &&  uci_elo >= 1500)  // this brings adaptive play to within 150 of desired Elo strength
+			 if  (adaptive &&  uci_elo >= 1500)  // this brings adaptive play to within 150 of desired Elo strength
 				 uci_elo += 100 + std::max((uci_elo - 1500)/3,0);
 			 uci_elo = std::min(uci_elo, 3200);
 			 //sync_cout << "Elo " << uci_elo << sync_endl;//for debug
@@ -467,7 +471,7 @@ skipLevels:
   if (bestThread != this || Skill(Options["Skill Level"]).enabled())
       sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << sync_endl;
 
-  if  (Options["Adaptive_Play"])
+  if  (adaptive)
   {
       size_t i = 0;
       if ( previousScore >= -PawnValueMg && previousScore <= PawnValueMg * 4 )
@@ -640,6 +644,7 @@ void Thread::search() {
               alpha = std::max(previousScore - delta,-VALUE_INFINITE);
               beta  = std::min(previousScore + delta, VALUE_INFINITE);
 
+
 		// Adjust contempt based on root move's previousScore (dynamic contempt)
 		int dct;
 #ifdef Add_Features
@@ -653,13 +658,15 @@ void Thread::search() {
 #endif
                 {
 #ifdef Add_Features
-                    dct = ct + 86 * previousScore / (abs(previousScore) + 176)
-                          + (attack * (ct + 88 * previousScore / (abs(previousScore) + 176)))/1000;
+                    dct = ct + (111 - ct / 2) * previousScore / (abs(previousScore) + 176)
+                           + (attack * (ct + (111 - ct / 2) * previousScore / (abs(previousScore) + 176)))/1000;
+                    /*dct = ct + 86 * previousScore / (abs(previousScore) + 176)
+                          + (attack * (ct + 88 * previousScore / (abs(previousScore) + 176)))/1000;*/
 #else
-                    dct = ct + 86 * previousScore / (abs(previousScore) + 176);
+                    int dct = ct + (111 - ct / 2) * previousScore / (abs(previousScore) + 176);
 #endif
-                    contempt = (us == WHITE ?  make_score(dct, dct / 2)
-                                : -make_score(dct, dct / 2));
+					contempt = (us == WHITE ?  make_score(dct, dct / 2)
+								: -make_score(dct, dct / 2));
                }
        }
 
@@ -2002,7 +2009,7 @@ moves_loop: // When in check, search starts from here
        }
     }
 #ifdef Add_Features //variety play
-	  if (!(Options["Adaptive_Play"]) && jekyll && uci_elo >= 1500 && (bestValue + (255 * PawnValueEg / (std::min(uci_elo,3500)/10)) >= 0 ))
+	  if (!adaptive && jekyll && uci_elo >= 1500 && (bestValue + (255 * PawnValueEg / (std::min(uci_elo,3500)/10)) >= 0 ))
 		  {
 //            int o_value = bestValue;// for debug
 //            sync_cout << "Value " << bestValue << sync_endl;// for debug
