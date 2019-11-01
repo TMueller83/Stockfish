@@ -698,6 +698,8 @@ namespace {
 
     Value mg = mg_value(score);
     Value eg = eg_value(score);
+	
+    int separation = distance<File>(pos.square<KING>(WHITE), pos.square<KING>(BLACK));
 
     int outflanking =  distance<File>(pos.square<KING>(WHITE), pos.square<KING>(BLACK))
                      - distance<Rank>(pos.square<KING>(WHITE), pos.square<KING>(BLACK));
@@ -714,6 +716,7 @@ namespace {
                     + 11 * pos.count<PAWN>()
                     +  9 * outflanking
                     + 18 * pawnsOnBothFlanks
+                    + 20 * (separation > 3)
                     + 49 * !pos.non_pawn_material()
                     - 36 * almostUnwinnable
                     -103 ;
