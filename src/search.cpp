@@ -177,7 +177,7 @@ int intLevel = 40;
 
   Value value_to_tt(Value v, int ply);
 
-#if defined (Sullivan) || (Blau)
+#if defined (Sullivan) || (Blau) || (Fortress)
   Value value_from_tt(Value v, int ply, int r50c);
 #else
   Value value_from_tt(Value v, int ply);
@@ -350,19 +350,19 @@ skipLevels:
          {  //note varietry strength is capped around ~2150-2200 due to its robustness
              int benchKnps = 1000 * (Options["Bench_KNPS"]);
              std::mt19937 gen(now());
-             std::uniform_int_distribution<int> dis(-0, 0);
+             std::uniform_int_distribution<int> dis(-10, 10);
              int rand = dis(gen);
              uci_elo = uci_elo + rand + shallowBlue_adjust;
-             sync_cout << "Elo " << uci_elo << sync_endl;// for debug
+             //sync_cout << "Elo " << uci_elo << sync_endl;// for debug
              int ccrlELo = uci_elo;
 			 if (Options["FIDE_Ratings"])
 				 uci_elo = (((uci_elo * 10) / 7) - 1200);  //shallowBlue adj was only required to get CCRL rating correct
-			 if ((Options["Variety"]))  //note varietry strength is capped around ~2150-2200 due to its robustness
-				 uci_elo += 50 + std::max((uci_elo - 1700)/3,0); // so to use variety without a huge amount of Elo
-			 if  (Options["Adaptive_Play"])  // this brings adaptive play to within 150 of desired Elo strength
-				 uci_elo += 100 + std::max((uci_elo - 1700)/3,0);
+			 if ((Options["Variety"]) && uci_elo >= 1500)  //note varietry strength is capped around ~2150-2200 due to its robustness
+				 uci_elo += 50 + std::max((uci_elo - 1500)/3,0); // so to use variety without a huge amount of Elo
+			 if  ((Options["Adaptive_Play"]) &&  uci_elo >= 1500)  // this brings adaptive play to within 150 of desired Elo strength
+				 uci_elo += 100 + std::max((uci_elo - 1500)/3,0);
 			 uci_elo = std::min(uci_elo, 3200);
-			 sync_cout << "Elo " << uci_elo << sync_endl;//for debug
+			 //sync_cout << "Elo " << uci_elo << sync_endl;//for debug
              int NodesToSearch  =  pow(1.0072, (std::min(uci_elo - 1199,  351 ))) * 48
                                  + pow(1.0050, (std::min(uci_elo - 1199,  851 ))) * 48
                                  - pow(1.0050, (std::min(uci_elo - 1199,  351 ))) * 48
@@ -382,10 +382,10 @@ skipLevels:
              if (uci_elo < 1500 )
              {
                  floatLevel = Options["UCI_LimitStrength"] ?
-                              clamp(std::pow((uci_elo - 993 )  / 13.16, 1), 0.0, 40.0):
+                              clamp(std::pow((uci_elo - 970 )  / 13.16, 1), 0.0, 40.0):
                               double(Options["Skill Level"]);
-                 intLevel = int(floatLevel) +
-                            ((floatLevel - int(floatLevel)) * 1024 > rng.rand<unsigned>() % 1024  ? 1 : 0);
+                 intLevel = int(floatLevel);
+                 //sync_cout << "Level " << intLevel  << sync_endl;// for debug
              }
          }
 #endif
@@ -578,7 +578,7 @@ void Thread::search() {
       multiPV = std::max(multiPV, (size_t)4);
   else
       multiPV = std::min(multiPV, rootMoves.size());
-#if ((defined Sullivan) || (defined Blau) || (defined Fortress))//MichaelB7
+#if defined (Sullivan) || (Blau) || (Fortress)  //MichaelB7
   int w_ct = int(Options["W_Contempt"]) * PawnValueEg / 100; // From centipawns
   int b_ct = int(Options["B_Contempt"]) * PawnValueEg / 100; // From centipawns
   int ct = (us == WHITE ) ? w_ct : b_ct ;
@@ -632,7 +632,7 @@ void Thread::search() {
           if (rootDepth >= 4)
           {
               Value previousScore = rootMoves[pvIdx].previousScore;
-#if defined (Sullivan) || (Blau)
+#if defined (Sullivan) || (Blau) || (Fortress)
               delta = Value(20 + abs(previousScore) / 64);
 #else
               delta = Value(21 + abs(previousScore) / 128);
@@ -810,7 +810,7 @@ void Thread::search() {
 
 
 namespace {
-#if defined (Sullivan) || (Blau)
+#if defined (Sullivan) || (Blau) || (Fortress)
   static TTEntry *probeTT(const Position &pos, Stack* ss, Key posKey,
                           bool &ttHit, Value &ttValue, Move &ttMove) {
 
@@ -842,7 +842,7 @@ namespace {
 #ifndef Fortress
     // Check if we have an upcoming move which draws by repetition, or
     // if the opponent had an alternative move earlier to this position.
-#if defined (Sullivan) || (Blau)
+#if defined (Sullivan) || (Blau) || (Fortress)
     if (   pos.rule50_count() >= 5
 #else
     if (   pos.rule50_count() >= 3
@@ -908,7 +908,7 @@ namespace {
 	  excludedMove = ss->excludedMove;
 	  posKey = pos.key() ^ Key(excludedMove << 16); // Isn't a very good hash
 	  tte = TT.probe(posKey, ttHit);
-      ttValue = ttHit ? value_from_tt(tte->value(), ss->ply) : VALUE_NONE;
+      ttValue = ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
 	  ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
 	  : ttHit    ? tte->move() : MOVE_NONE;
 	  ttPv = PvNode || (ttHit && tte->is_pv());
@@ -984,15 +984,16 @@ if (   Threads.stop.load(std::memory_order_relaxed) || ss->ply >= MAX_PLY)
     // search to overwrite a previous full search TT value, so we use a different
     // position key in case of an excluded move.
     int piecesCount = pos.count<ALL_PIECES>();
+
 #ifndef Fortress
     excludedMove = ss->excludedMove;
     posKey = pos.key() ^ Key(excludedMove << 16); // Isn't a very good hash
-#if defined (Sullivan) || (Blau)
+#if defined (Sullivan) || (Blau) || (Fortress)
     tte = probeTT(pos, ss, posKey, ttHit, ttValue, ttMove);
 #else
     tte = TT.probe(posKey, ttHit);
 #endif
-#if defined (Sullivan) || (Blau)
+#if defined (Sullivan) || (Blau) || (Fortress)
     ttValue = ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
 #else
     ttValue = ttHit ? value_from_tt(tte->value(), ss->ply) : VALUE_NONE;
@@ -1006,7 +1007,7 @@ if (   Threads.stop.load(std::memory_order_relaxed) || ss->ply >= MAX_PLY)
     // At non-PV nodes we check for an early TT cutoff
     if (  !PvNode
         && ttHit
-#if defined (Sullivan) || (Blau)
+#if defined (Sullivan) || (Blau) || (Fortress)
 		&& (pos.rule50_count() < 92 || (piecesCount < 8  && TB::Cardinality ))
 #endif
 #ifdef Fortress
@@ -1277,12 +1278,12 @@ if (   Threads.stop.load(std::memory_order_relaxed) || ss->ply >= MAX_PLY)
     {
         search<NT>(pos, ss, alpha, beta, depth - 7, cutNode);
 
-#if defined (Sullivan) || (Blau)
+#if defined (Sullivan) || (Blau) || (Fortress)
         tte = probeTT(pos, ss, posKey, ttHit, ttValue, ttMove);
 #else
         tte = TT.probe(posKey, ttHit);
 #endif
-#if defined (Sullivan) || (Blau)
+#if defined (Sullivan) || (Blau) || (Fortress)
 		ttValue = ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
 #else
         ttValue = ttHit ? value_from_tt(tte->value(), ss->ply) : VALUE_NONE;
@@ -1395,7 +1396,7 @@ moves_loop: // When in check, search starts from here
 
       // Check extension (~2 Elo)
 
-#if defined (Sullivan) || (Blau)
+#if defined (Sullivan) || (Blau) || (Fortress)
 
        if (    givesCheck
                && !extension
@@ -1417,15 +1418,15 @@ moves_loop: // When in check, search starts from here
 #endif
 
       // Shuffle extension
-#if defined (Sullivan) || (Blau)
-      else if (   PvNode && piecesCountShuff > 15
+#if defined (Sullivan) || (Blau) || (Fortress)
+      else if (   PvNode && piecesCount > 15
                && pos.rule50_count() > 24
 #else
       else if (   PvNode
                && pos.rule50_count() > 18
 #endif
                && depth < 3
-#if defined (Sullivan) || (Blau)
+#if defined (Sullivan) || (Blau) || (Fortress)
                && thisThread->selDepth < 102
                && ++thisThread->shuffleExts < thisThread->nodes.load(std::memory_order_relaxed) / 4)
 #else
@@ -1750,15 +1751,6 @@ moves_loop: // When in check, search starts from here
 
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
 			
-#ifdef Add_Features
-            if (jekyll && popcount(pos.pieces()) > 7)
-			{
-                std::mt19937 gen2(now());
-                std::uniform_int_distribution<int> dis(0, 185 );
-                bestValue -= dis(gen2);
-			}
-#endif
-			
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
 
     return bestValue;
@@ -1838,13 +1830,13 @@ moves_loop: // When in check, search starts from here
                                                   : DEPTH_QS_NO_CHECKS;
     // Transposition table lookup
     posKey = pos.key();
-#if defined (Sullivan) || (Blau)
+#if defined (Sullivan) || (Blau) || (Fortress)
    tte = probeTT(pos, ss, posKey, ttHit, ttValue, ttMove);
    int piecesCountqs = pos.count<ALL_PIECES>();
 #else
     tte = TT.probe(posKey, ttHit);
 #endif
-#if defined (Sullivan) || (Blau)
+#if defined (Sullivan) || (Blau) || (Fortress)
     ttValue = ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
 #else
     ttValue = ttHit ? value_from_tt(tte->value(), ss->ply) : VALUE_NONE;
@@ -1854,7 +1846,7 @@ moves_loop: // When in check, search starts from here
 
     if (  !PvNode
         && ttHit
-#if defined (Sullivan) || (Blau)
+#if defined (Sullivan) || (Blau) || (Fortress)
         && (pos.rule50_count() < 92 || (piecesCountqs < 8  && TB::Cardinality ))
 #endif
 #ifdef Fortress
@@ -1896,15 +1888,6 @@ moves_loop: // When in check, search starts from here
             if (!ttHit)
                 tte->save(posKey, value_to_tt(bestValue, ss->ply), pvHit, BOUND_LOWER,
                           DEPTH_NONE, MOVE_NONE, ss->staticEval);
-			
-#ifdef Add_Features
-            if (jekyll && popcount(pos.pieces()) > 7)
-            {
-                std::mt19937 gen3(now());
-                std::uniform_int_distribution<int> dis(0, 185 );
-                bestValue -= dis(gen3);
-            }
-#endif
 
             return bestValue;
         }
@@ -2018,6 +2001,16 @@ moves_loop: // When in check, search starts from here
           }
        }
     }
+#ifdef Add_Features //variety play
+	  if (!(Options["Adaptive_Play"]) && jekyll && uci_elo >= 1500 && (bestValue + (255 * PawnValueEg / (std::min(uci_elo,3500)/10)) >= 0 ))
+		  {
+//            int o_value = bestValue;// for debug
+//            sync_cout << "Value " << bestValue << sync_endl;// for debug
+              bestValue += (rand() % 64 * 2000/uci_elo);
+//            sync_cout << "Random Value " << bestValue << sync_endl;// for debug
+//            sync_cout << "Change " << bestValue - o_value << sync_endl;// for debug
+		  }
+#endif
 
     // All legal moves have been searched. A special case: If we're in check
     // and no legal moves were found, it is checkmate.
@@ -2030,15 +2023,6 @@ moves_loop: // When in check, search starts from here
               ttDepth, bestMove, ss->staticEval);
 
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
-	  
-#ifdef Add_Features
-          if (jekyll && popcount(pos.pieces()) > 7)
-          {
-              std::mt19937 gen4(now());
-              std::uniform_int_distribution<int> dis(0, 185 );
-              bestValue -= dis(gen4);
-          }
-#endif
 
     return bestValue;
   }
@@ -2060,12 +2044,12 @@ moves_loop: // When in check, search starts from here
   // value_from_tt() is the inverse of value_to_tt(): It adjusts a mate score
   // from the transposition table (which refers to the plies to mate/be mated
   // from current position) to "plies to mate/be mated from the root".
-#if defined (Sullivan) || (Blau)
+#if defined (Sullivan) || (Blau) || (Fortress)
   Value value_from_tt(Value v, int ply, int r50c) {
 #else
   Value value_from_tt(Value v, int ply) {
 #endif
-#if defined (Sullivan) || (Blau)
+#if defined (Sullivan) || (Blau) || (Fortress)
     return  v == VALUE_NONE             ? VALUE_NONE
           : v >= VALUE_MATE_IN_MAX_PLY  ? VALUE_MATE - v > 99 - r50c ? VALUE_MATE_IN_MAX_PLY  : v - ply
           : v <= VALUE_MATED_IN_MAX_PLY ? VALUE_MATE + v > 99 - r50c ? VALUE_MATED_IN_MAX_PLY : v + ply : v;

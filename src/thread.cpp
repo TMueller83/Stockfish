@@ -210,7 +210,7 @@ void ThreadPool::start_thinking(Position& pos, StateListPtr& states,
 
   for (Thread* th : *this)
   {
-#if defined (Sullivan) || (Blau)
+#if defined (Sullivan) || (Blau) || (Fortress)
       th->extension = th->nodes = th->tbHits = th->nmpMinPly = 0;
 #endif
 	  th->shuffleExts = th->nodes = th->tbHits = th->nmpMinPly = 0;

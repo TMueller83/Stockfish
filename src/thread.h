@@ -63,7 +63,7 @@ public:
 
   Pawns::Table pawnsTable;
   Material::Table materialTable;
-#if defined (Sullivan) || (Blau)
+#if defined (Sullivan) || (Blau) || (Fortress)
   size_t pvIdx, pvLast, shuffleExts, extension;
 #else
   size_t pvIdx, pvLast, shuffleExts;

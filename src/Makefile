@@ -24,14 +24,14 @@
 ### ==========================================================================
 
 ### Executable name  (Note: 4 new bench positions were added om 10/17/2019)
-### Bluefish bench nodes ------> 5596789 > based on commits up to 10/28/2019 v
-### Bluefish-FD bench nodes ---> 6068065 > based on commits up to 10/28/2019 v
-### Blue-Honey bench nodes ----> 5648217 > based on commits up to 10/28/2019 v
-### Blue-Honey-FD bench nodes -> 7524132 > based on commits up to 10/28/2019 v
-### Honey bench nodes ---------> 5676502 > based on commits up to 10/28/2019 v
-### Honey-FD bench nodes ------> 6810740 > based on commits up to 10/28/2019 v
-### stockfish-FD bench nodes --> 4890533 > based on commits up to 10/28/2019 v
-### stockfish bench nodes -----> 5115841 > based on commits up to 10/28/2019 v
+### Bluefish bench nodes ------> 5485192 > based on commits up to 10/30/2019 v
+### Bluefish-FD bench nodes ---> 5528787 > based on commits up to 10/30/2019 v
+### Blue-Honey bench nodes ----> 6025307 > based on commits up to 10/30/2019 v
+### Blue-Honey-FD bench nodes -> 6517388 > based on commits up to 10/30/2019 v
+### Honey bench nodes ---------> 5239312 > based on commits up to 10/30/2019 v
+### Honey-FD bench nodes ------> 6325779 > based on commits up to 10/30/2019 v
+### stockfish-FD bench nodes --> 5401228 > based on commits up to 10/30/2019 v
+### stockfish bench nodes -----> 5115841 > based on commits up to 10/30/2019 v
 
 ####  Always leave the three lines below as is (any subsequent defines will override)
 DATE=$(shell date +"%m%d%y")
@@ -52,7 +52,7 @@ FEATURE1=add_features
 ###	BLUEFISH = yes
 
 ### Release versions , enter yes and release version below foor releases
-RELEASEVER = no
+RELEASEVER = yes
 RELVERSION = X6a
 
 ### TEST versions, enter yes and labels below to build named test exe's
