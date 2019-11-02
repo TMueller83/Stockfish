@@ -207,6 +207,7 @@ void ThreadPool::start_thinking(Position& pos, StateListPtr& states,
 
   for (Thread* th : *this)
   {
+      th->checkExts = th->nodes = th->tbHits = th->nmpMinPly = 0;
       th->shuffleExts = th->nodes = th->tbHits = th->nmpMinPly = 0;
       th->rootDepth = th->completedDepth = 0;
       th->rootMoves = rootMoves;
