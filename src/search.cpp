@@ -1405,13 +1405,12 @@ moves_loop: // When in check, search starts from here
 
 #if defined (Sullivan) || (Blau) || (Fortress)
 
-       if (    givesCheck
-               && !extension
+       else if (    givesCheck
                && ++thisThread->extension < thisThread->nodes.load(std::memory_order_relaxed) / 4 ) //MichaelB7
 		  extension = 1;
 
      // MichaelB7 Passed pawn extension
-      if ( move == ss->killers[0] && !extension
+      else if ( move == ss->killers[0] && !extension
 			  && (pos.promotion_pawn_push(move)
                           || (pos.advanced_pawn_push(move)
                           && pos.pawn_passed(us, to_sq(move)))))
