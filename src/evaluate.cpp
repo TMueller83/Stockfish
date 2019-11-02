@@ -782,6 +782,8 @@ constexpr Score MobilityBonus[][32] = {
 
     Value mg = mg_value(score);
     Value eg = eg_value(score);
+	
+    int separation = distance<File>(pos.square<KING>(WHITE), pos.square<KING>(BLACK));
 
     int outflanking =  distance<File>(pos.square<KING>(WHITE), pos.square<KING>(BLACK))
                      - distance<Rank>(pos.square<KING>(WHITE), pos.square<KING>(BLACK));
@@ -798,6 +800,7 @@ constexpr Score MobilityBonus[][32] = {
                     + 11 * pos.count<PAWN>()
                     +  9 * outflanking
                     + 18 * pawnsOnBothFlanks
+                    + 40 * (separation > 3) * (outflanking <= 0)
                     + 49 * !pos.non_pawn_material()
                     - 36 * almostUnwinnable
                     -103 ;
