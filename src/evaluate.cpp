@@ -782,9 +782,9 @@ constexpr Score MobilityBonus[][32] = {
 
     Value mg = mg_value(score);
     Value eg = eg_value(score);
-	
+#if defined (Sullivan) || (defined Blau) || (Fortress)
     int separation = distance<File>(pos.square<KING>(WHITE), pos.square<KING>(BLACK));
-
+#endif
     int outflanking =  distance<File>(pos.square<KING>(WHITE), pos.square<KING>(BLACK))
                      - distance<Rank>(pos.square<KING>(WHITE), pos.square<KING>(BLACK));
 
@@ -799,11 +799,14 @@ constexpr Score MobilityBonus[][32] = {
     int complexity =   9 * pe->passed_count()
                     + 11 * pos.count<PAWN>()
                     +  9 * outflanking
-                    + 18 * pawnsOnBothFlanks
-                    + 40 * (separation > 3) * (outflanking <= 0)
-                    + 49 * !pos.non_pawn_material()
-                    - 36 * almostUnwinnable
-                    -103 ;
+                    + 21 * pawnsOnBothFlanks
+#if defined (Sullivan) || (defined Blau) || (Fortress)
+                    + 50 * (separation > 3) * (outflanking <= 0)
+#endif
+                    + 51 * !pos.non_pawn_material()
+                    - 43 * almostUnwinnable
+                    - 95 ;
+
 
     // Now apply the bonus: note that we find the attacking side by extracting the
     // sign of the midgame or endgame values, and that we carefully cap the bonus

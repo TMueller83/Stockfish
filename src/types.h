@@ -179,37 +179,37 @@ enum Value : int {
   VALUE_MATED_IN_MAX_PLY = -VALUE_MATE + 2 * MAX_PLY,
 
 #if defined (Sullivan) && (defined Blau)
-  #define PVM 91/100
-  #define PVE 89/100
-  #define NVM 91/100
-  #define NVE 89/100
-  #define BVM 91/100
-  #define BVE 89/100
-  #define RVM 87/100
-  #define RVE 89/100
-  #define QVM 89/100
-  #define QVE 89/100
+  #define PVM 90/100
+  #define PVE 90/100
+  #define NVM 90/100
+  #define NVE 90/100
+  #define BVM 90/100
+  #define BVE 90/100
+  #define RVM 90/100
+  #define RVE 90/100
+  #define QVM 90/100
+  #define QVE 90/100
 
 #elif (defined Blau)
   #define PVM 80/100
-  #define PVE 78/100
+  #define PVE 80/100
   #define NVM 80/100
-  #define NVE 78/100
+  #define NVE 80/100
   #define BVM 80/100
-  #define BVE 78/100
-  #define RVM 76/100
-  #define RVE 78/100
-  #define QVM 78/100
-  #define QVE 78/100
+  #define BVE 80/100
+  #define RVM 80/100
+  #define RVE 80/100
+  #define QVM 80/100
+  #define QVE 80/100
 
 #elif (defined Sullivan)
-  #define PVM 102/100
+  #define PVM 100/100
   #define PVE 100/100
-  #define NVM 102/100
+  #define NVM 100/100
   #define NVE 100/100
-  #define BVM 102/100
+  #define BVM 100/100
   #define BVE 100/100
-  #define RVM 98/100
+  #define RVM 100/100
   #define RVE 100/100
   #define QVM 100/100
   #define QVE 100/100
@@ -227,14 +227,13 @@ enum Value : int {
   #define QVE 100/100
 #endif
 
-    PawnValueMg   = 128*PVM,   PawnValueEg   = 213*PVE,
-    KnightValueMg = 782*NVM,   KnightValueEg = 865*NVE,
-    BishopValueMg = 830*BVM,   BishopValueEg = 918*BVE,
-    RookValueMg   = 1289*RVM,  RookValueEg   = 1378*RVE,
-    QueenValueMg  = 2529*QVM,  QueenValueEg  = 2687*QVE,
+PawnValueMg   = 128*PVM,   PawnValueEg   = 213*PVE,
+KnightValueMg = 781*NVM,   KnightValueEg = 854*NVE,
+BishopValueMg = 825*BVM,   BishopValueEg = 915*BVE,
+RookValueMg   = 1276*RVM,  RookValueEg   = 1380*RVE,
+QueenValueMg  = 2538*QVM,  QueenValueEg  = 2682*QVE,
 	
-    MidgameLimit  = 15258*PVM, EndgameLimit  = 3915*PVE
-
+MidgameLimit  = 15258*PVM, EndgameLimit  = 3915*PVE
 };
 
 enum PieceType {

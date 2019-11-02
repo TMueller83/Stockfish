@@ -1754,8 +1754,12 @@ moves_loop: // When in check, search starts from here
         tte->save(posKey, value_to_tt(bestValue, ss->ply), ttPv,
                   bestValue >= beta ? BOUND_LOWER :
                   PvNode && bestMove ? BOUND_EXACT : BOUND_UPPER,
+#if defined (Sullivan) || (Blau) || (Fortress)
+                  std::min(depth + 6 * int(pos.rule50_count() > 90), MAX_PLY - 1),
+                       bestMove, ss->staticEval); // joergoster patch
+#else
                   depth, bestMove, ss->staticEval);
-
+#endif
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
 			
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
