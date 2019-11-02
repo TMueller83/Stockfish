@@ -127,7 +127,7 @@ void init(OptionsMap& o) {
     o["Variety"]                  << Option(false);
     o["Adaptive_Play"]            << Option(false); //Adaptive Play change - now simple on/off check box
 #if (defined Add_Features && defined Sullivan)  // leaving in, since it makes it easier to tweak annually
-    o["DC_Slider"]                << Option(0, -180, 180);
+    o["DC_Slider"]                << Option(30, -180, 180);
 #elif (defined Add_Features && Stockfish)
     o["DC_Slider"]                << Option(0, -180, 180);
 #endif
