@@ -364,7 +364,9 @@ void Thread::search() {
 
   multiPV = std::min(multiPV, rootMoves.size());
 
-  int ct = int(Options["Contempt"]) * PawnValueEg / 100; // From centipawns
+  int w_ct = int(Options["W_Contempt"]) * PawnValueEg / 100; // From centipawns
+  int b_ct = int(Options["B_Contempt"]) * PawnValueEg / 100; // From centipawns
+  int ct = (us == WHITE ) ? w_ct : b_ct ;
 
   // In analysis mode, adjust contempt in accordance with user preference
   if (Limits.infinite || Options["UCI_AnalyseMode"])
