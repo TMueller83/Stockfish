@@ -1406,6 +1406,7 @@ moves_loop: // When in check, search starts from here
 #if defined (Sullivan) || (Blau) || (Fortress)
 
        else if (    givesCheck
+               && (pos.is_discovery_check_on_king(~us, move) || pos.see_ge(move))
                && ++thisThread->extension < thisThread->nodes.load(std::memory_order_relaxed) / 4 ) //MichaelB7
 		  extension = 1;
 
