@@ -1425,21 +1425,27 @@ moves_loop: // When in check, search starts from here
 #endif
 
       // Shuffle extension
-#if defined (Sullivan) || (Blau) || (Fortress)
+/*#if defined (Sullivan) || (Blau) || (Fortress)
       else if (   PvNode && piecesCount > 15
                && pos.rule50_count() > 24
-#else
+#else*/
+#ifndef Sullivan
+#ifndef Blau
+#ifndef Fortress
       else if (   PvNode
                && pos.rule50_count() > 18
-#endif
+//#endif
                && depth < 3
-#if defined (Sullivan) || (Blau) || (Fortress)
+/*#if defined (Sullivan) || (Blau) || (Fortress)
                && thisThread->selDepth < 102
                && ++thisThread->shuffleExts < thisThread->nodes.load(std::memory_order_relaxed) / 4)
-#else
+#else*/
                && ++thisThread->shuffleExts < thisThread->nodes.load(std::memory_order_relaxed) / 4)  // To avoid too many extensions
-#endif
+//#endif
           extension = 1;
+#endif
+#endif
+#endif
 #ifdef Sullivan  //see above for Passed pawn extension
 #else
       // Passed pawn extension
