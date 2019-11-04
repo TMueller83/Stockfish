@@ -50,8 +50,9 @@
 namespace Search {
 
   LimitsType Limits;
-  bool adaptive       = Options["Adaptive_Play"];
-
+  bool adaptive;
+  bool ctempt;
+  int  userDrawScore;
 }
 
 namespace Tablebases {
@@ -123,7 +124,7 @@ namespace {
 #ifdef Add_Features
 bool  bruteForce, fide, jekyll, minOutput, uci_sleep, noNULL;
 bool limitStrength = false;
-int   aggressiveness, attack, intLevel = 40, tactical, uci_elo;
+int  intLevel = 40, tactical, uci_elo;
 #else
 int intLevel = 40;
 #endif
@@ -262,7 +263,7 @@ void MainThread::search() {
     1 Honey-CCRL-1712      1059   0.0   29   29   500  256.5  51.3  235  222   43  47.0   8.6  1049
     2 Shallow Blue 2.0.0   1049   9.5   29   29   500  243.5  48.7  222  235   43  44.4   8.6  1059
     ---------------------------------------------------------------------------------------------------------*/
-    aggressiveness      = Options["DC_Slider"];
+	adaptive            = Options["Adaptive_Play"];
     bruteForce          = Options["BruteForce"];
     jekyll              = Options["Variety"];
     minOutput           = Options["Minimal_Output"];
@@ -538,6 +539,9 @@ void Thread::search() {
   MainThread* mainThread = (this == Threads.main() ? Threads.main() : nullptr);
   double timeReduction = 1, totBestMoveChanges = 0;
   Color us = rootPos.side_to_move();
+  ctempt= Options["Contempt"];
+  userDrawScore = int(Options["Draw_Score"]) * PawnValueEg;
+
 
 #ifdef Add_Features
   TB::SevenManProbe = Options["7 Man Probing"];
@@ -573,7 +577,6 @@ void Thread::search() {
 
 #ifdef Add_Features
     if (tactical) multiPV = pow(2, tactical);
-	if (aggressiveness) attack = aggressiveness;
 #endif
 
   // When playing with strength handicap enable MultiPV search that we will
@@ -582,13 +585,9 @@ void Thread::search() {
       multiPV = std::max(multiPV, (size_t)4);
   else
       multiPV = std::min(multiPV, rootMoves.size());
-#if defined (Sullivan) || (Blau) || (Fortress)  //MichaelB7
-  int w_ct = int(Options["W_Contempt"]) * PawnValueEg / 100; // From centipawns
-  int b_ct = int(Options["B_Contempt"]) * PawnValueEg / 100; // From centipawns
-  int ct = (us == WHITE ) ? w_ct : b_ct ;
-#else
-  int ct = int(Options["Contempt"]) * PawnValueEg / 100; // From centipawns
-#endif
+
+  int ct = int(ctempt) * (24 * PawnValueEg / 100); // From centipawns
+
   // In analysis mode, adjust contempt in accordance with user preference
   if (Limits.infinite || Options["UCI_AnalyseMode"])
       ct =  Options["Analysis_Contempt"] == "Off"  ? 0
@@ -644,30 +643,11 @@ void Thread::search() {
               alpha = std::max(previousScore - delta,-VALUE_INFINITE);
               beta  = std::min(previousScore + delta, VALUE_INFINITE);
 
-
 		// Adjust contempt based on root move's previousScore (dynamic contempt)
-		int dct;
-#ifdef Add_Features
-		bool dc = Options["Dynamic_Contempt"];
-		if (!dc)
-		{
-			dct = 0;
-			contempt = Score(0);
-		}
-		else
-#endif
-                {
-#ifdef Add_Features
-                    dct = ct + (111 - ct / 2) * previousScore / (abs(previousScore) + 176)
-                           + (attack * (ct + (111 - ct / 2) * previousScore / (abs(previousScore) + 176)))/1000;
-                    /*dct = ct + 86 * previousScore / (abs(previousScore) + 176)
-                          + (attack * (ct + 88 * previousScore / (abs(previousScore) + 176)))/1000;*/
-#else
-                    int dct = ct + (111 - ct / 2) * previousScore / (abs(previousScore) + 176);
-#endif
-					contempt = (us == WHITE ?  make_score(dct, dct / 2)
-								: -make_score(dct, dct / 2));
-               }
+              int dct = ctempt * (ct + (111 - ct / 2) * previousScore / (abs(previousScore) + 176)) + userDrawScore;
+
+              contempt = (us == WHITE ?  make_score(dct, dct / 2)
+                       : -make_score(dct, dct / 2));
        }
 
           // Start with a small aspiration window and, in the case of a fail

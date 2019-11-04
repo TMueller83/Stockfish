@@ -94,17 +94,17 @@ void init(OptionsMap& o) {
     o["Best_Move_4"]              << Option(true, on_best_book_move4);
     o["Book_Depth_4"]             << Option(127, 1, 127, on_book_depth4);
 #endif
-#if ((defined Sullivan) || (defined Blau) || (defined Fortress))
-    o["W_Contempt"]               << Option(  22, -150, 150);
-    o["B_Contempt"]               << Option(  22, -150, 150);
+#ifdef Fortress
+    o["Contempt"]                 << Option(false);
 #else
-    o["Contempt"]                 << Option(  24, -100, 100);
+    o["Contempt"]                 << Option(true);
 #endif
 #ifdef Add_Features
     o["Analysis_Contempt"]        << Option("Off var White var Black var Both var Off", "Off");
 #else
     o["Analysis_Contempt"]        << Option("Both var Off var White var Black var Both", "Both");
 #endif
+    o["Draw_Score"]               << Option( 0, -300, 300);
     o["Skill Level"]              << Option(40, 0, 40);
     o["Move Overhead"]            << Option(30, 0, 5000);
     o["Minimum Thinking Time"]    << Option(20, 0, 5000);
