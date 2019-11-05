@@ -24,14 +24,14 @@
 ### ==========================================================================
 
 ### Executable name  (Note: 4 new bench positions were added om 10/17/2019)
-### Bluefish bench nodes ------>  6089928 > based on commits up to 11/01/2019 v
-### Bluefish-FD bench nodes --->  5813911 > based on commits up to 11/01/2019 v
-### Blue-Honey bench nodes ---->  5949917 > based on commits up to 11/01/2019 v
-### Blue-Honey-FD bench nodes ->  6883854 > based on commits up to 11/01/2019 v
-### Honey bench nodes --------->  5155316 > based on commits up to 11/01/2019 v
-### Honey-FD bench nodes ------>  5716153 > based on commits up to 11/01/2019 v
-### stockfish-FD bench nodes --> 16778069 > based on commits up to 11/01/2019 v
-### stockfish bench nodes ------> 4959244 > based on commits up to 11/01/2019 v
+### Bluefish bench nodes ------>  4723090 > based on commits up to 11/04/2019 v
+### Bluefish-FD bench nodes --->  5777063 > based on commits up to 11/04/2019 v
+### Blue-Honey bench nodes ---->  5109155 > based on commits up to 11/04/2019 v
+### Blue-Honey-FD bench nodes ->  6001087 > based on commits up to 11/04/2019 v
+### Honey bench nodes --------->  4583476 > based on commits up to 11/04/2019 v
+### Honey-FD bench nodes ------>  5111887 > based on commits up to 11/04/2019 v
+### stockfish-FD bench nodes -->  4878745 > based on commits up to 11/04/2019 v
+### stockfish bench nodes ------> 4707799 > based on commits up to 11/04/2019 v
 
 ####  Always leave the three lines below as is (any subsequent defines will override)
 DATE=$(shell date +"%m%d%y")
@@ -56,9 +56,9 @@ RELEASEVER = yes
 RELVERSION = X6a
 
 ### TEST versions, enter yes and labels below to build named test exe's
-TEST = yes
+TEST = no
 TESTv1 = $(DATE2)
-TESTv2 = makefix2
+TESTv2 =
 ifeq ($(TEST),yes)
 CXXFLAGS += -DTest
 endif

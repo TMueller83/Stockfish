@@ -275,7 +275,7 @@ constexpr Score MobilityBonus[][32] = {
     // Init our king safety tables
     Square s = make_square(clamp(file_of(ksq), FILE_B, FILE_G),
                            clamp(rank_of(ksq), RANK_2, RANK_7));
-    kingRing[Us] = PseudoAttacks[KING][s] | s;
+    kingRing[Us] = s | PseudoAttacks[KING][s];
 
     kingAttackersCount[Them] = popcount(kingRing[Us] & pe->pawn_attacks(Them));
     kingAttacksCount[Them] = kingAttackersWeight[Them] = 0;
@@ -329,7 +329,7 @@ constexpr Score MobilityBonus[][32] = {
         {
             // Bonus if piece is on an outpost square or can reach one
             bb = OutpostRanks & attackedBy[Us][PAWN] & ~pe->pawn_attacks_span(Them);
-            if (bb & s)
+            if (s & bb)
 #if ((defined Sullivan) || (defined Blau))
             score += Outpost * (Pt == KNIGHT ? 4 : 2);
 			
