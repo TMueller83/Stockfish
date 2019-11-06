@@ -104,7 +104,7 @@ void init(OptionsMap& o) {
 #else
     o["Analysis_Contempt"]        << Option("Both var Off var White var Black var Both", "Both");
 #endif
-    o["Draw_Score"]               << Option( 0, -300, 300);
+    o["Draw_Score"]               << Option( 0, -50, 50); //10 to 16 is best if used, used to play more conservative
     o["Skill Level"]              << Option(40, 0, 40);
     o["Move Overhead"]            << Option(30, 0, 5000);
     o["Minimum Thinking Time"]    << Option(20, 0, 5000);
@@ -126,11 +126,6 @@ void init(OptionsMap& o) {
     o["Minimal_Output"]           << Option(false);
     o["Variety"]                  << Option(false);
     o["Adaptive_Play"]            << Option(false); //Adaptive Play change - now simple on/off check box
-#if (defined Add_Features && defined Sullivan)  // leaving in, since it makes it easier to tweak annually
-    o["DC_Slider"]                << Option(30, -180, 180);
-#elif (defined Add_Features && Stockfish)
-    o["DC_Slider"]                << Option(0, -180, 180);
-#endif
 #ifdef Add_Features
     o["MultiPV"]                  << Option(1, 1, 256);
 #else
@@ -166,7 +161,8 @@ void init(OptionsMap& o) {
                                             "var Class_B var Class_C var Class_D var Boris "
                                             "var Novice var None", "None");
 #endif
-    o["nodestime"]                << Option(0, 0, 10000);
+    o["Nodestime"]                << Option(0, 0, 10000);
+    o["NPS_Level"]                << Option(0, 0, 60);
     o["UCI_Chess960"]             << Option(false);
     o["UCI_AnalyseMode"]          << Option(false);
     o["SyzygyPath"]               << Option("<empty>", on_tb_path);

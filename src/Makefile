@@ -24,14 +24,14 @@
 ### ==========================================================================
 
 ### Executable name  (Note: 4 new bench positions were added om 10/17/2019)
-### Bluefish bench nodes ------>  4723090 > based on commits up to 11/04/2019 v
-### Bluefish-FD bench nodes --->  5777063 > based on commits up to 11/04/2019 v
-### Blue-Honey bench nodes ---->  5109155 > based on commits up to 11/04/2019 v
-### Blue-Honey-FD bench nodes ->  6001087 > based on commits up to 11/04/2019 v
-### Honey bench nodes --------->  4583476 > based on commits up to 11/04/2019 v
-### Honey-FD bench nodes ------>  5111887 > based on commits up to 11/04/2019 v
-### stockfish-FD bench nodes -->  4878745 > based on commits up to 11/04/2019 v
-### stockfish bench nodes ------> 4707799 > based on commits up to 11/04/2019 v
+### Bluefish bench nodes ------>  4723090 > based on commits up to 11/07/2019 v
+### Bluefish-FD bench nodes --->  5777063 > based on commits up to 11/07/2019 v
+### Blue-Honey bench nodes ---->  5109155 > based on commits up to 11/07/2019 v
+### Blue-Honey-FD bench nodes ->  6001087 > based on commits up to 11/07/2019 v
+### Honey bench nodes --------->  4583476 > based on commits up to 11/07/2019 v
+### Honey-FD bench nodes ------>  5111887 > based on commits up to 11/07/2019 v
+### stockfish-FD bench nodes -->  4878745 > based on commits up to 11/07/2019 v
+### stockfish bench nodes ------> 4707799 > based on commits up to 11/07/2019 v
 
 ####  Always leave the three lines below as is (any subsequent defines will override)
 DATE=$(shell date +"%m%d%y")
@@ -39,7 +39,7 @@ DATE2=$(shell date +"%m%d")
 FEATURE1=add_features
 
 ### Uncomment the line below for Honey, comment out for Stockfish
-###	VERSION=sullivan
+###	HONEY=yes
 
 ### Fortress Detection code that will help in positions such as this:
 ### 3r4/3r4/2p1k3/p1pbPp1p/Pp1p1PpP/1P1P2R1/2P4R/2K1Q3 w - - 0 6, bm Rxg4
@@ -89,7 +89,7 @@ ifeq ($(FORTRESS_DETECT),yes)
 	SUF=-FD
 endif
 
-ifeq ($(VERSION),sullivan)
+ifeq ($(HONEY),yes)
     NAME=$(PRE)Honey$(SUF)
     CXXFLAGS += -DSullivan
 	ifeq ($(BLUEFISH),yes)
@@ -119,7 +119,7 @@ ifeq ($(VERSION),sullivan)
 endif
 
 ### Note:  For building cur-dev stockfish with the features added.
-ifneq ($(VERSION),sullivan)
+ifneq ($(HONEY),yes)
 	ifeq ($(BLUEFISH),yes)
 		CXXFLAGS += -DBlau
 		PRE=Blue
@@ -502,7 +502,7 @@ help:
 	@echo "<target> would be 'build' or 'profile-build'"
 	@echo ""
 	@echo "To compile stockfish, uncomment this line in the makefile: "
-	@echo "'### VERSION=sullivan' by remvoing the 3 #(pound signs)"
+	@echo "'### HONEY=yes' by remvoing the 3 #(pound signs)"
 	@echo "then type: 'make <target> ARCH=<arch> [COMP=compiler] [COMPCXX=cxx]'"
 	@echo ""
 	@echo "Supported targets:"

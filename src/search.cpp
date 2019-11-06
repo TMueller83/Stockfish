@@ -53,6 +53,8 @@ namespace Search {
   bool adaptive;
   bool ctempt;
   int  userDrawScore;
+  int dct;
+  int benchKnps;
 }
 
 namespace Tablebases {
@@ -307,53 +309,62 @@ void MainThread::search() {
       }
       else
       {
-		 if (Options["UCI_LimitStrength"] && Options["Engine_Level"] == "None")
-		 {
-			 uci_elo = (Options["UCI_Elo"]);
+         if (Options["NPS_Level"])
+         {
+             benchKnps = 1000 * (Options["Bench_KNPS"]);
+             sync_cout << "Bknps: " << benchKnps  << sync_endl;// for debug
+             int nps = 64 * pow(1.1486, (Options["NPS_Level"] - 1 ));
+             Limits.nodes = nps;
+             Limits.nodes *= Time.optimum()/1000 + 1 ;
+             std::this_thread::sleep_for (std::chrono::milliseconds(Time.optimum()) * double(1 - Limits.nodes/benchKnps));
+         }
+         else if (Options["UCI_LimitStrength"] && Options["Engine_Level"] == "None")
+         {
+             uci_elo = (Options["UCI_Elo"]);
              limitStrength = true;
              goto skipLevels;
-		 }
-		 if (Options["Engine_Level"] == "None")
+         }
+         if (Options["Engine_Level"] == "None")
          {
              limitStrength = false;
-		     goto skipLevels;
+             goto skipLevels;
          }
          else limitStrength = true;
 		  
          if (Options["Engine_Level"] == "World_Champion")
-                uci_elo = 2900;
+             uci_elo = 2900;
          else if (Options["Engine_Level"] == "Super_GM")
-                uci_elo = 2800;
+             uci_elo = 2800;
          else if (Options["Engine_Level"] == "GM")
-                uci_elo = 2650;
+             uci_elo = 2650;
          else if (Options["Engine_Level"] == "Deep_Thought")
-                uci_elo = 2500;
+             uci_elo = 2500;
          else if (Options["Engine_Level"] == "SIM")
-                uci_elo = 2400;
+             uci_elo = 2400;
 		 else if (Options["Engine_Level"] == "IM")
-                uci_elo = 2300;
+             uci_elo = 2300;
          else if (Options["Engine_Level"] == "Cray_Blitz")
-                uci_elo = 2200;
+             uci_elo = 2200;
          else if (Options["Engine_Level"] == "Master")
-                uci_elo = 2100;
+             uci_elo = 2100;
          else if (Options["Engine_Level"] == "Expert")
-                uci_elo = 1950;
+             uci_elo = 1950;
          else if (Options["Engine_Level"] == "Class_A")
-                uci_elo = 1800;
+             uci_elo = 1800;
          else if (Options["Engine_Level"] == "Class_B")
-                uci_elo = 1650;
+             uci_elo = 1650;
          else if (Options["Engine_Level"] == "Class_C")
-                uci_elo = 1500;
+             uci_elo = 1500;
          else if (Options["Engine_Level"] == "Class_D")
-                uci_elo = 1350;
+             uci_elo = 1350;
          else if (Options["Engine_Level"] == "Boris")
-                uci_elo = 1200;
+             uci_elo = 1200;
          else if (Options["Engine_Level"] == "Novice")
-                uci_elo = 1000;
+             uci_elo = 1000;
 skipLevels:
          if (limitStrength)
          {  //note varietry strength is capped around ~2150-2200 due to its robustness
-             int benchKnps = 1000 * (Options["Bench_KNPS"]);
+             benchKnps = 1000 * (Options["Bench_KNPS"]);
              std::mt19937 gen(now());
              std::uniform_int_distribution<int> dis(-10, 10);
              int rand = dis(gen);
@@ -540,7 +551,7 @@ void Thread::search() {
   double timeReduction = 1, totBestMoveChanges = 0;
   Color us = rootPos.side_to_move();
   ctempt= Options["Contempt"];
-  userDrawScore = int(Options["Draw_Score"]) * PawnValueEg;
+  userDrawScore = int(Options["Draw_Score"]) * PawnValueEg/100;
 
 
 #ifdef Add_Features
@@ -644,7 +655,7 @@ void Thread::search() {
               beta  = std::min(previousScore + delta, VALUE_INFINITE);
 
 		// Adjust contempt based on root move's previousScore (dynamic contempt)
-              int dct = ctempt * (ct + (111 - ct / 2) * previousScore / (abs(previousScore) + 176)) + userDrawScore;
+              dct = ctempt * (ct + (111 - ct / 2) * previousScore / (abs(previousScore) + 176)) + userDrawScore;
 
               contempt = (us == WHITE ?  make_score(dct, dct / 2)
                        : -make_score(dct, dct / 2));
@@ -720,6 +731,9 @@ void Thread::search() {
           if (    mainThread
               && (Threads.stop || pvIdx + 1 == multiPV || Time.elapsed() > 3000))
               sync_cout << UCI::pv(rootPos, rootDepth, alpha, beta) << sync_endl;
+              //int dctcp = dct * 100/PawnValueEg; //for debug
+              //sync_cout << "Contempt MG: " << dctcp  << sync_endl;// for debug
+              //sync_cout << "Contempt EG: " << dctcp/2  << "\n" << sync_endl;// for debug
       }
 
         if (!Threads.stop)
