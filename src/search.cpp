@@ -808,6 +808,7 @@ namespace {
         &&  eval >= ss->staticEval
         &&  ss->staticEval >= beta - 33 * depth + 299 - improving * 30
         && !excludedMove
+        && thisThread->selDepth + 3 > thisThread->rootDepth
         &&  pos.non_pawn_material(us)
         && (ss->ply >= thisThread->nmpMinPly || us != thisThread->nmpColor))
     {
