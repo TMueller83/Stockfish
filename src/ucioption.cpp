@@ -99,12 +99,16 @@ void init(OptionsMap& o) {
 #else
     o["Contempt"]                 << Option(true);
 #endif
+#ifdef Fortress
+	o["Dynamic_Contempt"]         << Option(false);
+#else
+	o["Dynamic_Contempt"]         << Option(true);
+#endif
 #ifdef Add_Features
     o["Analysis_Contempt"]        << Option("Off var White var Black var Both var Off", "Off");
 #else
     o["Analysis_Contempt"]        << Option("Both var Off var White var Black var Both", "Both");
 #endif
-    o["Draw_Score"]               << Option( 0, -50, 50); //10 to 16 is best if used, used to play more conservative
     o["Skill Level"]              << Option(40, 0, 40);
     o["Move Overhead"]            << Option(30, 0, 5000);
     o["Minimum Thinking Time"]    << Option(20, 0, 5000);
@@ -112,20 +116,20 @@ void init(OptionsMap& o) {
     o["Hash"]                     << Option(16, 1, MaxHashMB, on_hash_size);
     o["Ponder"]                   << Option(false);
 #ifdef Add_Features
+    o["Adaptive_Play"]            << Option(false); //Adaptive Play change - now simple on/off check box
+    o["Variety"]                  << Option(false); // Do not use with Adaptive play
+#if defined (Sullivan) || (Blau) || (Fortress)
+    o["Defensive"]                << Option(true); //Do not use with Offensive play
+#else
+    o["Defensive"]                << Option(false); //Do not use with Offensive play
+#endif
+    o["BruteForce"]               << Option(false);
     o["Clear_Hash"]               << Option(on_clear_hash);
     o["Clean_Search"]             << Option(false);
     o["7 Man Probing"]            << Option(false);
-    o["BruteForce"] 	          << Option(false);
     o["No_Null_Moves"]            << Option(false);
-#ifdef Fortress
-    o["Dynamic_Contempt"]         << Option(false);
-#else
-    o["Dynamic_Contempt"]         << Option(true);
-#endif
     o["FastPlay"]                 << Option(false);
     o["Minimal_Output"]           << Option(false);
-    o["Variety"]                  << Option(false);
-    o["Adaptive_Play"]            << Option(false); //Adaptive Play change - now simple on/off check box
 #ifdef Add_Features
     o["MultiPV"]                  << Option(1, 1, 256);
 #else
@@ -147,6 +151,9 @@ void init(OptionsMap& o) {
 #else
     o["Slow Mover"]               << Option(84, 10, 1000);
 #endif
+    o["NPS_Level"]                << Option(0, 0, 60);// Do not use with other reduce strength levels
+                                                      //can be used with adaptive play of variety,
+                                                      //sleep is auto-on with this play
     o["UCI_LimitStrength"]        << Option(false);
     o["UCI_Sleep"]                << Option(false);
 /* Expanded Range (1000 to 2900 Elo) and roughly in sync with CCRL 40/4, anchored to ShalleoBlue at Elo 1712*/
@@ -162,7 +169,6 @@ void init(OptionsMap& o) {
                                             "var Novice var None", "None");
 #endif
     o["Nodestime"]                << Option(0, 0, 10000);
-    o["NPS_Level"]                << Option(0, 0, 60);
     o["UCI_Chess960"]             << Option(false);
     o["UCI_AnalyseMode"]          << Option(false);
     o["SyzygyPath"]               << Option("<empty>", on_tb_path);

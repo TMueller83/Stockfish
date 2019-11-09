@@ -52,7 +52,8 @@ namespace Search {
   LimitsType Limits;
   bool adaptive;
   bool ctempt;
-  int  userDrawScore;
+  int defensive;
+  int offensive;
   int dct;
   int benchKnps;
 }
@@ -267,13 +268,15 @@ void MainThread::search() {
     ---------------------------------------------------------------------------------------------------------*/
 	adaptive            = Options["Adaptive_Play"];
     bruteForce          = Options["BruteForce"];
+    defensive           = Options["Defensive"];
+    fide                = Options["FIDE_Ratings"];
     jekyll              = Options["Variety"];
     minOutput           = Options["Minimal_Output"];
     noNULL              = Options["No_Null_Moves"];
     tactical            = Options["Tactical"];
     uci_elo             = Options["Engine_Elo"];
     uci_sleep           = Options["UCI_Sleep"];
-	fide                = Options["FIDE_Ratings"];
+
 	
 #endif
 
@@ -551,8 +554,7 @@ void Thread::search() {
   double timeReduction = 1, totBestMoveChanges = 0;
   Color us = rootPos.side_to_move();
   ctempt= Options["Contempt"];
-  userDrawScore = int(Options["Draw_Score"]) * PawnValueEg/100;
-
+  int defensive = -34 * (int(Options["Defensive"]));  //about 16 cp
 
 #ifdef Add_Features
   TB::SevenManProbe = Options["7 Man Probing"];
@@ -655,7 +657,7 @@ void Thread::search() {
               beta  = std::min(previousScore + delta, VALUE_INFINITE);
 
 		// Adjust contempt based on root move's previousScore (dynamic contempt)
-              dct = ctempt * (ct + (111 - ct / 2) * previousScore / (abs(previousScore) + 176)) + userDrawScore;
+              dct = ctempt * (ct + (111 - ct / 2) * previousScore / (abs(previousScore) + 176)) + defensive;
 
               contempt = (us == WHITE ?  make_score(dct, dct / 2)
                        : -make_score(dct, dct / 2));

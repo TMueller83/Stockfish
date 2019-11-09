@@ -24,14 +24,14 @@
 ### ==========================================================================
 
 ### Executable name  (Note: 4 new bench positions were added om 10/17/2019)
-### Bluefish bench nodes ------>  4723090 > based on commits up to 11/07/2019 v
-### Bluefish-FD bench nodes --->  5777063 > based on commits up to 11/07/2019 v
-### Blue-Honey bench nodes ---->  5109155 > based on commits up to 11/07/2019 v
-### Blue-Honey-FD bench nodes ->  6001087 > based on commits up to 11/07/2019 v
-### Honey bench nodes --------->  4583476 > based on commits up to 11/07/2019 v
-### Honey-FD bench nodes ------>  5111887 > based on commits up to 11/07/2019 v
-### stockfish-FD bench nodes -->  4878745 > based on commits up to 11/07/2019 v
-### stockfish bench nodes ------> 4707799 > based on commits up to 11/07/2019 v
+### Bluefish bench nodes ------>  5122706 > based on commits up to 11/07/2019 v
+### Bluefish-FD bench nodes --->  5876701 > based on commits up to 11/07/2019 v
+### Blue-Honey bench nodes ---->  4997093 > based on commits up to 11/07/2019 v
+### Blue-Honey-FD bench nodes ->  5576254 > based on commits up to 11/07/2019 v
+### Honey bench nodes --------->  4446516 > based on commits up to 11/07/2019 v
+### Honey-FD bench nodes ------>  5442309 > based on commits up to 11/07/2019 v
+### stockfish-FD bench nodes -->  5009773 > based on commits up to 11/07/2019 v
+### stockfish bench nodes ------> 4362323 > based on commits up to 11/07/2019 v
 
 ####  Always leave the three lines below as is (any subsequent defines will override)
 DATE=$(shell date +"%m%d%y")
