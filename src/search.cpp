@@ -1014,6 +1014,7 @@ moves_loop: // When in check, search starts from here
 
       // Step 14. Pruning at shallow depth (~170 Elo)
       if (  !rootNode
+          && !givesCheck
           && pos.non_pawn_material(us)
           && bestValue > VALUE_MATED_IN_MAX_PLY)
       {
@@ -1021,7 +1022,6 @@ moves_loop: // When in check, search starts from here
           moveCountPruning = moveCount >= futility_move_count(improving, depth);
 
           if (   !captureOrPromotion
-              && !givesCheck
               && (!pos.advanced_pawn_push(move) || pos.non_pawn_material(~us) > BishopValueMg))
           {
               // Move count based pruning
@@ -1047,8 +1047,7 @@ moves_loop: // When in check, search starts from here
               if (!pos.see_ge(move, Value(-(31 - std::min(lmrDepth, 18)) * lmrDepth * lmrDepth)))
                   continue;
           }
-          else if (  !(givesCheck && extension)
-                   && !pos.see_ge(move, Value(-199) * depth)) // (~20 Elo)
+          else if (  !extension && !pos.see_ge(move, Value(-199) * depth)) // (~20 Elo)
                   continue;
       }
 
