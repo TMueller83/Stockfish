@@ -77,20 +77,26 @@ namespace {
   constexpr Value SpaceThreshold = Value(12222);
 
   // KingAttackWeights[PieceType] contains king attack weights by piece type
-#if ((defined Sullivan) || (defined Blau))
-  constexpr int KingAttackWeights[PIECE_TYPE_NB] = { 0, 0, 77, 55, 44, 10 };
+#if defined (Sullivan) || (Blau)
+  //constexpr int KingAttackWeights[PIECE_TYPE_NB] = { 0, 0, 77, 55, 44, 10 };
+  constexpr int KingAttackWeights[PIECE_TYPE_NB] = { 0, 0, 79, 53, 43, 10 };
 #else
   constexpr int KingAttackWeights[PIECE_TYPE_NB] = { 0, 0, 81, 52, 44, 10 };
 #endif
 
   // Penalties for enemy's safe checks
 
+#if defined (Sullivan) || (Blau)
+  constexpr int QueenSafeCheck  = 770;
+  constexpr int RookSafeCheck   = 1074;
+  constexpr int BishopSafeCheck = 620;
+  constexpr int KnightSafeCheck = 770;
+#else
   constexpr int QueenSafeCheck  = 780;
-
   constexpr int RookSafeCheck   = 1080;
   constexpr int BishopSafeCheck = 635;
   constexpr int KnightSafeCheck = 790;
-
+#endif
 #define S(mg, eg) make_score(mg, eg)
 
   // MobilityBonus[PieceType-2][attacked] contains bonuses for middle and end game,
