@@ -1014,6 +1014,7 @@ moves_loop: // When in check, search starts from here
 
       // Step 14. Pruning at shallow depth (~170 Elo)
       if (  !rootNode
+          && !inCheck
           && pos.non_pawn_material(us)
           && bestValue > VALUE_MATED_IN_MAX_PLY)
       {
@@ -1039,7 +1040,6 @@ moves_loop: // When in check, search starts from here
 
               // Futility pruning: parent node (~2 Elo)
               if (   lmrDepth < 6
-                  && !inCheck
                   && ss->staticEval + 250 + 211 * lmrDepth <= alpha)
                   continue;
 
