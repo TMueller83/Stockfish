@@ -118,6 +118,9 @@ void init(OptionsMap& o) {
 #ifdef Add_Features
     o["Adaptive_Play"]            << Option(false); //Adaptive Play change - now simple on/off check box
     o["Variety"]                  << Option(false); // Do not use with Adaptive play
+#ifdef Weakfish
+    o["WeakFish"]                 << Option(true);
+#endif
 #if defined (Sullivan) || (Blau) || (Fortress)
     o["Defensive"]                << Option(true); //Do not use with Offensive play
 #else
@@ -127,7 +130,6 @@ void init(OptionsMap& o) {
     o["Clear_Hash"]               << Option(on_clear_hash);
     o["Clean_Search"]             << Option(false);
     o["7 Man Probing"]            << Option(false);
-    o["No_Null_Moves"]            << Option(false);
     o["FastPlay"]                 << Option(false);
     o["Minimal_Output"]           << Option(false);
 #ifdef Add_Features

@@ -46,6 +46,7 @@ FEATURE1=add_features
 ### Fortress Detection code by Joe Ellis:
 ### https://github.com/jhellis3/Stockfish/tree/game_cycle
 ###	FORTRESS_DETECT = yes
+### WEAKFISH = yes
 
 ### Bluefish evaluation by Eelco de Groot
 ### http://talkchess.com/forum3/viewtopic.php?f=2&t=71929
@@ -53,7 +54,7 @@ FEATURE1=add_features
 
 ### Release versions , enter yes and release version below foor releases
 RELEASEVER = yes
-RELVERSION = X6a
+RELVERSION = XR7
 
 ### TEST versions, enter yes and labels below to build named test exe's
 TEST = no
@@ -87,8 +88,12 @@ endif
 ifeq ($(FORTRESS_DETECT),yes)
     CXXFLAGS += -DFortress
 	SUF=-FD
+else
+ifeq ($(WEAKFISH),yes)
+	CXXFLAGS += -DWeakfish
+	SUF=-WF
 endif
-
+endif
 ifeq ($(HONEY),yes)
     NAME=$(PRE)Honey$(SUF)
     CXXFLAGS += -DSullivan
@@ -127,12 +132,22 @@ ifneq ($(HONEY),yes)
 		PRE=Stock
 	endif
 	NAME=$(PRE)fish$(SUF)
+	ifeq ($(RELEASEVER),no)
 		ifeq ($(COMP),mingw)
 			EXE = $(NAME)-$(DATE).exe
 		else
 			EXE = $(NAME)-$(DATE)
 		endif
 	endif
+	ifeq ($(RELEASEVER),yes)
+		CXXFLAGS += -DReleaseVer
+		ifeq ($(COMP),mingw)
+			EXE = $(NAME)-$(RELVERSION).exe
+		else
+		EXE = $(NAME)-$(RELVERSION)
+		endif
+	endif
+endif
 
 ### Installation dir definitions
 PREFIX = /opt/local
@@ -140,9 +155,13 @@ PREFIX = /opt/local
 BINDIR = $(PREFIX)/bin
 
 ### Built-in benchmark for pgo-builds
-PGOBENCH = ./$(EXE) bench 16 1 10
-PGOBENCH2 = ./$(EXE) bench 16 2 8
-
+ifeq ($(WEAKFISH),yes)
+	PGOBENCH = ./$(EXE) bench 16 1 5
+	PGOBENCH2 = ./$(EXE) bench 16 2 3
+else
+	PGOBENCH = ./$(EXE) bench 16 1 10
+	PGOBENCH2 = ./$(EXE) bench 16 2 8
+endif
 ### Object files
 ifeq ($(FILES),with_c_book)
 	OBJS = benchmark.o bitbase.o bitboard.o endgame.o evaluate.o main.o \

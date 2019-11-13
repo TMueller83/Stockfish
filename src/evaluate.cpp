@@ -29,6 +29,7 @@
 #include "material.h"
 #include "pawns.h"
 #include "thread.h"
+#include "uci.h"
 
 namespace Trace {
 
@@ -85,7 +86,6 @@ namespace {
 #endif
 
   // Penalties for enemy's safe checks
-
 #if defined (Sullivan) || (Blau)
   constexpr int QueenSafeCheck  = 770;
   constexpr int RookSafeCheck   = 1074;
@@ -428,7 +428,9 @@ constexpr Score MobilityBonus[][32] = {
   // Evaluation::king() assigns bonuses and penalties to a king of a given color
   template<Tracing T> template<Color Us>
   Score Evaluation<T>::king() const {
-
+#ifdef Weakfish
+    bool weakFish          = Options["WeakFish"];
+#endif
     constexpr Color    Them = (Us == WHITE ? BLACK : WHITE);
     constexpr Bitboard Camp = (Us == WHITE ? AllSquares ^ Rank6BB ^ Rank7BB ^ Rank8BB
                                            : AllSquares ^ Rank1BB ^ Rank2BB ^ Rank3BB);
@@ -440,7 +442,10 @@ constexpr Score MobilityBonus[][32] = {
 
     // Init the score with king shelter and enemy pawns storm
     Score score = pe->king_safety<Us>(pos);
-
+#ifdef Weakfish
+    if (!weakFish)
+	   {
+#endif
     // Attacked squares defended at most once by our queen or king
     weak =  attackedBy[Them][ALL_PIECES]
           & ~attackedBy2[Us]
@@ -538,7 +543,9 @@ constexpr Score MobilityBonus[][32] = {
 
     if (T)
         Trace::add(KING, Us, score);
-
+#ifdef Weakfish
+      }
+#endif
     return score;
   }
 
@@ -547,14 +554,19 @@ constexpr Score MobilityBonus[][32] = {
   // attacking and the attacked pieces.
   template<Tracing T> template<Color Us>
   Score Evaluation<T>::threats() const {
-
+#ifdef Weakfish
+  bool weakFish2          = Options["WeakFish"];
+#endif
     constexpr Color     Them     = (Us == WHITE ? BLACK   : WHITE);
     constexpr Direction Up       = pawn_push(Us);
     constexpr Bitboard  TRank3BB = (Us == WHITE ? Rank3BB : Rank6BB);
 
     Bitboard b, weak, defended, nonPawnEnemies, stronglyProtected, safe;
     Score score = SCORE_ZERO;
-
+#ifdef Weakfish
+    if (!weakFish2)
+       {
+#endif
     // Non-pawn enemies
     nonPawnEnemies = pos.pieces(Them) & ~pos.pieces(PAWN);
 
@@ -651,7 +663,9 @@ constexpr Score MobilityBonus[][32] = {
 
     if (T)
         Trace::add(THREAT, Us, score);
-
+#ifdef Weakfish
+    }
+#endif
     return score;
   }
 
@@ -660,7 +674,9 @@ constexpr Score MobilityBonus[][32] = {
 
   template<Tracing T> template<Color Us>
   Score Evaluation<T>::passed() const {
-
+#ifdef Weakfish
+    bool weakFish3          = Options["WeakFish"];
+#endif
     constexpr Color     Them = (Us == WHITE ? BLACK : WHITE);
     constexpr Direction Up   = pawn_push(Us);
 
@@ -670,7 +686,10 @@ constexpr Score MobilityBonus[][32] = {
 
     Bitboard b, bb, squaresToQueen, unsafeSquares;
     Score score = SCORE_ZERO;
-
+#ifdef Weakfish
+    if (!weakFish3)
+        {
+#endif
     b = pe->passed_pawns(Us);
 
     while (b)
@@ -734,7 +753,9 @@ constexpr Score MobilityBonus[][32] = {
 
     if (T)
         Trace::add(PASSED, Us, score);
-
+#ifdef Weakfish
+        }
+#endif
     return score;
   }
 

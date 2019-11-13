@@ -123,9 +123,11 @@ namespace {
     int level;
     Move best = MOVE_NONE;
   };
-
+#ifdef Weakfish
+bool  weakFishSearch;
+#endif
 #ifdef Add_Features
-bool  bruteForce, fide, jekyll, minOutput, uci_sleep, noNULL;
+bool  fide, jekyll, minOutput, uci_sleep, noNULL;
 bool limitStrength = false;
 int  intLevel = 40, tactical, uci_elo;
 #else
@@ -251,7 +253,7 @@ void MainThread::search() {
   }
 #ifdef Add_Features
     PRNG rng(now());
-    double floatLevel   = 0;
+ //   double floatLevel   = 0;
     int shallowBlue_adjust = 135; //to roughly anchor 1712 rating to CCRL Shallow BLue 2.0 rating of 1712
 	// Dowm from teh intial  setting of 300 ina just a few monnths
  /* Reset on 10/02/2019
@@ -262,12 +264,13 @@ void MainThread::search() {
     2 Shallow Blue 2.0.0   1049   9.5   29   29   500  243.5  48.7  222  235   43  44.4   8.6  1059
     ---------------------------------------------------------------------------------------------------------*/
 	adaptive            = Options["Adaptive_Play"];
-    bruteForce          = Options["BruteForce"];
+#ifdef Weakfish
+    weakFishSearch      = Options["WeakFish"];
+#endif
     defensive           = Options["Defensive"];
     fide                = Options["FIDE_Ratings"];
     jekyll              = Options["Variety"];
     minOutput           = Options["Minimal_Output"];
-    noNULL              = Options["No_Null_Moves"];
     tactical            = Options["Tactical"];
     uci_elo             = Options["Engine_Elo"];
     uci_sleep           = Options["UCI_Sleep"];
@@ -389,18 +392,11 @@ skipLevels:
 			 
 
              Limits.nodes = NodesToSearch;
-             Limits.nodes *= Time.optimum()/1000 + 1 ;
+             Limits.nodes *= Time.optimum()/1000;
+             Limits.nodes = clamp(Limits.nodes, (int64_t) 512,Limits.nodes);
              if (uci_sleep)
                  std::this_thread::sleep_for (std::chrono::milliseconds(Time.optimum()) * double(1 - Limits.nodes/benchKnps));
              uci_elo =  ccrlELo - shallowBlue_adjust;
-             if (uci_elo < 1500 )
-             {
-                 floatLevel = Options["UCI_LimitStrength"] ?
-                              clamp(std::pow((uci_elo - 970 )  / 13.16, 1), 0.0, 40.0):
-                              double(Options["Skill Level"]);
-                 intLevel = int(floatLevel);
-                 //sync_cout << "Level " << intLevel  << sync_endl;// for debug
-             }
          }
 #endif
       for (Thread* th : Threads)
@@ -566,21 +562,23 @@ void Thread::search() {
   beta = VALUE_INFINITE;
 
   size_t multiPV = Options["MultiPV"];
-
+  PRNG rng(now());
 #ifndef Add_Features
   // Pick integer skill levels, but non-deterministically round up or down
   // such that the average integer skill corresponds to the input floating point one.
   // UCI_Elo is converted to a suitable fractional skill level, using anchoring
   // to CCRL Elo (goldfish 1.13 = 2000) and a fit through Ordo derived Elo
   // for match (TC 60+0.6) results spanning a wide range of k values.
-  PRNG rng(now());
-  double floatLevel = Options["UCI_LimitStrength"] ?
-                      clamp(std::pow((Options["UCI_Elo"] - 1346.6) / 71.7, 1 / 0.806), 0.0, 40.0) :
-                      double(Options["Skill Level"]);
-  intLevel = int(floatLevel) +
-             ((floatLevel - int(floatLevel)) * 1024 > rng.rand<unsigned>() % 1024  ? 1 : 0);
-#endif
 
+  double floatLevel = Options["UCI_LimitStrength"] ?
+                      std::pow((Options["UCI_Elo"] - 1346.6) / 35.85, 1 / 0.806) :
+                      double(Options["Skill Level"]);
+	intLevel = clamp(int(floatLevel) +
+					 ((floatLevel - int(floatLevel)) * 1024 > rng.rand<unsigned>() % 1024  ? 1 : 0), 0, 40);
+#else
+  if (uci_elo <= 1500)
+      jekyll = true;
+#endif
 	Skill skill(intLevel);
 
 #ifdef Add_Features
@@ -1135,8 +1133,8 @@ if (   Threads.stop.load(std::memory_order_relaxed) || ss->ply >= MAX_PLY)
 #endif
     // Step 7. Razoring (~2 Elo)
     if (   !rootNode // The required rootNode PV handling is not available in qsearch
-#ifdef Add_Features
-        && !bruteForce
+#ifdef Weakfish
+        && !weakFishSearch
 #endif
         &&  depth < 2
 #ifdef Fortress
@@ -1150,8 +1148,8 @@ if (   Threads.stop.load(std::memory_order_relaxed) || ss->ply >= MAX_PLY)
 
     // Step 8. Futility pruning: child node (~30 Elo)
     if (   !PvNode
-#ifdef Add_Features
-        && !bruteForce
+#ifdef Weakfish
+        && !weakFishSearch
 #endif
         &&  depth < 7
 #ifdef Fortress
@@ -1225,8 +1223,8 @@ if (   Threads.stop.load(std::memory_order_relaxed) || ss->ply >= MAX_PLY)
     // If we have a good enough capture and a reduced search returns a value
     // much above beta, we can (almost) safely prune the previous move.
     if (   !PvNode
-#ifdef Add_Features
-        && !bruteForce
+#ifdef Weakfish
+        && !weakFishSearch
 #endif
         &&  depth >= 5
         &&  abs(beta) < VALUE_MATE_IN_MAX_PLY)
@@ -1350,6 +1348,7 @@ moves_loop: // When in check, search starts from here
       // a reduced search on all the other moves but the ttMove and if the
       // result is lower than ttValue minus a margin then we will extend the ttMove.
       if (    depth >= 6
+
           &&  move == ttMove
           && !rootNode
 #ifdef Fortress
@@ -1388,9 +1387,9 @@ moves_loop: // When in check, search starts from here
 
 #if defined (Sullivan) || (Blau) || (Fortress)
 
-       else if (    givesCheck
-               && (pos.is_discovery_check_on_king(~us, move) || pos.see_ge(move))
-               && ++thisThread->extension < thisThread->nodes.load(std::memory_order_relaxed) / 4 ) //MichaelB7
+       else if (    givesCheck)
+               //&& (pos.is_discovery_check_on_king(~us, move) || pos.see_ge(move))
+               //&& ++thisThread->extension < thisThread->nodes.load(std::memory_order_relaxed) / 4 ) //MichaelB7
 		  extension = 1;
 
      // MichaelB7 Passed pawn extension
@@ -1422,8 +1421,8 @@ moves_loop: // When in check, search starts from here
 
       // Step 14. Pruning at shallow depth (~170 Elo)
       if (  !rootNode
-#ifdef Add_Features
-          && !bruteForce
+#ifdef Weakfish
+          && !weakFishSearch
 #endif			
           && pos.non_pawn_material(us)
           && bestValue > VALUE_MATED_IN_MAX_PLY)
@@ -1484,8 +1483,8 @@ moves_loop: // When in check, search starts from here
 
       // Step 16. Reduced depth search (LMR). If the move fails high it will be
       // re-searched at full depth..
-#ifdef Add_Features
-      if (    !bruteForce && depth >= 3
+#ifdef Weakfish
+      if (    !weakFishSearch && depth >= 3
 #else
       if (    depth >= 3
 #endif

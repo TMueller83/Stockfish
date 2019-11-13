@@ -66,7 +66,7 @@ namespace {
 
 	
 #if (defined Sullivan && defined Add_Features && ReleaseVer)
-const string Version = "X6a ";
+const string Version = "XR7 ";
 #elif (defined Sullivan && defined Add_Features)
 const string Version = "";
 #endif
@@ -77,6 +77,8 @@ const string Version = "";
 	
 #ifdef Fortress
 const string Suffix = "FD ";
+#elif Weakfish
+const string Suffix = "WF ";
 #else
 const string Suffix = "";
 #endif
