@@ -323,6 +323,7 @@ void MainThread::search() {
          {
              uci_elo = (Options["UCI_Elo"]);
              limitStrength = true;
+			 jekyll=true;
              goto skipLevels;
          }
          if (Options["Engine_Level"] == "None")
@@ -330,7 +331,11 @@ void MainThread::search() {
              limitStrength = false;
              goto skipLevels;
          }
-         else limitStrength = true;
+         else
+             {
+				 limitStrength = true;
+				 jekyll=true;
+			 }
 		  
          if (Options["Engine_Level"] == "World_Champion")
              uci_elo = 2900;
@@ -374,26 +379,27 @@ skipLevels:
              int ccrlELo = uci_elo;
 			 if (fide)
 				 uci_elo = (((uci_elo * 10) / 7) - 1200);  //shallowBlue adj was only required to get CCRL rating correct
-			 if (jekyll && uci_elo >= 1500)  //note varietry strength is capped around ~2150-2200 due to its robustness
-				 uci_elo += 50 + std::max((uci_elo - 1500)/3,0); // so to use variety without a huge amount of Elo
-			 if  (adaptive &&  uci_elo >= 1500)  // this brings adaptive play to within 150 of desired Elo strength
-				 uci_elo += 100 + std::max((uci_elo - 1500)/3,0);
+             uci_elo += 200; //  to offset Elo loss with variety
 			 uci_elo = std::min(uci_elo, 3200);
 			 //sync_cout << "Elo " << uci_elo << sync_endl;//for debug
-             int NodesToSearch  =  pow(1.0072, (std::min(uci_elo - 1199,  351 ))) * 48
-                                 + pow(1.0050, (std::min(uci_elo - 1199,  851 ))) * 48
-                                 - pow(1.0050, (std::min(uci_elo - 1199,  351 ))) * 48
-                                 + pow(1.0042, (std::min(uci_elo - 1199, 1351 ))) * 48
-                                 - pow(1.0042, (std::min(uci_elo - 1199,  851 ))) * 48
-                                 + pow(1.0039, (std::min(uci_elo - 1199, 1426 ))) * 48
-                                 - pow(1.0039, (std::min(uci_elo - 1199, 1351 ))) * 48
-                                 + pow(1.0040, (std::max(uci_elo - 1199,    0 ))) * 48
-			                     - pow(1.0040, (std::min(uci_elo - 1199, 1426 ))) * 48;
+             /*int NodesToSearch  =  pow(1.0072, (std::min(uci_elo - 999,  351 ))) * 48
+                                 + pow(1.0050, (std::min(uci_elo - 999,  851 ))) * 48
+                                 - pow(1.0050, (std::min(uci_elo - 999,  351 ))) * 48
+                                 + pow(1.0042, (std::min(uci_elo - 999, 1351 ))) * 48
+                                 - pow(1.0042, (std::min(uci_elo - 999,  851 ))) * 48
+                                 + pow(1.0039, (std::min(uci_elo - 999, 1426 ))) * 48
+                                 - pow(1.0039, (std::min(uci_elo - 999, 1351 ))) * 48
+                                 + pow(1.0040, (std::max(uci_elo - 999,    0 ))) * 48
+			                     - pow(1.0040, (std::min(uci_elo - 999, 1426 ))) * 48;*/
 			 
-
+			 int NodesToSearch  =  pow(1.00382, (uci_elo - 999)) * 48;
+			 sync_cout << "Nodes To Search: " << NodesToSearch << sync_endl;//for debug
              Limits.nodes = NodesToSearch;
              Limits.nodes *= Time.optimum()/1000;
-             Limits.nodes = clamp(Limits.nodes, (int64_t) 512,Limits.nodes);
+             Limits.nodes = clamp(Limits.nodes, (int64_t) 48,Limits.nodes);
+			 int sleepValue = Time.optimum() * double(1 - Limits.nodes/benchKnps) ;
+			 sync_cout << "Sleep time: " << sleepValue << sync_endl;//for debug
+			 sync_cout << "Limit Nodes: " <<  Limits.nodes << sync_endl;//for debug
              if (uci_sleep)
                  std::this_thread::sleep_for (std::chrono::milliseconds(Time.optimum()) * double(1 - Limits.nodes/benchKnps));
              uci_elo =  ccrlELo - shallowBlue_adjust;
@@ -575,9 +581,6 @@ void Thread::search() {
                       double(Options["Skill Level"]);
 	intLevel = clamp(int(floatLevel) +
 					 ((floatLevel - int(floatLevel)) * 1024 > rng.rand<unsigned>() % 1024  ? 1 : 0), 0, 40);
-#else
-  if (uci_elo <= 1500)
-      jekyll = true;
 #endif
 	Skill skill(intLevel);
 
@@ -1387,8 +1390,8 @@ moves_loop: // When in check, search starts from here
 
 #if defined (Sullivan) || (Blau) || (Fortress)
 
-       else if (    givesCheck)
-               //&& (pos.is_discovery_check_on_king(~us, move) || pos.see_ge(move))
+       else if (    givesCheck
+               && (pos.is_discovery_check_on_king(~us, move) || pos.see_ge(move)))
                //&& ++thisThread->extension < thisThread->nodes.load(std::memory_order_relaxed) / 4 ) //MichaelB7
 		  extension = 1;
 
@@ -1963,15 +1966,26 @@ moves_loop: // When in check, search starts from here
           }
        }
     }
-#ifdef Add_Features //variety play
-	  if (!adaptive && jekyll && uci_elo >= 1500 && (bestValue + (255 * PawnValueEg / (std::min(uci_elo,3500)/10)) >= 0 ))
-		  {
-//            int o_value = bestValue;// for debug
-//            sync_cout << "Value " << bestValue << sync_endl;// for debug
-              bestValue += (rand() % 64 * 2000/uci_elo);
-//            sync_cout << "Random Value " << bestValue << sync_endl;// for debug
-//            sync_cout << "Change " << bestValue - o_value << sync_endl;// for debug
-		  }
+/*#if defined (Add_Features) && (Weakness)
+    if (!adaptive && limitStrength && jekyll )
+        {
+            //int o_value = bestValue;// for debug
+            //sync_cout << "Value " << bestValue << sync_endl;// for debug
+            double eloAntiLog = exp(double(uci_elo/400) - 2.5 );
+            bestValue += (rand() % 400 / eloAntiLog);
+            //sync_cout << "Random Value " << bestValue << sync_endl;// for debug
+            //sync_cout << "Change " << bestValue - o_value << sync_endl;// for debug
+        }*/
+#if defined (Add_Features)
+	  if (!adaptive && jekyll && (bestValue + (255 * PawnValueEg / (uci_elo/10)) >= 0 ))
+        {
+			//int o_value = bestValue;// for debug
+			//sync_cout << "Value " << bestValue << sync_endl;// for debug
+
+			bestValue += (rand() % 64 * 2001/uci_elo + 1);
+			//sync_cout << "Random Value " << bestValue << sync_endl;// for debug
+			//sync_cout << "Change " << bestValue - o_value << sync_endl;// for debug
+	  }
 #endif
 
     // All legal moves have been searched. A special case: If we're in check
