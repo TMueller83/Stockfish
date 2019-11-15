@@ -253,16 +253,14 @@ void MainThread::search() {
   }
 #ifdef Add_Features
     PRNG rng(now());
- //   double floatLevel   = 0;
-    int shallowBlue_adjust = 135; //to roughly anchor 1712 rating to CCRL Shallow BLue 2.0 rating of 1712
-	// Dowm from teh intial  setting of 300 ina just a few monnths
- /* Reset on 10/02/2019
-    500 game(s) loaded
-    Rank Name                Rating   Δ     +    -     #     Σ    Σ%     W    L    D   W%    =%   OppR
-    ---------------------------------------------------------------------------------------------------------
-    1 Honey-CCRL-1712      1059   0.0   29   29   500  256.5  51.3  235  222   43  47.0   8.6  1049
-    2 Shallow Blue 2.0.0   1049   9.5   29   29   500  243.5  48.7  222  235   43  44.4   8.6  1059
-    ---------------------------------------------------------------------------------------------------------*/
+    int shallowBlue_adjust = 35; //to roughly anchor 1712 rating to CCRL Shallow BLue 2.0 rating of 1712
+	/* Reset on 11/14/2019:
+  500 game(s) loaded
+  Rank Name                    Rating   Δ     +    -     #     Σ    Σ%     W    L    D   W%    =%   OppR
+  ---------------------------------------------------------------------------------------------------------
+  1 Honey-XR7-1712  11/14/2019  1055   0.0   25   25   500  251.5  50.3  169  166  165  33.8  33.0  1053
+  2 Honey-CCRL-1712 10/02/2019  1053   1.3   25   25   500  248.5  49.7  166  169  165  33.2  33.0  1055
+  ---------------------------------------------------------------------------------------------------------*/
 	adaptive            = Options["Adaptive_Play"];
 #ifdef Weakfish
     weakFishSearch      = Options["WeakFish"];
@@ -381,16 +379,6 @@ skipLevels:
 				 uci_elo = (((uci_elo * 10) / 7) - 1200);  //shallowBlue adj was only required to get CCRL rating correct
              uci_elo += 200; //  to offset Elo loss with variety
 			 uci_elo = std::min(uci_elo, 3200);
-			 //sync_cout << "Elo " << uci_elo << sync_endl;//for debug
-             /*int NodesToSearch  =  pow(1.0072, (std::min(uci_elo - 999,  351 ))) * 48
-                                 + pow(1.0050, (std::min(uci_elo - 999,  851 ))) * 48
-                                 - pow(1.0050, (std::min(uci_elo - 999,  351 ))) * 48
-                                 + pow(1.0042, (std::min(uci_elo - 999, 1351 ))) * 48
-                                 - pow(1.0042, (std::min(uci_elo - 999,  851 ))) * 48
-                                 + pow(1.0039, (std::min(uci_elo - 999, 1426 ))) * 48
-                                 - pow(1.0039, (std::min(uci_elo - 999, 1351 ))) * 48
-                                 + pow(1.0040, (std::max(uci_elo - 999,    0 ))) * 48
-			                     - pow(1.0040, (std::min(uci_elo - 999, 1426 ))) * 48;*/
 			 
 			 int NodesToSearch  =  pow(1.00382, (uci_elo - 999)) * 48;
 			 sync_cout << "Nodes To Search: " << NodesToSearch << sync_endl;//for debug
@@ -1391,8 +1379,8 @@ moves_loop: // When in check, search starts from here
 #if defined (Sullivan) || (Blau) || (Fortress)
 
        else if (    givesCheck
-               && (pos.is_discovery_check_on_king(~us, move) || pos.see_ge(move)))
-               //&& ++thisThread->extension < thisThread->nodes.load(std::memory_order_relaxed) / 4 ) //MichaelB7
+               && (pos.is_discovery_check_on_king(~us, move) || pos.see_ge(move))
+               && ++thisThread->extension < thisThread->nodes.load(std::memory_order_relaxed) / 2 ) //MichaelB7
 		  extension = 1;
 
      // MichaelB7 Passed pawn extension
@@ -1966,22 +1954,12 @@ moves_loop: // When in check, search starts from here
           }
        }
     }
-/*#if defined (Add_Features) && (Weakness)
-    if (!adaptive && limitStrength && jekyll )
-        {
-            //int o_value = bestValue;// for debug
-            //sync_cout << "Value " << bestValue << sync_endl;// for debug
-            double eloAntiLog = exp(double(uci_elo/400) - 2.5 );
-            bestValue += (rand() % 400 / eloAntiLog);
-            //sync_cout << "Random Value " << bestValue << sync_endl;// for debug
-            //sync_cout << "Change " << bestValue - o_value << sync_endl;// for debug
-        }*/
+	  
 #if defined (Add_Features)
 	  if (!adaptive && jekyll && (bestValue + (255 * PawnValueEg / (uci_elo/10)) >= 0 ))
         {
 			//int o_value = bestValue;// for debug
 			//sync_cout << "Value " << bestValue << sync_endl;// for debug
-
 			bestValue += (rand() % 64 * 2001/uci_elo + 1);
 			//sync_cout << "Random Value " << bestValue << sync_endl;// for debug
 			//sync_cout << "Change " << bestValue - o_value << sync_endl;// for debug
