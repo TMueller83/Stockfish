@@ -35,7 +35,7 @@ make -j $BUILD $ARCH $COMP "$@"
 mke BLUEFISH=yes && wait
 mke HONEY=yes BLUEFISH=yes && wait
 mke HONEY=yes && wait
-mke HONEY=yes WEAKFISH=yes && wait
+mke WEAKFISH=yes && wait
 mke HONEY=yes FORTRESS_DETECT=yes
 
 

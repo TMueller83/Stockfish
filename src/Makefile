@@ -46,11 +46,13 @@ FEATURE1=add_features
 ### Fortress Detection code by Joe Ellis:
 ### https://github.com/jhellis3/Stockfish/tree/game_cycle
 ###	FORTRESS_DETECT = yes
-### WEAKFISH = yes
+
 
 ### Bluefish evaluation by Eelco de Groot
 ### http://talkchess.com/forum3/viewtopic.php?f=2&t=71929
 ###	BLUEFISH = yes
+### Weakfish has about 90% of the evalutation and search code Elo improvements removed
+### WEAKFISH = yes
 
 ### Release versions , enter yes and release version below foor releases
 RELEASEVER = yes
@@ -88,11 +90,6 @@ endif
 ifeq ($(FORTRESS_DETECT),yes)
     CXXFLAGS += -DFortress
 	SUF=-FD
-else
-ifeq ($(WEAKFISH),yes)
-	CXXFLAGS += -DWeakfish
-	SUF=-WF
-endif
 endif
 ifeq ($(HONEY),yes)
     NAME=$(PRE)Honey$(SUF)
@@ -127,7 +124,10 @@ endif
 ifneq ($(HONEY),yes)
 	ifeq ($(BLUEFISH),yes)
 		CXXFLAGS += -DBlau
-		PRE=Blue
+		PRE=Bluw
+	else ifeq ($(WEAKFISH),yes)
+		CXXFLAGS += -DWeakfish
+		PRE=Weak
 	else
 		PRE=Stock
 	endif
