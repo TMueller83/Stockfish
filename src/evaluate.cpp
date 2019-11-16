@@ -433,7 +433,7 @@ constexpr Score MobilityBonus[][32] = {
     constexpr Bitboard Camp = (Us == WHITE ? AllSquares ^ Rank6BB ^ Rank7BB ^ Rank8BB
                                            : AllSquares ^ Rank1BB ^ Rank2BB ^ Rank3BB);
 
-    Bitboard weak, b1, b2, safe, unsafeChecks = 0;
+    Bitboard weak, b1, b2, b3, safe, unsafeChecks = 0;
     Bitboard rookChecks, queenChecks, bishopChecks, knightChecks;
     int kingDanger = 0;
     const Square ksq = pos.square<KING>(Us);
@@ -495,23 +495,22 @@ constexpr Score MobilityBonus[][32] = {
     else
         unsafeChecks |= knightChecks;
 
-    // Find the squares that opponent attacks in our king flank, and the squares
-    // which are attacked twice in that flank.
+    // Find the squares that opponent attacks in our king flank, the squares
+    // which they attack twice in that flank, and the squares that we defend.
     b1 = attackedBy[Them][ALL_PIECES] & KingFlank[file_of(ksq)] & Camp;
     b2 = b1 & attackedBy2[Them];
+    b3 = attackedBy[Us][ALL_PIECES] & KingFlank[file_of(ksq)] & Camp;
 
-    int kingFlankAttacks = popcount(b1) + popcount(b2);
+    int kingFlankAttack = popcount(b1) + popcount(b2);
+    int kingFlankDefense = popcount(b3);
 
     kingDanger +=        kingAttackersCount[Them] * kingAttackersWeight[Them]
                  + 185 * popcount(kingRing[Us] & weak)
                  + 148 * popcount(unsafeChecks)
                  +  98 * popcount(pos.blockers_for_king(Us))
                  +  69 * kingAttacksCount[Them]
-#if ((defined Sullivan) || (defined Blau))
-                 +   5 * kingFlankAttacks * kingFlankAttacks / 16
-#else
-                 +   3 * kingFlankAttacks * kingFlankAttacks / 8
-#endif
+                 +   4 * (kingFlankAttack - kingFlankDefense)
+                 +   3 * kingFlankAttack * kingFlankAttack / 8
                  +       mg_value(mobility[Them] - mobility[Us])
                  - 873 * !pos.count<QUEEN>(Them)
                  - 100 * bool(attackedBy[Us][KNIGHT] & attackedBy[Us][KING])
@@ -537,7 +536,7 @@ constexpr Score MobilityBonus[][32] = {
         score -= PawnlessFlank;
 
     // Penalty if king flank is under attack, potentially moving toward the king
-    score -= FlankAttacks * kingFlankAttacks;
+    score -= FlankAttacks * kingFlankAttack;
 
     if (T)
         Trace::add(KING, Us, score);

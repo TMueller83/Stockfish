@@ -1,37 +1,39 @@
 ### ==========================================================================
 ### Copyright Notice and License Information
 ### ==========================================================================
-#   Honey, a UCI chess playing engine derived from SugaR, Stockfish and Glaurung 2.1
-#   Copyright (C) 2004-2008 Tord Romstad (Glaurung Author)
-#   Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad (Stockfish Authors)
-#   Copyright (C) 2015-2016 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Stockfish Authors)
-#   Copyright (C) 2017-2018 Michael Byrne, Marco Zerbinati, Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Honey Authors)
+###   Honey, a UCI chess playing engine derived from SugaR, Stockfish and Glaurung 2.1
+###   Copyright (C) 2004-2008 Tord Romstad (Glaurung Author)
+###   Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad (Stockfish Authors)
+###   Copyright (C) 2015-2016 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Stockfish Authors)
+###   Copyright (C) 2017-2018 Michael Byrne, Marco Zerbinati, Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Honey Authors)
 
-#   Honey is free software: you can redistri/Volumes/Macintosh_1.5TBbute it and/or modify
-#   it under the terms of the GNU General Public License as published by
-#   the Free Software Foundation, either version 3 of the License, or
-#   (at your option) any later version.
+###   Honey is free software: you can redistri/Volumes/Macintosh_1.5TBbute it and/or modify
+###   it under the terms of the GNU General Public License as published by
+###   the Free Software Foundation, either version 3 of the License, or
+###   (at your option) any later version.
 
-#   Honey is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#   GNU General Public License for more details.
+###   Honey is distributed in the hope that it will be useful,
+###   but WITHOUT ANY WARRANTY; without even the implied warranty of
+###   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+###   GNU General Public License for more details.
 
-#   You should have received a copy of the GNU General Public License
-#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+###   You should have received a copy of the GNU General Public License
+###   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ### ==========================================================================
 ### Section 1. General Configuration
 ### ==========================================================================
 
 ### Executable name  (Note: 4 new bench positions were added om 10/17/2019)
-### Bluefish bench nodes ------>  5122706 > based on commits up to 11/07/2019 v
-### Bluefish-FD bench nodes --->  5876701 > based on commits up to 11/07/2019 v
-### Blue-Honey bench nodes ---->  4997093 > based on commits up to 11/07/2019 v
-### Blue-Honey-FD bench nodes ->  5576254 > based on commits up to 11/07/2019 v
-### Honey bench nodes --------->  4446516 > based on commits up to 11/07/2019 v
-### Honey-FD bench nodes ------>  5442309 > based on commits up to 11/07/2019 v
-### stockfish-FD bench nodes -->  5009773 > based on commits up to 11/07/2019 v
-### stockfish bench nodes ------> 4362323 > based on commits up to 11/07/2019 v
+### Based on commits through 11/16/2019
+### Blue-Honey-FD-XR7.nodes:Nodes searched  : 5682470
+### Blue-Honey-XR7.nodes:Nodes searched  : 5252181
+### Bluefish-FD-XR7.nodes:Nodes searched  : 5276271
+### Bluefish-XR7.nodes:Nodes searched  : 5187712
+### Honey-FD-XR7.nodes:Nodes searched  : 4526333
+### Honey-XR7.nodes:Nodes searched  : 4727821
+### Stockfish-FD-XR7.nodes:Nodes searched  : 4932222
+### Stockfish-XR7.nodes:Nodes searched  : 4496847
+### Weakfish-XR7.nodes:Nodes searched  : 9428953
 
 ####  Always leave the three lines below as is (any subsequent defines will override)
 DATE=$(shell date +"%m%d%y")
@@ -58,12 +60,13 @@ FEATURE1=add_features
 RELEASEVER = yes
 RELVERSION = XR7
 
+
 ### TEST versions, enter yes and labels below to build named test exe's
 TEST = no
 TESTv1 = $(DATE2)
 TESTv2 =
 ifeq ($(TEST),yes)
-CXXFLAGS += -DTest
+	CXXFLAGS += -DTest
 endif
 
 ### Uncomment for use with Raspberry Pi -  a slower NPS UCI option setting used in Play
@@ -124,7 +127,7 @@ endif
 ifneq ($(HONEY),yes)
 	ifeq ($(BLUEFISH),yes)
 		CXXFLAGS += -DBlau
-		PRE=Bluw
+		PRE=Blue
 	else ifeq ($(WEAKFISH),yes)
 		CXXFLAGS += -DWeakfish
 		PRE=Weak
@@ -563,8 +566,12 @@ help:
 	@echo "make profile-build ARCH=x86-64-bmi2 COMP=gcc COMPCXX=g++-4.8"
 	@echo ""
 
+directory = bench_nodes
+all: | $(directory)
+$(directory):
+	mkdir -p $@
 
-.PHONY: help build profile-build strip install clean objclean profileclean help \
+.PHONY: all help build profile-build strip install clean objclean profileclean help \
         config-sanity icc-profile-use icc-profile-make gcc-profile-use gcc-profile-make \
         clang-profile-use clang-profile-make
 
@@ -582,8 +589,8 @@ profile-build: config-sanity objclean profileclean
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) $(profile_make)
 	@echo ""
 	@echo "Step 2/4. Running benchmark for pgo-build ..."
-	$(PGOBENCH) > /dev/null
-	$(PGOBENCH2) > /dev/null
+	$(PGOBENCH) &> /dev/null
+	$(PGOBENCH2) &> /dev/null
 	@echo ""
 	@echo "Step 3/4. Building optimized executable ..."
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) objclean
@@ -593,11 +600,11 @@ profile-build: config-sanity objclean profileclean
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) profileclean
 	strip $(EXE)
 	cp $(EXE) /Users/michaelbyrne/cluster.mfb
-#	$(EXE) bench >/dev/null
-#	wait
+	$(EXE) bench >> /dev/null 2> $(directory)/$(EXE).nodes
 	rm -f *.o syzygy/*.o llvm-profdata
 #	touch * syzygy/*
 #	cp $(EXE) /opt/picochess/engines/armv7l
+	echo "$(EXE) build completed"
 
 strip:
 	strip $(EXE)

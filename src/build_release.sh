@@ -38,10 +38,14 @@ mke HONEY=yes && wait
 mke WEAKFISH=yes && wait
 mke HONEY=yes FORTRESS_DETECT=yes
 
+echo ""
+cd bench_nodes
+rm -f *.txt
+echo -n "### " >benchnodes.txt ; grep 'searched' *.nodes  /dev/null >>benchnodes.txt
+rm *.nodes
+cd ..
 
 end=`date +%s`
 runtime=$((end-start))
 echo ""
 echo Compile time $runtime seconds...
-echo ""
-

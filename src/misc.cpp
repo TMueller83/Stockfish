@@ -77,8 +77,6 @@ const string Version = "";
 	
 #ifdef Fortress
 const string Suffix = "FD ";
-#elif Weakfish
-const string Suffix = "WF ";
 #else
 const string Suffix = "";
 #endif
@@ -167,6 +165,8 @@ const string engine_info(bool to_uci) {
 #endif
 #elif (defined Blau)
     ss << "Bluefish " << Version << Suffix << setfill('0');
+#elif (defined Weakfish)
+	ss << "Weakfish " << Version << Suffix << setfill('0');
 #else
     ss << "Stockfish " << Version << Suffix << setfill('0');
 #endif
@@ -184,7 +184,7 @@ const string engine_info(bool to_uci) {
 		ss << setw(2) << (1 + months.find(month) / 4) <<setw(2) << day << year.substr(2) << "";
     }
 #endif
-#ifdef Sullivan
+#if defined (Sullivan) || (Weakfish)
     ss	<< (to_uci  ? "\nid author ": " by ")
             << "M. Byrne and scores of others...";
 #else
@@ -193,7 +193,7 @@ const string engine_info(bool to_uci) {
 	   ss << (to_uci  ? "\nid author ": " by ")
        << "T. Romstad, M. Costalba, J. Kiiski, G. Linscott";
 #endif
-#if (defined Pi && defined Sullivan)
+#ifdef Pi
 	ss << (to_uci  ? "":"\nCompiled for Picochess by Scally");
 #endif
   return ss.str();

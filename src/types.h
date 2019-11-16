@@ -179,28 +179,28 @@ enum Value : int {
   VALUE_MATED_IN_MAX_PLY = -VALUE_MATE + 2 * MAX_PLY,
 
 #if defined (Sullivan) && (defined Blau)
-  #define PVM 90/100
-  #define PVE 90/100
-  #define NVM 90/100
-  #define NVE 90/100
-  #define BVM 90/100
-  #define BVE 90/100
-  #define RVM 90/100
-  #define RVE 90/100
-  #define QVM 90/100
-  #define QVE 90/100
+  #define PVM 87/100
+  #define PVE 87/100
+  #define NVM 87/100
+  #define NVE 87/100
+  #define BVM 87/100
+  #define BVE 87/100
+  #define RVM 87/100
+  #define RVE 87/100
+  #define QVM 87/100
+  #define QVE 87/100
 
 #elif (defined Blau)
-  #define PVM 80/100
-  #define PVE 80/100
-  #define NVM 80/100
-  #define NVE 80/100
-  #define BVM 80/100
-  #define BVE 80/100
-  #define RVM 80/100
-  #define RVE 80/100
-  #define QVM 80/100
-  #define QVE 80/100
+  #define PVM 74/100
+  #define PVE 74/100
+  #define NVM 74/100
+  #define NVE 74/100
+  #define BVM 74/100
+  #define BVE 74/100
+  #define RVM 74/100
+  #define RVE 74/100
+  #define QVM 74/100
+  #define QVE 74/100
 
 #elif (defined Sullivan)
   #define PVM 100/100

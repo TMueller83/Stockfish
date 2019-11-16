@@ -5,7 +5,7 @@
 ###
 
 ### time the compile process
-echo on
+#set echo on
 start=`date +%s`
 
 #ARCH="ARCH=general-32"
@@ -32,19 +32,27 @@ function mke() {
 make -j $BUILD $ARCH $COMP "$@"
 }
 
-mke BLUEFISH=yes && wait
-mke BLUEFISH=yes FORTRESS_DETECT=yes && wait
-mke HONEY=yes BLUEFISH=yes && wait
-mke HONEY=yes BLUEFISH=yes FORTRESS_DETECT=yes && wait
-mke HONEY=yes && wait
-mke HONEY=yes FORTRESS_DETECT=yes && wait
-mke WEAKFISH=yes && wait
-mke FORTRESS_DETECT=yes && wait
+mke BLUEFISH=yes  &&
+mke BLUEFISH=yes  FORTRESS_DETECT=yes &&
+mke HONEY=yes BLUEFISH=yes &&
+mke HONEY=yes BLUEFISH=yes FORTRESS_DETECT=yes &&
+mke HONEY=yes &&
+mke HONEY=yes FORTRESS_DETECT=yes &&
+mke WEAKFISH=yes &&
+mke FORTRESS_DETECT=yes &&
 mke
+
+echo ""
+cd bench_nodes
+mv benchnodes.txt benchnodes_old.txt
+grep 'searched' *.nodes  /dev/null >> benchnodes.txt
+sed -i -e  's/^/### /g' benchnodes.txt
+rm *.nodes benchnodes.txt-e
+cd ..
+
 
 end=`date +%s`
 runtime=$((end-start))
 echo ""
-echo Compile time $runtime seconds...
-echo ""
+echo Processing time $runtime seconds...
 
