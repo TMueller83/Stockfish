@@ -1,0 +1,9 @@
+### Blue-Honey-FD-XR7.nodes:Nodes searched  : 5629114
+### Blue-Honey-XR7.nodes:Nodes searched  : 6181563
+### Bluefish-FD-XR7.nodes:Nodes searched  : 5902675
+### Bluefish-XR7.nodes:Nodes searched  : 5936509
+### Honey-FD-XR7.nodes:Nodes searched  : 5561843
+### Honey-XR7.nodes:Nodes searched  : 5542105
+### Stockfish-FD-XR7.nodes:Nodes searched  : 5452202
+### Stockfish-XR7.nodes:Nodes searched  : 4496847
+### Weakfish-XR7.nodes:Nodes searched  : 9428953

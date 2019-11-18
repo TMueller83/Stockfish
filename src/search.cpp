@@ -80,7 +80,7 @@ namespace {
   // Different node types, used as a template parameter
   enum NodeType { NonPV, PV };
 #if defined (Sullivan) || (Blau) || (Fortress)
-  constexpr int ttProgressWindow = 4096, ttProgressResolution = 16;
+  constexpr uint64_t ttProgressWindow = 4096, ttProgressResolution = 1024;
 #endif
   // Razor and futility margins
   constexpr int RazorMargin = 661;
@@ -588,8 +588,8 @@ void Thread::search() {
 
   int ct = int(ctempt) * (24 * PawnValueEg / 100); // From centipawns
   //int ct = int(Options["Contempt"]) * PawnValueEg / 100; // From centipawns
-
   multiPV = std::min(multiPV, rootMoves.size());
+
 #if defined (Sullivan) || (Blau) || (Fortress)
   ttProgress = (ttProgressWindow / 2) * ttProgressResolution;
 #endif
@@ -996,6 +996,7 @@ if (   Threads.stop.load(std::memory_order_relaxed) || ss->ply >= MAX_PLY)
 
     ttPv = PvNode || (ttHit && tte->is_pv());
 #if defined (Sullivan) || (Blau)
+    // ttProgress can be used to approximate the running average of ttHit
     thisThread->ttProgress = (ttProgressWindow - 1) * thisThread->ttProgress / ttProgressWindow + ttProgressResolution * ttHit;
 #endif
 #endif
@@ -1505,8 +1506,9 @@ moves_loop: // When in check, search starts from here
       {
           Depth r = reduction(improving, depth, moveCount);
 #if defined (Sullivan) || (Blau) || (Fortress)
-          if (thisThread->ttProgress > ttProgressResolution * ttProgressWindow / 2)
-             r--;
+		  // Decrease reduction if the ttHit running average is large
+		  if (thisThread->ttProgress > 544 * ttProgressResolution * ttProgressWindow / 1024)
+			  r--;
 #endif
           // Reduction if other threads are searching this position.
           if (th.marked())
