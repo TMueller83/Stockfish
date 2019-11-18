@@ -177,7 +177,7 @@ enum Value : int {
 
   VALUE_MATE_IN_MAX_PLY  =  VALUE_MATE - 2 * MAX_PLY,
   VALUE_MATED_IN_MAX_PLY = -VALUE_MATE + 2 * MAX_PLY,
-
+//Code idea below by Ed Schröder
 #if defined (Sullivan) && (defined Blau)
   #define PVM 87/100
   #define PVE 87/100

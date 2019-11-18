@@ -985,7 +985,7 @@ if (   Threads.stop.load(std::memory_order_relaxed) || ss->ply >= MAX_PLY)
 #ifndef Fortress
     excludedMove = ss->excludedMove;
     posKey = pos.key() ^ Key(excludedMove << 16); // Isn't a very good hash
-#if defined (Sullivan) || (Blau) 
+#if defined (Sullivan) || (Blau)
     tte = probeTT(pos, ss, posKey, ttHit, ttValue, ttMove);
 #else
     tte = TT.probe(posKey, ttHit);
@@ -1435,7 +1435,7 @@ moves_loop: // When in check, search starts from here
 
        else if (    givesCheck
                && (pos.is_discovery_check_on_king(~us, move) || pos.see_ge(move))
-               && ++thisThread->extension < thisThread->nodes.load(std::memory_order_relaxed) / 4 ) //MichaelB7
+               && ++thisThread->extension < thisThread->nodes.load(std::memory_order_relaxed) /4) //MichaelB7
 		  extension = 1;
 
      // MichaelB7 Passed pawn extension
