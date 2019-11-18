@@ -191,16 +191,16 @@ enum Value : int {
   #define QVE 87/100
 
 #elif (defined Blau)
-  #define PVM 74/100
-  #define PVE 74/100
-  #define NVM 74/100
-  #define NVE 74/100
-  #define BVM 74/100
-  #define BVE 74/100
-  #define RVM 74/100
-  #define RVE 74/100
-  #define QVM 74/100
-  #define QVE 74/100
+  #define PVM 78/100
+  #define PVE 78/100
+  #define NVM 78/100
+  #define NVE 78/100
+  #define BVM 78/100
+  #define BVE 78/100
+  #define RVM 78/100
+  #define RVE 78/100
+  #define QVM 78/100
+  #define QVE 78/100
 
 #elif (defined Sullivan)
   #define PVM 100/100

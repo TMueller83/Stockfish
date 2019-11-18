@@ -122,9 +122,9 @@ void init(OptionsMap& o) {
     o["WeakFish"]                 << Option(true);
 #endif
 #if defined (Sullivan) || (Blau) || (Fortress)
-    o["Defensive"]                << Option(true); //Do not use with Offensive play
+    o["Defensive"]                << Option(true);
 #else
-    o["Defensive"]                << Option(false); //Do not use with Offensive play
+    o["Defensive"]                << Option(false); 
 #endif
     o["BruteForce"]               << Option(false);
     o["Clear_Hash"]               << Option(on_clear_hash);

@@ -24,14 +24,14 @@
 ### ==========================================================================
 
 ### Executable name  (Note: 4 new bench positions were added om 10/17/2019)
-### Based on commits through 11/16/2019
-### Blue-Honey-FD-XR7.nodes:Nodes searched  : 5629114
-### Blue-Honey-XR7.nodes:Nodes searched  : 6181563
-### Bluefish-FD-XR7.nodes:Nodes searched  : 5902675
-### Bluefish-XR7.nodes:Nodes searched  : 5936509
-### Honey-FD-XR7.nodes:Nodes searched  : 5561843
-### Honey-XR7.nodes:Nodes searched  : 5542105
-### Stockfish-FD-XR7.nodes:Nodes searched  : 5452202
+### Based on commits through 11/17/2019
+### Blue-Honey-FD-XR7.nodes:Nodes searched  : 5657204
+### Blue-Honey-XR7.nodes:Nodes searched  : 5316778
+### Bluefish-FD-XR7.nodes:Nodes searched  : 5707235
+### Bluefish-XR7.nodes:Nodes searched  : 5742786
+### Honey-FD-XR7.nodes:Nodes searched  : 5245331
+### Honey-XR7.nodes:Nodes searched  : 4833615
+### Stockfish-FD-XR7.nodes:Nodes searched  : 5146638
 ### Stockfish-XR7.nodes:Nodes searched  : 4496847
 ### Weakfish-XR7.nodes:Nodes searched  : 9428953
 
