@@ -79,7 +79,9 @@ namespace {
 
   // Different node types, used as a template parameter
   enum NodeType { NonPV, PV };
-
+#if defined (Sullivan) || (Blau) || (Fortress)
+  constexpr int ttProgressWindow = 4096, ttProgressResolution = 16;
+#endif
   // Razor and futility margins
   constexpr int RazorMargin = 661;
   Value futility_margin(Depth d, bool improving) {
@@ -585,6 +587,12 @@ void Thread::search() {
       multiPV = std::min(multiPV, rootMoves.size());
 
   int ct = int(ctempt) * (24 * PawnValueEg / 100); // From centipawns
+  //int ct = int(Options["Contempt"]) * PawnValueEg / 100; // From centipawns
+
+  multiPV = std::min(multiPV, rootMoves.size());
+#if defined (Sullivan) || (Blau) || (Fortress)
+  ttProgress = (ttProgressWindow / 2) * ttProgressResolution;
+#endif
 
   // In analysis mode, adjust contempt in accordance with user preference
   if (Limits.infinite || Options["UCI_AnalyseMode"])
@@ -900,6 +908,7 @@ namespace {
 	  ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
 	  : ttHit    ? tte->move() : MOVE_NONE;
 	  ttPv = PvNode || (ttHit && tte->is_pv());
+      thisThread->ttProgress = (ttProgressWindow - 1) * thisThread->ttProgress / ttProgressWindow + ttProgressResolution * ttHit;
 #endif
     if (!rootNode)
     {
@@ -976,7 +985,7 @@ if (   Threads.stop.load(std::memory_order_relaxed) || ss->ply >= MAX_PLY)
 #ifndef Fortress
     excludedMove = ss->excludedMove;
     posKey = pos.key() ^ Key(excludedMove << 16); // Isn't a very good hash
-#if defined (Sullivan) || (Blau) || (Fortress)
+#if defined (Sullivan) || (Blau) 
     tte = probeTT(pos, ss, posKey, ttHit, ttValue, ttMove);
 #else
     tte = TT.probe(posKey, ttHit);
@@ -986,6 +995,9 @@ if (   Threads.stop.load(std::memory_order_relaxed) || ss->ply >= MAX_PLY)
             : ttHit    ? tte->move() : MOVE_NONE;
 
     ttPv = PvNode || (ttHit && tte->is_pv());
+#if defined (Sullivan) || (Blau)
+    thisThread->ttProgress = (ttProgressWindow - 1) * thisThread->ttProgress / ttProgressWindow + ttProgressResolution * ttHit;
+#endif
 #endif
 
     // At non-PV nodes we check for an early TT cutoff
@@ -1492,7 +1504,10 @@ moves_loop: // When in check, search starts from here
               || cutNode))
       {
           Depth r = reduction(improving, depth, moveCount);
-
+#if defined (Sullivan) || (Blau) || (Fortress)
+          if (thisThread->ttProgress > ttProgressResolution * ttProgressWindow / 2)
+             r--;
+#endif
           // Reduction if other threads are searching this position.
           if (th.marked())
               r++;

@@ -25,13 +25,13 @@
 
 ### Executable name  (Note: 4 new bench positions were added om 10/17/2019)
 ### Based on commits through 11/16/2019
-### Blue-Honey-FD-XR7.nodes:Nodes searched  : 5682470
-### Blue-Honey-XR7.nodes:Nodes searched  : 5252181
-### Bluefish-FD-XR7.nodes:Nodes searched  : 5276271
-### Bluefish-XR7.nodes:Nodes searched  : 5187712
-### Honey-FD-XR7.nodes:Nodes searched  : 4526333
-### Honey-XR7.nodes:Nodes searched  : 4727821
-### Stockfish-FD-XR7.nodes:Nodes searched  : 4932222
+### Blue-Honey-FD-XR7.nodes:Nodes searched  : 5629114
+### Blue-Honey-XR7.nodes:Nodes searched  : 6181563
+### Bluefish-FD-XR7.nodes:Nodes searched  : 5902675
+### Bluefish-XR7.nodes:Nodes searched  : 5936509
+### Honey-FD-XR7.nodes:Nodes searched  : 5561843
+### Honey-XR7.nodes:Nodes searched  : 5542105
+### Stockfish-FD-XR7.nodes:Nodes searched  : 5452202
 ### Stockfish-XR7.nodes:Nodes searched  : 4496847
 ### Weakfish-XR7.nodes:Nodes searched  : 9428953
 
@@ -576,35 +576,39 @@ $(directory):
         clang-profile-use clang-profile-make
 
 build: config-sanity
-	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) all
-	strip $(EXE)
-#	cp $(EXE) /Users/michaelbyrne/cluster.mfb
-#	$(EXE) bench >/dev/null
-#	wait
-	rm -f *.o syzygy/*.o
+	@$(MAKE) ARCH=$(ARCH) COMP=$(COMP) all
+	@strip $(EXE)
+#	@cp $(EXE) /Users/michaelbyrne/cluster.mfb
+#	@$(EXE) bench >/dev/null
+#	@wait
+	@rm -f *.o syzygy/*.o
 
 profile-build: config-sanity objclean profileclean
 	@echo ""
 	@echo "Step 1/4. Building instrumented executable ..."
-	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) $(profile_make)
+	@$(MAKE) ARCH=$(ARCH) COMP=$(COMP) $(profile_make)
 	@echo ""
 	@echo "Step 2/4. Running benchmark for pgo-build ..."
-	$(PGOBENCH) &> /dev/null
-	$(PGOBENCH2) &> /dev/null
+	@$(PGOBENCH) &> /dev/null
+	@$(PGOBENCH2) &> /dev/null
 	@echo ""
 	@echo "Step 3/4. Building optimized executable ..."
-	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) objclean
-	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) $(profile_use)
+	@$(MAKE) ARCH=$(ARCH) COMP=$(COMP) objclean
+	@$(MAKE) ARCH=$(ARCH) COMP=$(COMP) $(profile_use)
 	@echo ""
 	@echo "Step 4/4. Deleting profile data ..."
-	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) profileclean
-	strip $(EXE)
-	cp $(EXE) /Users/michaelbyrne/cluster.mfb
-	$(EXE) bench >> /dev/null 2> $(directory)/$(EXE).nodes
-	rm -f *.o syzygy/*.o llvm-profdata
+	@$(MAKE) ARCH=$(ARCH) COMP=$(COMP) profileclean
+	@strip $(EXE)
+	@cp $(EXE) /Users/michaelbyrne/cluster.mfb
+	@$(EXE) bench >> /dev/null 2> $(directory)/$(EXE).nodes
+	@rm -f *.o syzygy/*.o llvm-profdata
 #	touch * syzygy/*
 #	cp $(EXE) /opt/picochess/engines/armv7l
-	echo "$(EXE) build completed"
+	@echo ""
+	@echo "==================================="
+	@echo "$(EXE) build completed..."
+	@echo "==================================="
+	@echo ""
 
 strip:
 	strip $(EXE)
@@ -663,7 +667,7 @@ config-sanity:
 	@test "$(sanitize)" = "undefined" || test "$(sanitize)" = "thread" || test "$(sanitize)" = "address" || test "$(sanitize)" = "no"
 	@test "$(optimize)" = "yes" || test "$(optimize)" = "no"
 	@test "$(arch)" = "any" || test "$(arch)" = "x86_64" || test "$(arch)" = "i386" || \
-	 test "$(arch)" = "ppc64" || test "$(arch)" = "ppc" || test "$(arch)" = "armv7"
+	@test "$(arch)" = "ppc64" || test "$(arch)" = "ppc" || test "$(arch)" = "armv7"
 	@test "$(bits)" = "32" || test "$(bits)" = "64"
 	@test "$(prefetch)" = "yes" || test "$(prefetch)" = "no"
 	@test "$(popcnt)" = "yes" || test "$(popcnt)" = "no"
@@ -675,39 +679,39 @@ $(EXE): $(OBJS)
 	$(CXX) -o $@ $(OBJS) $(LDFLAGS)
 
 clang-profile-make:
-	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
-	EXTRACXXFLAGS='-fprofile-instr-generate ' \
-	EXTRALDFLAGS=' -fprofile-instr-generate' \
+	@$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
+	@EXTRACXXFLAGS='-fprofile-instr-generate ' \
+	@EXTRALDFLAGS=' -fprofile-instr-generate' \
 	all
 
 clang-profile-use:
-	/opt/local/bin/llvm-profdata-mp-7.0 merge -output=stockfish.profdata *.profraw
-	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
-	EXTRACXXFLAGS='-fprofile-instr-use=stockfish.profdata -Wno-profile-instr-out-of-date' \
-	EXTRALDFLAGS='-fprofile-use ' \
+	@/opt/local/bin/llvm-profdata-mp-7.0 merge -output=stockfish.profdata *.profraw
+	@$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
+	@EXTRACXXFLAGS='-fprofile-instr-use=stockfish.profdata -Wno-profile-instr-out-of-date' \
+	@EXTRALDFLAGS='-fprofile-use ' \
 	all
 
 gcc-profile-make:
-	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
-	EXTRACXXFLAGS='-fprofile-generate -fprofile-correction' \
-	EXTRALDFLAGS='-lgcov' \
+	@$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
+	@EXTRACXXFLAGS='-fprofile-generate -fprofile-correction' \
+	@EXTRALDFLAGS='-lgcov' \
 	all
 
 gcc-profile-use:
-	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
-	EXTRACXXFLAGS='-fprofile-use -fprofile-correction -fno-peel-loops -fno-tracer -Os' \
-	EXTRALDFLAGS='-lgcov' \
+	@$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
+	@EXTRACXXFLAGS='-fprofile-use -fprofile-correction -fno-peel-loops -fno-tracer -Os' \
+	@EXTRALDFLAGS='-lgcov' \
 	all
 
 icc-profile-make:
 	@mkdir -p profdir
-	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
-	EXTRACXXFLAGS='-prof-gen=srcpos -prof_dir ./profdir' \
+	@$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
+	@EXTRACXXFLAGS='-prof-gen=srcpos -prof_dir ./profdir' \
 	all
 
 icc-profile-use:
-	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
-	EXTRACXXFLAGS='-prof_use -prof_dir ./profdir' \
+	@$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
+	@EXTRACXXFLAGS='-prof_use -prof_dir ./profdir' \
 	all
 
 .depend:

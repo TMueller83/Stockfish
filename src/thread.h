@@ -63,12 +63,12 @@ public:
 
   Pawns::Table pawnsTable;
   Material::Table materialTable;
-#if defined (Sullivan) || (Blau) || (Fortress)
-  size_t pvIdx, pvLast, extension;
-#else
-  size_t pvIdx, pvLast;
-#endif
 
+#if defined (Sullivan) || (Blau) || (Fortress)
+  size_t pvIdx, pvLast, extension, ttProgress;
+#else
+  size_t pvIdx, pvLast, ttProgress;
+#endif
   int selDepth, nmpMinPly;
 
   Color nmpColor;
