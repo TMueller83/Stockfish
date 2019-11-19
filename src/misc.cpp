@@ -60,20 +60,17 @@ namespace {
 
 /// Version number. If Version is left empty, then compile date in the format
 /// DD-MM-YY and show in engine_info.
-#ifndef Sullivan
-#define Stockfish
-#endif
+//#ifndef Sullivan
+//#define Stockfish
+//#endif
 
 	
 #if (defined Sullivan && defined Add_Features && ReleaseVer)
 const string Version = "XR7 ";
-#elif (defined Sullivan && defined Add_Features)
+#else
 const string Version = "";
 #endif
 
-#if (defined Stockfish && defined Add_Features)
-const string Version = "";
-#endif
 	
 #ifdef Fortress
 const string Suffix = "FD ";

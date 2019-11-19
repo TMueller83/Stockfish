@@ -86,18 +86,18 @@ struct Magic {
     Bitboard  mask;
     Bitboard  magic;
     Bitboard* attacks;
-#ifndef Sullivan //Niklas Fiekas fast magics
+#if defined (Stockfish) || (Weakfish) //Niklas Fiekas fast magics
     unsigned  shift;
 #endif
     // Compute the attack's index using the 'magic bitboards' approach
-#ifdef Sullivan //Niklas Fiekas fast magics
+#if defined (Sullivan) || (Blau) //Niklas Fiekas fast magics
     template<PieceType Pt>
 #endif
     unsigned index(Bitboard occupied) const {
 
         if (HasPext)
             return unsigned(pext(occupied, mask));
-#ifdef Sullivan //Niklas Fiekas fast magics
+#if defined (Sullivan) || (Blau) //Niklas Fiekas fast magics
         unsigned shift = 64 - (Pt == ROOK ? 12 : 9);
         return unsigned(((occupied & mask) * magic) >> shift);
 #else
@@ -275,7 +275,7 @@ template<PieceType Pt>
 inline Bitboard attacks_bb(Square s, Bitboard occupied) {
 
     const Magic& m = Pt == ROOK ? RookMagics[s] : BishopMagics[s];
-#ifdef Sullivan //Niklas Fiekas fast magics
+#if defined (Sullivan) || (Blau) //Niklas Fiekas fast magics
     return m.attacks[m.index<Pt>(occupied)];
 #else
     return m.attacks[m.index(occupied)];

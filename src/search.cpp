@@ -53,7 +53,6 @@ namespace Search {
   bool adaptive;
   bool ctempt;
   int defensive;
-  int offensive;
   int dct;
   int benchKnps;
 }
@@ -79,9 +78,8 @@ namespace {
 
   // Different node types, used as a template parameter
   enum NodeType { NonPV, PV };
-#if defined (Sullivan) || (Blau) || (Fortress)
-  constexpr uint64_t ttProgressWindow = 4096, ttProgressResolution = 1024;
-#endif
+  constexpr uint64_t ttHitAverageWindow     = 4096;
+  constexpr uint64_t ttHitAverageResolution = 1024;
   // Razor and futility margins
   constexpr int RazorMargin = 661;
   Value futility_margin(Depth d, bool improving) {
@@ -263,7 +261,7 @@ void MainThread::search() {
   1 Honey-XR7-1712  11/14/2019  1055   0.0   25   25   500  251.5  50.3  169  166  165  33.8  33.0  1053
   2 Honey-CCRL-1712 10/02/2019  1053   1.3   25   25   500  248.5  49.7  166  169  165  33.2  33.0  1055
   ---------------------------------------------------------------------------------------------------------*/
-	adaptive            = Options["Adaptive_Play"];
+    adaptive            = Options["Adaptive_Play"];
 #ifdef Weakfish
     weakFishSearch      = Options["WeakFish"];
 #endif
@@ -542,7 +540,7 @@ void Thread::search() {
   double timeReduction = 1, totBestMoveChanges = 0;
   Color us = rootPos.side_to_move();
   ctempt= Options["Contempt"];
-  int defensive = -34 * (int(Options["Defensive"]));  //about 16 cp
+  defensive = -34 * (int(Options["Defensive"]));  //about 16 cp
 
 #ifdef Add_Features
   TB::SevenManProbe = Options["7 Man Probing"];
@@ -568,10 +566,10 @@ void Thread::search() {
   // for match (TC 60+0.6) results spanning a wide range of k values.
 
   double floatLevel = Options["UCI_LimitStrength"] ?
-                      std::pow((Options["UCI_Elo"] - 1346.6) / 35.85, 1 / 0.806) :
-                      double(Options["Skill Level"]);
-	intLevel = clamp(int(floatLevel) +
-					 ((floatLevel - int(floatLevel)) * 1024 > rng.rand<unsigned>() % 1024  ? 1 : 0), 0, 40);
+                        clamp(std::pow((Options["UCI_Elo"] - 1346.6) / 143.4, 1 / 0.806), 0.0, 40.0) :
+                        double(Options["Skill Level"]);
+  int intLevel = int(floatLevel) +
+                 ((floatLevel - int(floatLevel)) * 1024 > rng.rand<unsigned>() % 1024  ? 1 : 0);
 #endif
 	Skill skill(intLevel);
 
@@ -583,17 +581,13 @@ void Thread::search() {
   // use behind the scenes to retrieve a set of possible moves.
   if (skill.enabled())
       multiPV = std::max(multiPV, (size_t)4);
-  else
-      multiPV = std::min(multiPV, rootMoves.size());
 
-  int ct = int(ctempt) * (24 * PawnValueEg / 100); // From centipawns
-  //int ct = int(Options["Contempt"]) * PawnValueEg / 100; // From centipawns
   multiPV = std::min(multiPV, rootMoves.size());
 
-#if defined (Sullivan) || (Blau) || (Fortress)
-  ttProgress = (ttProgressWindow / 2) * ttProgressResolution;
-#endif
+  multiPV = std::min(multiPV, rootMoves.size());
+  ttHitAverage = ttHitAverageWindow * ttHitAverageResolution / 2;
 
+int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // From centipawns
   // In analysis mode, adjust contempt in accordance with user preference
   if (Limits.infinite || Options["UCI_AnalyseMode"])
       ct =  Options["Analysis_Contempt"] == "Off"  ? 0
@@ -710,9 +704,7 @@ void Thread::search() {
               }
               else
 			  {
-#ifndef Sullivan  // commit 8fec88347 Tweak Late Move Reduction at root
                   ++rootMoves[pvIdx].bestMoveCount;
-#endif
 				  break;
               }
               delta += delta / 4 + 5;
@@ -908,7 +900,8 @@ namespace {
 	  ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
 	  : ttHit    ? tte->move() : MOVE_NONE;
 	  ttPv = PvNode || (ttHit && tte->is_pv());
-      thisThread->ttProgress = (ttProgressWindow - 1) * thisThread->ttProgress / ttProgressWindow + ttProgressResolution * ttHit;
+      thisThread->ttHitAverage =   (ttHitAverageWindow - 1) * thisThread->ttHitAverage / ttHitAverageWindow
+                               + ttHitAverageResolution * ttHit;
 #endif
     if (!rootNode)
     {
@@ -995,12 +988,11 @@ if (   Threads.stop.load(std::memory_order_relaxed) || ss->ply >= MAX_PLY)
             : ttHit    ? tte->move() : MOVE_NONE;
 
     ttPv = PvNode || (ttHit && tte->is_pv());
-#if defined (Sullivan) || (Blau)
-    // ttProgress can be used to approximate the running average of ttHit
-    thisThread->ttProgress = (ttProgressWindow - 1) * thisThread->ttProgress / ttProgressWindow + ttProgressResolution * ttHit;
-#endif
-#endif
 
+    // thisThread->ttHitAverage can be used to approximate the running average of ttHit
+    thisThread->ttHitAverage =   (ttHitAverageWindow - 1) * thisThread->ttHitAverage / ttHitAverageWindow
+                                + ttHitAverageResolution * ttHit;
+#endif
     // At non-PV nodes we check for an early TT cutoff
     if (  !PvNode
         && ttHit
@@ -1377,9 +1369,8 @@ moves_loop: // When in check, search starts from here
 				if (!pos.see_ge(move, Value(-(31 - std::min(lmrDepth, 18)) * lmrDepth * lmrDepth)))
 					continue;
 			}
-			else if (  !(givesCheck && extension)
-					 && !pos.see_ge(move, Value(-199) * depth)) // (~20 Elo)
-				continue;
+			else if (!pos.see_ge(move, Value(-199) * depth)) // (~20 Elo)
+                  continue;
 		}
 
       // Step 14. Extensions (~70 Elo)
@@ -1435,8 +1426,7 @@ moves_loop: // When in check, search starts from here
 #if defined (Sullivan) || (Blau) || (Fortress)
 
        else if (    givesCheck
-               && (pos.is_discovery_check_on_king(~us, move) || pos.see_ge(move))
-               && ++thisThread->extension < thisThread->nodes.load(std::memory_order_relaxed) /4) //MichaelB7
+               && (pos.is_discovery_check_on_king(~us, move) || pos.see_ge(move)))
 		  extension = 1;
 
      // MichaelB7 Passed pawn extension
@@ -1468,6 +1458,8 @@ moves_loop: // When in check, search starts from here
 
       // Speculative prefetch as early as possible
       prefetch(TT.first_entry(pos.key_after(move)));
+
+      // Check for legality just before making the move
       if (!rootNode && !pos.legal(move))
       {
           ss->moveCount = --moveCount;
@@ -1493,23 +1485,19 @@ moves_loop: // When in check, search starts from here
 #ifdef Fortress
           &&  !gameCycle
 #endif
-#ifdef Sullivan
-          &&  moveCount > 1 + 3 * rootNode
-#else  // commit 8fec88347 Tweak Late Move Reduction at root by @locutus2
           &&  moveCount > 1 + 2 * rootNode
           && (!rootNode || thisThread->best_move_count(move) == 0)
-#endif
           && (  !captureOrPromotion
               || moveCountPruning
               || ss->staticEval + PieceValue[EG][pos.captured_piece()] <= alpha
               || cutNode))
       {
           Depth r = reduction(improving, depth, moveCount);
-#if defined (Sullivan) || (Blau) || (Fortress)
-		  // Decrease reduction if the ttHit running average is large
-		  if (thisThread->ttProgress > 544 * ttProgressResolution * ttProgressWindow / 1024)
-			  r--;
-#endif
+
+          // Decrease reduction if the ttHit running average is large
+          if (thisThread->ttHitAverage > 544 * ttHitAverageResolution * ttHitAverageWindow / 1024)
+              r--;
+
           // Reduction if other threads are searching this position.
           if (th.marked())
               r++;
@@ -1721,7 +1709,6 @@ moves_loop: // When in check, search starts from here
 #else
                   depth, bestMove, ss->staticEval);
 #endif
-    assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
 			
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
 

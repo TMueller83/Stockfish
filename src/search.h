@@ -72,9 +72,7 @@ struct RootMove {
   int selDepth = 0;
 
   int tbRank = 0;
-#ifndef Sullivan // commit 8fec88347 Tweak Late Move Reduction at root by @locutus2
   int bestMoveCount = 0;
-#endif
   Value tbScore;
   std::vector<Move> pv;
 };

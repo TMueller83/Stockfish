@@ -24,16 +24,16 @@
 ### ==========================================================================
 
 ### Executable name  (Note: 4 new bench positions were added om 10/17/2019)
-### Based on commits through 11/17/2019
-### Blue-Honey-FD-XR7.nodes:Nodes searched  : 5657204
-### Blue-Honey-XR7.nodes:Nodes searched  : 5316778
-### Bluefish-FD-XR7.nodes:Nodes searched  : 5707235
-### Bluefish-XR7.nodes:Nodes searched  : 5742786
-### Honey-FD-XR7.nodes:Nodes searched  : 5245331
-### Honey-XR7.nodes:Nodes searched  : 4833615
-### Stockfish-FD-XR7.nodes:Nodes searched  : 5146638
-### Stockfish-XR7.nodes:Nodes searched  : 4496847
-### Weakfish-XR7.nodes:Nodes searched  : 9428953
+### Based on commits through 11/18/2019
+### Blue-Honey-FD-XR7.nodes:Nodes searched  : 6004635
+### Blue-Honey-XR7.nodes:Nodes searched  : 5429744
+### Bluefish-FD-XR7.nodes:Nodes searched  : 6092661
+### Bluefish-XR7.nodes:Nodes searched  : 5921015
+### Honey-FD-XR7.nodes:Nodes searched  : 5259269
+### Honey-XR7.nodes:Nodes searched  : 5244368
+### Stockfish-FD-XR7.nodes:Nodes searched  : 4675923
+### Stockfish-XR7.nodes:Nodes searched  : 4989584
+### Weakfish-XR7.nodes:Nodes searched  : 8055916
 
 ####  Always leave the three lines below as is (any subsequent defines will override)
 DATE=$(shell date +"%m%d%y")
@@ -133,6 +133,7 @@ ifneq ($(HONEY),yes)
 		PRE=Weak
 	else
 		PRE=Stock
+		CXXFLAGS += -DStockfish
 	endif
 	NAME=$(PRE)fish$(SUF)
 	ifeq ($(RELEASEVER),no)
@@ -679,39 +680,39 @@ $(EXE): $(OBJS)
 	$(CXX) -o $@ $(OBJS) $(LDFLAGS)
 
 clang-profile-make:
-	@$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
-	@EXTRACXXFLAGS='-fprofile-instr-generate ' \
-	@EXTRALDFLAGS=' -fprofile-instr-generate' \
+	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
+	EXTRACXXFLAGS='-fprofile-instr-generate ' \
+	EXTRALDFLAGS=' -fprofile-instr-generate' \
 	all
 
 clang-profile-use:
-	@/opt/local/bin/llvm-profdata-mp-7.0 merge -output=stockfish.profdata *.profraw
-	@$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
-	@EXTRACXXFLAGS='-fprofile-instr-use=stockfish.profdata -Wno-profile-instr-out-of-date' \
-	@EXTRALDFLAGS='-fprofile-use ' \
+	/opt/local/bin/llvm-profdata-mp-7.0 merge -output=stockfish.profdata *.profraw
+	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
+	EXTRACXXFLAGS='-fprofile-instr-use=stockfish.profdata -Wno-profile-instr-out-of-date' \
+	EXTRALDFLAGS='-fprofile-use ' \
 	all
 
 gcc-profile-make:
-	@$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
-	@EXTRACXXFLAGS='-fprofile-generate -fprofile-correction' \
-	@EXTRALDFLAGS='-lgcov' \
+	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
+	EXTRACXXFLAGS='-fprofile-generate -fprofile-correction' \
+	EXTRALDFLAGS='-lgcov' \
 	all
 
 gcc-profile-use:
-	@$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
-	@EXTRACXXFLAGS='-fprofile-use -fprofile-correction -fno-peel-loops -fno-tracer -Os' \
-	@EXTRALDFLAGS='-lgcov' \
+	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
+	EXTRACXXFLAGS='-fprofile-use -fprofile-correction -fno-peel-loops -fno-tracer' \
+	EXTRALDFLAGS='-lgcov' \
 	all
 
 icc-profile-make:
 	@mkdir -p profdir
-	@$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
-	@EXTRACXXFLAGS='-prof-gen=srcpos -prof_dir ./profdir' \
+	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
+	EXTRACXXFLAGS='-prof-gen=srcpos -prof_dir ./profdir' \
 	all
 
 icc-profile-use:
-	@$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
-	@EXTRACXXFLAGS='-prof_use -prof_dir ./profdir' \
+	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
+	EXTRACXXFLAGS='-prof_use -prof_dir ./profdir' \
 	all
 
 .depend:
