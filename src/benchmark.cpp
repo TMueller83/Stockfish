@@ -67,7 +67,22 @@ const vector<string> Defaults = {
   "4rrk1/1p1nq3/p7/2p1P1pp/3P2bp/3Q1Bn1/PPPB4/1K2R1NR w - - 40 21",
   "r3k2r/3nnpbp/q2pp1p1/p7/Pp1PPPP1/4BNN1/1P5P/R2Q1RK1 w kq - 0 16",
   "3Qb1k1/1r2ppb1/pN1n2q1/Pp1Pp1Pr/4P2p/4BP2/4B1R1/1R5K b - - 11 40",
+#if defined (Sullivan) || (Blue)
+  "8/1p2KP2/1p4q1/1Pp5/2P5/N1Pp1k2/3P4/1N6 b - - 76 40", //draw
 
+  // 5-man positions
+  "8/8/8/8/5kp1/P7/8/1K1N4 w - - 0 1",     // Kc2 - mate
+  "8/8/8/5N2/8/p7/8/2NK3k w - - 0 1",      // Na2 - mate
+
+  // 6-man positions
+  "8/8/1P6/5pr1/8/4R3/7k/2K5 w - - 0 1",   // Re5 - mate
+  "8/2p4P/8/kr6/6R1/8/8/1K6 w - - 0 1",    // Ka2 - mate
+  "8/8/3P3k/8/1p6/8/1P6/1K3n2 b - - 0 1",  // Nd2 - draw
+
+  // 7-man position
+  "8/4n3/8/2n5/kp1N2P1/8/8/3K4 b - - 0 1", // Mate
+
+#else
   // 5-man positions
   "8/8/8/8/5kp1/P7/8/1K1N4 w - - 0 1",     // Kc2 - mate
   "8/8/8/5N2/8/p7/8/2NK3k w - - 0 1",      // Na2 - mate
@@ -78,8 +93,9 @@ const vector<string> Defaults = {
   "8/2p4P/8/kr6/6R1/8/8/1K6 w - - 0 1",    // Ka2 - mate
   "8/8/3P3k/8/1p6/8/1P6/1K3n2 b - - 0 1",  // Nd2 - draw
 
-  // 7-man positions
+  // 7-man position
   "8/R7/2q5/8/6k1/8/1P5p/K6R w - - 0 124", // Draw
+#endif
 
   // Mate and stalemate positions
   "6k1/3b3r/1p1p4/p1n2p2/1PPNpP1q/P3Q1p1/1R1RB1P1/5K2 b - - 0 1",

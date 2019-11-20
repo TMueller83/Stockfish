@@ -1,0 +1,12 @@
+### Based on commits through 11/19/2019:
+### ======================================================
+### Blue-Honey-FD-XR7.nodes:Nodes searched  : 5820584
+### Blue-Honey-XR7.nodes:Nodes searched  : 5706089
+### Bluefish-FD-XR7.nodes:Nodes searched  : 5619402
+### Bluefish-XR7.nodes:Nodes searched  : 5880164
+### Honey-FD-XR7.nodes:Nodes searched  : 5234196
+### Honey-XR7.nodes:Nodes searched  : 5004015
+### Stockfish-FD-XR7.nodes:Nodes searched  : 5193239
+### Stockfish-XR7.nodes:Nodes searched  : 4897149
+### Weakfish-XR7.nodes:Nodes searched  : 8055916
+### ======================================================

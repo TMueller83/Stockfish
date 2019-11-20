@@ -1349,7 +1349,10 @@ moves_loop: // When in check, search starts from here
 			if (
 				!captureOrPromotion
 				&& !givesCheck
-				&& (!PvNode || !pos.advanced_pawn_push(move) || pos.non_pawn_material(~us) > BishopValueMg))
+#if defined (Sullivan) || (Blau)
+                && (!PvNode || !pos.advanced_pawn_push(move) || pos.non_pawn_material(~us) > BishopValueMg)
+#endif
+                )
 			{
 				// Reduced depth of the next LMR search
 				int lmrDepth = std::max(newDepth - reduction(improving, depth, moveCount), 0);
@@ -1426,8 +1429,9 @@ moves_loop: // When in check, search starts from here
 #if defined (Sullivan) || (Blau) || (Fortress)
 
        else if (    givesCheck
-               && (pos.is_discovery_check_on_king(~us, move) || pos.see_ge(move)))
-		  extension = 1;
+               && (pos.is_discovery_check_on_king(~us, move) || pos.see_ge(move))
+               && ++thisThread->extension < thisThread->nodes.load(std::memory_order_relaxed) /4) //MichaelB7 one more time
+               extension = 1;
 
      // MichaelB7 Passed pawn extension
       else if ( move == ss->killers[0] && !extension

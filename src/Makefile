@@ -23,17 +23,22 @@
 ### Section 1. General Configuration
 ### ==========================================================================
 
-### Executable name  (Note: 4 new bench positions were added om 10/17/2019)
-### Based on commits through 11/18/2019
-### Blue-Honey-FD-XR7.nodes:Nodes searched  : 6004635
-### Blue-Honey-XR7.nodes:Nodes searched  : 5429744
-### Bluefish-FD-XR7.nodes:Nodes searched  : 6092661
-### Bluefish-XR7.nodes:Nodes searched  : 5921015
-### Honey-FD-XR7.nodes:Nodes searched  : 5259269
-### Honey-XR7.nodes:Nodes searched  : 5244368
-### Stockfish-FD-XR7.nodes:Nodes searched  : 4675923
-### Stockfish-XR7.nodes:Nodes searched  : 4989584
+### Note: 4 new bench positions were added on 10/17/2019.
+###       Bluefish and Honey benchmarks were modified on 11/19/2019
+###
+### Current bench nodes for each version.
+### Based on commits through 11/19/2019:
+### ======================================================
+### Blue-Honey-FD-XR7.nodes:Nodes searched  : 5820584
+### Blue-Honey-XR7.nodes:Nodes searched  : 5706089
+### Bluefish-FD-XR7.nodes:Nodes searched  : 5619402
+### Bluefish-XR7.nodes:Nodes searched  : 5880164
+### Honey-FD-XR7.nodes:Nodes searched  : 5234196
+### Honey-XR7.nodes:Nodes searched  : 5004015
+### Stockfish-FD-XR7.nodes:Nodes searched  : 5193239
+### Stockfish-XR7.nodes:Nodes searched  : 4897149
 ### Weakfish-XR7.nodes:Nodes searched  : 8055916
+### ======================================================
 
 ####  Always leave the three lines below as is (any subsequent defines will override)
 DATE=$(shell date +"%m%d%y")
@@ -567,7 +572,7 @@ help:
 	@echo "make profile-build ARCH=x86-64-bmi2 COMP=gcc COMPCXX=g++-4.8"
 	@echo ""
 
-directory = bench_nodes
+directory = ../bench_nodes
 all: | $(directory)
 $(directory):
 	mkdir -p $@

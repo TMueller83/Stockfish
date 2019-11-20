@@ -5,7 +5,8 @@
 ###
 
 ### time the compile process
-#set echo on
+set echo on
+#DATE=$(shell date +"%m/%d/%y")
 start=`date +%s`
 
 #ARCH="ARCH=general-32"
@@ -42,13 +43,22 @@ mke WEAKFISH=yes &&
 mke FORTRESS_DETECT=yes &&
 mke
 
+### The script code belows computes the bench nodes for each version, and tupdates the Makefile
+### with the bench nodes and the date this was run.
 echo ""
-cd bench_nodes
+cd ../bench_nodes
 mv benchnodes.txt benchnodes_old.txt
+echo "$( date +'Based on commits through %m/%d/%Y:')">> benchnodes.txt
+echo "======================================================">> benchnodes.txt
 grep 'searched' *.nodes  /dev/null >> benchnodes.txt
+echo "======================================================">> benchnodes.txt
 sed -i -e  's/^/### /g' benchnodes.txt
 rm *.nodes benchnodes.txt-e
-cd ..
+echo "$(<benchnodes.txt)"
+sed -i.bak -e '30,41d' ../src/Makefile
+sed '29r benchnodes.txt' <../src/Makefile >../src/Makefile.tmp
+mv ../src/Makefile.tmp ../src/Makefile
+cd ../src
 
 
 end=`date +%s`

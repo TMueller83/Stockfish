@@ -1,0 +1,13 @@
+### Current bench nodes for each version.
+### Based on commits through 11/19/19:
+### ======================================================
+### Blue-Honey-FD-XR7.nodes:Nodes searched  : 5732044
+### Blue-Honey-XR7.nodes:Nodes searched  : 6116231
+### Bluefish-FD-XR7.nodes:Nodes searched  : 5619402
+### Bluefish-XR7.nodes:Nodes searched  : 5880164
+### Honey-FD-XR7.nodes:Nodes searched  : 5504240
+### Honey-XR7.nodes:Nodes searched  : 5140367
+### Stockfish-FD-XR7.nodes:Nodes searched  : 5193239
+### Stockfish-XR7.nodes:Nodes searched  : 4897149
+### Weakfish-XR7.nodes:Nodes searched  : 8055916
+### ======================================================
