@@ -208,10 +208,15 @@ void ThreadPool::start_thinking(Position& pos, StateListPtr& states,
 
   for (Thread* th : *this)
   {
+#ifdef Noir
+      th->nodes = th->tbHits = th->nmpGuard = 0;
+#else
+      th->nodes = th->tbHits = th->nmpMinPly = 0;
+#endif
 #if defined (Sullivan) || (Blau) || (Fortress)
       th->extension = th->nodes = th->tbHits = th->nmpMinPly = 0;
 #endif
-      th->nodes = th->tbHits = th->nmpMinPly = 0;
+
       th->rootDepth = th->completedDepth = 0;
       th->rootMoves = rootMoves;
       th->rootPos.set(pos.fen(), pos.is_chess960(), &setupStates->back(), th);

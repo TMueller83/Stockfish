@@ -41,14 +41,23 @@ struct TTEntry {
   Move  move()  const { return (Move )move16; }
   Value value() const { return (Value)value16; }
   Value eval()  const { return (Value)eval16; }
+#ifdef Noir
+  Depth depth() const { return (Depth)depth8 + DEPTH_NONE; }
+#else
   Depth depth() const { return (Depth)depth8 + DEPTH_OFFSET; }
+#endif
   bool is_pv() const { return (bool)(genBound8 & 0x4); }
   Bound bound() const { return (Bound)(genBound8 & 0x3); }
   void save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev);
 
 private:
   friend class TranspositionTable;
+
+#ifdef Noir
+  uint64_t key;
+#else
   uint16_t key16;
+#endif
   uint16_t move16;
   int16_t  value16;
   int16_t  eval16;
@@ -74,10 +83,14 @@ class TranspositionTable {
 
   struct Cluster {
     TTEntry entry[ClusterSize];
+#ifndef Noir
     char padding[2]; // Align to a divisor of the cache line size
+#endif
   };
 
+#ifndef Noir
 static_assert(CacheLineSize % sizeof(Cluster) == 0, "Cluster size incorrect"); 
+#endif
 
 public:
  ~TranspositionTable() { free(mem); }
@@ -89,7 +102,11 @@ public:
 
   // The 32 lowest order bits of the key are used to get the index of the cluster
   TTEntry* first_entry(const Key key) const {
+#ifdef Noir
+    return &table[key & (clusterCount - 1)].entry[0];
+#else
     return &table[(uint32_t(key) * uint64_t(clusterCount)) >> 32].entry[0];
+#endif
   }
 
 private:

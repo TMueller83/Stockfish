@@ -327,8 +327,11 @@ Value Endgame<KNNKP>::operator()(const Position& pos) const {
 
   assert(verify_material(pos, strongSide, 2 * KnightValueMg, 0));
   assert(verify_material(pos, weakSide, VALUE_ZERO, 1));
-
+#ifdef Stockfish  //Rocky640 -> github.com/official-stockfish/Stockfish/issues/2417  8/4n3/8/2n5/kp1N2P1/8/8/3K4 b - -
   Value result =  2 * KnightValueEg
+#else
+  Value result =  KnightValueEg
+#endif
                 - PawnValueEg
                 + PushToEdges[pos.square<KING>(weakSide)];
 

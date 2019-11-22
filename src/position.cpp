@@ -748,7 +748,7 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
 
   assert(color_of(pc) == us);
   assert(captured == NO_PIECE || color_of(captured) == (type_of(m) != CASTLING ? them : us));
-  //assert(type_of(captured) != KING);
+  assert(type_of(captured) != KING);
 
   if (type_of(m) == CASTLING)
   {

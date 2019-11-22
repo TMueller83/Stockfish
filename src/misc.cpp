@@ -160,10 +160,12 @@ const string engine_info(bool to_uci) {
 #else
     ss << "Honey " << Version << Suffix << setfill('0');
 #endif
-#elif (defined Blau)
+#elif defined (Blau)
     ss << "Bluefish " << Version << Suffix << setfill('0');
-#elif (defined Weakfish)
+#elif defined (Weakfish)
 	ss << "Weakfish " << Version << Suffix << setfill('0');
+#elif defined (Noir)
+	ss << "Blackfish " << Version << Suffix << setfill('0');
 #else
     ss << "Stockfish " << Version << Suffix << setfill('0');
 #endif

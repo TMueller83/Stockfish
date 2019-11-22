@@ -139,8 +139,11 @@ Move MovePicker::select(Pred filter) {
   {
       if (T == Best)
           std::swap(*cur, *std::max_element(cur, endMoves));
-
+#ifdef Noir
+      if (*cur != ttMove && filter() && pos.legal(*cur))
+#else
       if (*cur != ttMove && filter())
+#endif
           return *cur++;
 
       cur++;

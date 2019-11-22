@@ -33,12 +33,13 @@ function mke() {
 make -j $BUILD $ARCH $COMP "$@"
 }
 
-mke BLUEFISH=yes  &&
-mke BLUEFISH=yes  FORTRESS_DETECT=yes &&
-mke HONEY=yes BLUEFISH=yes &&
+mke NOIR=yes &&
+mke BLUEFISH=yes FORTRESS_DETECT=yes &&
+mke BLUEFISH=yes &&
 mke HONEY=yes BLUEFISH=yes FORTRESS_DETECT=yes &&
-mke HONEY=yes &&
+mke HONEY=yes BLUEFISH=yes &&
 mke HONEY=yes FORTRESS_DETECT=yes &&
+mke HONEY=yes &&
 mke WEAKFISH=yes &&
 mke FORTRESS_DETECT=yes &&
 mke
@@ -55,7 +56,7 @@ echo "======================================================">> benchnodes.txt
 sed -i -e  's/^/### /g' benchnodes.txt
 rm *.nodes benchnodes.txt-e
 echo "$(<benchnodes.txt)"
-sed -i.bak -e '30,41d' ../src/Makefile
+sed -i.bak -e '30,42d' ../src/Makefile
 sed '29r benchnodes.txt' <../src/Makefile >../src/Makefile.tmp
 mv ../src/Makefile.tmp ../src/Makefile
 cd ../src

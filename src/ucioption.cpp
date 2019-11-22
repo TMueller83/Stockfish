@@ -232,18 +232,18 @@ Option::Option(const char* v, const char* cur, OnChange f) : type("combo"), min(
 { defaultValue = v; currentValue = cur; }
 
 Option::operator double() const {
-  //assert(type == "check" || type == "spin");		//macOS clang 6.0 error
+  assert(type == "check" || type == "spin");		//macOS clang 6.0 error
   return (type == "spin" ? stof(currentValue) : currentValue == "true");
 }
 
 Option::operator std::string() const {
-  //assert(type == "string");	//macOS clang 6.0 error
+  assert(type == "string");	//macOS clang 6.0 error
   return currentValue;
 }
 
 bool Option::operator==(const char* s) const {
 
-  //assert(type == "combo");	 //macOS clang 6.0 error
+  assert(type == "combo");	 //macOS clang 6.0 error
   return    !CaseInsensitiveLess()(currentValue, s)
          && !CaseInsensitiveLess()(s, currentValue);
 

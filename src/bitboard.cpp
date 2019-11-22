@@ -39,7 +39,7 @@ Magic BishopMagics[SQUARE_NB];
 
 namespace {
 
-#if defined (Sullivan) || (Blau) //Niklas Fiekas fast magics
+#if defined (Sullivan) || (Blau) || (Noir) //Niklas Fiekas fast magics
 Bitboard AttackTable[HasPext ? 107648 : 88772] = { 0 };
 
 struct MagicInit {
@@ -250,7 +250,7 @@ void Bitboards::init() {
   Direction RookDirections[] = { NORTH, EAST, SOUTH, WEST };
   Direction BishopDirections[] = { NORTH_EAST, SOUTH_EAST, SOUTH_WEST, NORTH_WEST };
 
-#if defined (Sullivan) || (Blau) //Niklas Fiekas fast magics
+#if defined (Sullivan) || (Blau) || (Noir) //Niklas Fiekas fast magics
     if (HasPext)
     {
         unsigned offset = 0;
@@ -308,7 +308,7 @@ namespace {
 
     return attack;
 }
-#if defined (Sullivan) || (Blau)  //Niklas Fiekas fast magics
+#if defined (Sullivan) || (Blau) || (Noir) //Niklas Fiekas fast magics
 Bitboard relevant_occupancies(Direction directions[], Square s) {
     Bitboard edges = ((Rank1BB | Rank8BB) & ~rank_bb(s)) | ((FileABB | FileHBB) & ~file_bb(s));
     return sliding_attack(directions, s, 0) & ~edges;
@@ -320,7 +320,7 @@ Bitboard relevant_occupancies(Direction directions[], Square s) {
   // www.chessprogramming.org/Magic_Bitboards. In particular, here we use the so
   // called "fancy" approach.
 
-#if defined (Sullivan) || (Blau)  //Niklas Fiekas fast magics
+#if defined (Sullivan) || (Blau) || (Noir) //Niklas Fiekas fast magics
 template<PieceType Pt>
 void init_magics(MagicInit init[], Magic magics[], Direction directions[])
 {

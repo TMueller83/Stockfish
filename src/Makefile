@@ -27,15 +27,16 @@
 ###       Bluefish and Honey benchmarks were modified on 11/19/2019
 ###
 ### Current bench nodes for each version.
-### Based on commits through 11/19/2019:
+### Based on commits through 11/21/2019:
 ### ======================================================
-### Blue-Honey-FD-XR7.nodes:Nodes searched  : 5820584
-### Blue-Honey-XR7.nodes:Nodes searched  : 5706089
-### Bluefish-FD-XR7.nodes:Nodes searched  : 5619402
-### Bluefish-XR7.nodes:Nodes searched  : 5880164
-### Honey-FD-XR7.nodes:Nodes searched  : 5234196
-### Honey-XR7.nodes:Nodes searched  : 5004015
-### Stockfish-FD-XR7.nodes:Nodes searched  : 5193239
+### Blackfish-XR7.nodes:Nodes searched  : 11584375
+### Blue-Honey-FD-XR7.nodes:Nodes searched  : 5361840
+### Blue-Honey-XR7.nodes:Nodes searched  : 5749094
+### Bluefish-FD-XR7.nodes:Nodes searched  : 6599186
+### Bluefish-XR7.nodes:Nodes searched  : 5909352
+### Honey-FD-XR7.nodes:Nodes searched  : 5030755
+### Honey-XR7.nodes:Nodes searched  : 5068426
+### Stockfish-FD-XR7.nodes:Nodes searched  : 5402694
 ### Stockfish-XR7.nodes:Nodes searched  : 4897149
 ### Weakfish-XR7.nodes:Nodes searched  : 8055916
 ### ======================================================
@@ -54,11 +55,15 @@ FEATURE1=add_features
 ### https://github.com/jhellis3/Stockfish/tree/game_cycle
 ###	FORTRESS_DETECT = yes
 
+### Blackfish evaluation based on Crystal by Joe Ellis
+### https://github.com/jhellis3/Stockfish/tree/crystal
+###	NOIR = yes
 
 ### Bluefish evaluation by Eelco de Groot
 ### http://talkchess.com/forum3/viewtopic.php?f=2&t=71929
 ###	BLUEFISH = yes
-### Weakfish has about 90% of the evalutation and search code Elo improvements removed
+
+### Weakfish has about 90% of the search code Elo improvements removed
 ### WEAKFISH = yes
 
 ### Release versions , enter yes and release version below foor releases
@@ -136,6 +141,9 @@ ifneq ($(HONEY),yes)
 	else ifeq ($(WEAKFISH),yes)
 		CXXFLAGS += -DWeakfish
 		PRE=Weak
+	else ifeq ($(NOIR),yes)
+		CXXFLAGS += -DNoir
+		PRE=Black
 	else
 		PRE=Stock
 		CXXFLAGS += -DStockfish

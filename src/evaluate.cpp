@@ -776,7 +776,7 @@ constexpr Score MobilityBonus[][32] = {
 
     Value mg = mg_value(score);
     Value eg = eg_value(score);
-#if defined (Sullivan) || (defined Blau) || (Fortress)
+#if defined (Sullivan) || (Blau) || (Fortress)
     int separation = distance<File>(pos.square<KING>(WHITE), pos.square<KING>(BLACK));
 #endif
     int outflanking =  distance<File>(pos.square<KING>(WHITE), pos.square<KING>(BLACK))

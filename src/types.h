@@ -103,7 +103,11 @@ typedef uint64_t Key;
 typedef uint64_t Bitboard;
 
 constexpr int MAX_MOVES = 256;
+#ifdef Noir
+constexpr int MAX_PLY   = 192;
+#else
 constexpr int MAX_PLY   = 246;
+#endif
 
 /// A move needs 16 bits to be stored
 ///
@@ -245,8 +249,12 @@ KnightValueMg = 781*NVM,   KnightValueEg = 854*NVE,
 BishopValueMg = 825*BVM,   BishopValueEg = 915*BVE,
 RookValueMg   = 1276*RVM,  RookValueEg   = 1380*RVE,
 QueenValueMg  = 2538*QVM,  QueenValueEg  = 2682*QVE,
-	
+
+#ifdef Noir
+VALUE_TB_WIN    = PawnValueEg,
+#endif
 MidgameLimit  = 15258*PVM, EndgameLimit  = 3915*PVE
+
 };
 
 enum PieceType {

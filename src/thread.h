@@ -68,9 +68,14 @@ public:
   size_t pvIdx, pvLast;
 #endif
   uint64_t ttHitAverage;
+#ifdef Noir
+  int selDepth;
+  bool nmpGuard;
+#else
   int selDepth, nmpMinPly;
 
   Color nmpColor;
+#endif
   std::atomic<uint64_t> nodes, tbHits, bestMoveChanges;
 
   Position rootPos;
