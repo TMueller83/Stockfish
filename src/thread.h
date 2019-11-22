@@ -73,7 +73,6 @@ public:
   bool nmpGuard;
 #else
   int selDepth, nmpMinPly;
-
   Color nmpColor;
 #endif
   std::atomic<uint64_t> nodes, tbHits, bestMoveChanges;

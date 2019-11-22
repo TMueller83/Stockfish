@@ -27,37 +27,19 @@
 ###       Bluefish and Honey benchmarks were modified on 11/19/2019
 ###
 ### Current bench nodes for each version.
-### Based on commits through 11/21/2019:
+### Based on commits through 11/22/2019:
 ### ======================================================
-### Blackfish-XR7.nodes:Nodes searched  : 10927420
-### Blue-Honey-FD-XR7.nodes:Nodes searched  : 5077833
-### Blue-Honey-XR7.nodes:Nodes searched  : 5228545
-### Bluefish-FD-XR7.nodes:Nodes searched  : 4910814
-### Bluefish-XR7.nodes:Nodes searched  : 5581980
-### Honey-FD-XR7.nodes:Nodes searched  : 5464722
-### Honey-XR7.nodes:Nodes searched  : 4830828
-### Stockfish-FD-XR7.nodes:Nodes searched  : 5571427
-### Stockfish-XR7.nodes:Nodes searched  : 5067870
-### Weakfish-XR7.nodes:Nodes searched  : 7864364
+### Blackfish-XR7.nodes:Nodes searched  : 10388653
+### Blue-Honey-FD-XR7.nodes:Nodes searched  : 12350609
+### Blue-Honey-XR7.nodes:Nodes searched  : 5218705
+### Bluefish-FD-XR7.nodes:Nodes searched  : 13304261
+### Bluefish-XR7.nodes:Nodes searched  : 5471383
+### Honey-FD-XR7.nodes:Nodes searched  : 10866321
+### Honey-XR7.nodes:Nodes searched  : 5059284
+### Stockfish-FD-XR7.nodes:Nodes searched  : 10889802
+### Stockfish-XR7.nodes:Nodes searched  : 5468157
+### Weakfish-XR7.nodes:Nodes searched  : 7618228
 ### ======================================================
-
-####  Always leave the three lines below as is (any subsequent defines will override)
-DATE=$(shell date +"%m%d%y")
-DATE2=$(shell date +"%m%d")
-FEATURE1=add_features
-
-### Uncomment the line below for Honey, comment out for Stockfish
-###	HONEY=yes
-
-### Fortress Detection code that will help in positions such as this:
-### 3r4/3r4/2p1k3/p1pbPp1p/Pp1p1PpP/1P1P2R1/2P4R/2K1Q3 w - - 0 6, bm Rxg4
-### Fortress Detection code by Joe Ellis:
-### https://github.com/jhellis3/Stockfish/tree/game_cycle
-###	FORTRESS_DETECT = yes
-
-### Blackfish evaluation based on Crystal by Joe Ellis
-### https://github.com/jhellis3/Stockfish/tree/crystal
-###	NOIR = yes
 
 ### Bluefish evaluation by Eelco de Groot
 ### http://talkchess.com/forum3/viewtopic.php?f=2&t=71929

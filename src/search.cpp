@@ -913,12 +913,16 @@ namespace {
     if (PvNode && thisThread->selDepth < ss->ply + 1)
         thisThread->selDepth = ss->ply + 1;
 
-#if defined (Noir)
+#if defined (Noir) || (Fortress)
     // Transposition table lookup. We don't want the score of a partial
     // search to overwrite a previous full search TT value, so we use a different
     // position key in case of an excluded move.
     excludedMove = ss->excludedMove;
+#ifdef Noir
     posKey = pos.key() ^ Key(excludedMove);
+#else
+    posKey = pos.key() ^ Key(excludedMove) << 16;
+#endif
     tte = TT.probe(posKey, ttHit);
     ttValue = ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
     ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
@@ -927,20 +931,6 @@ namespace {
     // thisThread->ttHitAverage can be used to approximate the running average of ttHit
     thisThread->ttHitAverage =   (ttHitAverageWindow - 1) * thisThread->ttHitAverage / ttHitAverageWindow
                                 + ttHitAverageResolution * ttHit;
-#elif defined (Fortress)
-    // Transposition table lookup. We don't want the score of a partial
-    // search to overwrite a previous full search TT value, so we use a different
-    // position key in case of an excluded move.
-    excludedMove = ss->excludedMove;
-    posKey = pos.key() ^ Key(excludedMove) << 16;
-    tte = TT.probe(posKey, ttHit);
-    ttValue = ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
-    ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
-    : ttHit    ? tte->move() : MOVE_NONE;
-    ttPv = PvNode || (ttHit && tte->is_pv());
-    // thisThread->ttHitAverage can be used to approximate the running average of ttHit
-    thisThread->ttHitAverage =   (ttHitAverageWindow - 1) * thisThread->ttHitAverage / ttHitAverageWindow
-    + ttHitAverageResolution * ttHit;
 #endif
     if (!rootNode)
     {
@@ -967,14 +957,20 @@ namespace {
 
         // Step 2. Check for aborted search and immediate draw
 #if defined (Fortress) || (Noir)
-if (   Threads.stop.load(std::memory_order_relaxed) || ss->ply >= MAX_PLY)
-#else
-        if (   Threads.stop.load(std::memory_order_relaxed)
-            || pos.is_draw(ss->ply)
-            || ss->ply >= MAX_PLY)
+        if (pos.is_draw(ss->ply))
+            return VALUE_DRAW;
 #endif
-            return (ss->ply >= MAX_PLY && !inCheck) ? evaluate(pos)
-#ifdef Noir
+         if (   Threads.stop.load(std::memory_order_relaxed) || ss->ply >= MAX_PLY)
+
+        if (   Threads.stop.load(std::memory_order_relaxed)
+#ifndef Noir
+#ifndef Fortress
+            || pos.is_draw(ss->ply)
+#endif
+#endif
+            || ss->ply >= MAX_PLY)
+                return (ss->ply >= MAX_PLY && !inCheck) ? evaluate(pos)
+#if defined (Fortress) || (Noir)
                                                     : VALUE_DRAW;
 #elif defined Sullivan
                                                     : value_draw(depth, pos.this_thread());
@@ -1030,7 +1026,6 @@ if (   Threads.stop.load(std::memory_order_relaxed) || ss->ply >= MAX_PLY)
     ttValue = ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
     ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
               : ttHit    ? tte->move() : MOVE_NONE;
-
     ttPv = PvNode || (ttHit && tte->is_pv());
 
     // thisThread->ttHitAverage can be used to approximate the running average of ttHit
@@ -1047,7 +1042,7 @@ if (   Threads.stop.load(std::memory_order_relaxed) || ss->ply >= MAX_PLY)
     // At non-PV nodes we check for an early TT cutoff
     if (  !PvNode
         && ttHit
-#if defined (Sullivan) || (Blau) || (Fortress)
+#if defined (Sullivan) || (Blau)
     && (pos.rule50_count() < 92 || (piecesCount < 8  && TB::Cardinality ))
 #endif
 #if defined (Fortress) || (Noir)
@@ -1055,7 +1050,7 @@ if (   Threads.stop.load(std::memory_order_relaxed) || ss->ply >= MAX_PLY)
 #endif
         && tte->depth() >= depth
         && ttValue != VALUE_NONE // Possible in case of TT access race
-#ifdef Noir
+#if defined (Fortress) || (Noir)
         && (ttValue != VALUE_DRAW || VALUE_DRAW >= beta)
 #endif
         && (ttValue >= beta ? (tte->bound() & BOUND_LOWER)
@@ -1258,6 +1253,7 @@ if (   Threads.stop.load(std::memory_order_relaxed) || ss->ply >= MAX_PLY)
            && !thisThread->nmpGuard
            && !(depth > 4 && (MoveList<LEGAL, KING>(pos).size() < 1 || MoveList<LEGAL>(pos).size() < 6)))
 #else
+#ifndef Noir
 #ifdef Fortress
       if (gameCycle)
           ss->staticEval = eval = ss->staticEval * std::max(0, (100 - pos.rule50_count())) / 100;
@@ -1291,11 +1287,7 @@ if (   Threads.stop.load(std::memory_order_relaxed) || ss->ply >= MAX_PLY)
         return eval;
 
     // Step 9. Null move search with verification search (~40 Elo)
-#ifdef Add_Features
     if (   !PvNode
-#else
-    if (   !PvNode
-#endif
         && (ss-1)->currentMove != MOVE_NULL
         && (ss-1)->statScore < 22661
         &&  eval >= beta
@@ -1312,6 +1304,7 @@ if (   Threads.stop.load(std::memory_order_relaxed) || ss->ply >= MAX_PLY)
 #endif
         &&  pos.non_pawn_material(us)
         && (ss->ply >= thisThread->nmpMinPly || us != thisThread->nmpColor))
+#endif
 #endif
     {
         assert(eval - beta >= 0);
@@ -1524,17 +1517,14 @@ moves_loop: // When in check, search starts from here
       {
 #endif
 
-		// Calculate new depth for this move
-#ifdef Noir
-                newDepth = depth - 1;
-
-      // Step 13. Pruning at shallow depth (~170 Elo)
-      if (  !PvNode
+        // Calculate new depth for this move
+        newDepth = depth - 1;
+#if defined (Fortress) || (Noir)
+        // Step 13. Pruning at shallow depth (~170 Elo)
+        if (  !PvNode
 #else
-		newDepth = depth - 1 + extension;
-	
-		// Step 13. Pruning at shallow depth (~170 Elo)
-		if (  !rootNode
+        // Step 13. Pruning at shallow depth (~170 Elo)
+        if (  !rootNode
 #endif
 #ifdef Weakfish
 			&& !weakFishSearch
@@ -1563,7 +1553,11 @@ moves_loop: // When in check, search starts from here
 					continue;
 				
 				// Futility pruning: parent node (~2 Elo)
-				if (   lmrDepth < 6
+#if defined (Fortress) || (Noir)
+                                if (   lmrDepth < 3
+#else
+                                if (   lmrDepth < 6
+#endif
 					&& !inCheck
 					&& ss->staticEval + 250 + 211 * lmrDepth <= alpha)
 					continue;
@@ -1577,31 +1571,44 @@ moves_loop: // When in check, search starts from here
 
       // Step 14. Extensions (~70 Elo)
 
-#ifdef Fortress
+#if defined (Fortress) || (Noir)
 		if (   gameCycle
-                       && (depth < 5 || PvNode))
-		extension = (2 - (ss->ply % 2 == 0 && !PvNode));
+            && (depth < 5 || PvNode))
+                extension = (2 - (ss->ply % 2 == 0 && !PvNode));
 #endif
       // Singular extension search (~60 Elo). If all moves but one fail low on a
       // search of (alpha-s, beta-s), and just one fails high on (alpha, beta),
       // then that move is singular and should be extended. To verify this we do
       // a reduced search on all the other moves but the ttMove and if the
       // result is lower than ttValue minus a margin then we will extend the ttMove.
+#if defined (Fortress) || (Noir)
+      else if (    depth >= 6
+#else
       if (    depth >= 6
-
+#endif
           &&  move == ttMove
           && !rootNode
-#ifdef Fortress
+#if defined (Fortress) || (Noir)
           &&  !gameCycle
 #endif
           && !excludedMove // Avoid recursive singular search
-       /* &&  ttValue != VALUE_NONE Already implicit in the next condition */
+#if defined (Fortress) || (Noir)
+          &&  ttValue != VALUE_NONE //Already implicit in the next condition */
+#else
           &&  abs(ttValue) < VALUE_KNOWN_WIN
+#endif
           && (tte->bound() & BOUND_LOWER)
           &&  tte->depth() >= depth - 3
-          &&  pos.legal(move))
+#ifndef Noir
+          &&  pos.legal(move)
+#endif
+		  )
       {
+#if defined (Fortress) || (Noir)
+          Value singularBeta = std::max(ttValue - 2 * depth, mated_in(ss->ply));
+#else
           Value singularBeta = ttValue - 2 * depth;
+#endif
           Depth halfDepth = depth / 2;
           ss->excludedMove = move;
           value = search<NonPV>(pos, ss, singularBeta - 1, singularBeta, halfDepth, cutNode);
@@ -1687,12 +1694,12 @@ moves_loop: // When in check, search starts from here
 #else
       if (    depth >= 3
 #endif
-#ifdef Fortress
+#if defined (Fortress) || (Noir)
           &&  !gameCycle
 #endif
           &&  moveCount > 1 + 2 * rootNode
           && (!rootNode || thisThread->best_move_count(move) == 0)
-#ifdef Noir
+#if defined (Fortress) || (Noir)
           &&  thisThread->selDepth > depth
 #endif
           && (  !captureOrPromotion
@@ -1722,7 +1729,7 @@ moves_loop: // When in check, search starts from here
           // Decrease reduction if ttMove has been singularly extended
           if (singularLMR)
               r -= 2;
-#ifdef Noir
+#if defined (Fortress) || (Noir)
           if (!PvNode && !captureOrPromotion)
 #else
           if (!captureOrPromotion)
@@ -1766,7 +1773,7 @@ moves_loop: // When in check, search starts from here
               // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
               r -= ss->statScore / 16384;
           }
-#ifdef Noir
+#if defined (Fortress) || (Noir)
           Depth rr = newDepth / (2 + ss->ply / 3);
 
           r -= rr;
@@ -1810,7 +1817,7 @@ moves_loop: // When in check, search starts from here
 
       // Step 18. Undo move
       pos.undo_move(move);
-#ifdef Noir
+#ifdef Noir  //MFB
       }
 #endif
 

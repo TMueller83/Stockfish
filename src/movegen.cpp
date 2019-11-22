@@ -203,9 +203,19 @@ namespace {
 
         if (Checks)
             b &= pos.check_squares(Pt);
+#ifdef Noir
+        Square ksq = pos.square<KING>(us);
 
         while (b)
+        {
+            Square to = pop_lsb(&b);
+            if (!(pos.blockers_for_king(us) & from) || aligned(from, to, ksq))
+                *moveList++ = make_move(from, to);
+         }
+#else
+        while (b)
             *moveList++ = make_move(from, pop_lsb(&b));
+#endif
     }
 
     return moveList;
@@ -230,7 +240,15 @@ namespace {
         Square ksq = pos.square<KING>(Us);
         Bitboard b = pos.attacks_from<KING>(ksq) & target;
         while (b)
+#ifdef Noir
+		{
+			Square to = pop_lsb(&b);
+			if ((pos.attackers_to(to) & pos.pieces(~Us)) == 0)
+				*moveList++ = make_move(ksq, to);
+		}
+#else
             *moveList++ = make_move(ksq, pop_lsb(&b));
+#endif
         if (Type != CAPTURES && pos.can_castle(CastlingRights(OO | OOO)))
         {
             if (!pos.castling_impeded(OO) && pos.can_castle(OO))
@@ -300,7 +318,15 @@ ExtMove* generate<QUIET_CHECKS>(const Position& pos, ExtMove* moveList) {
          b &= ~PseudoAttacks[QUEEN][pos.square<KING>(~us)];
 
      while (b)
+#ifdef Noir
+	 {
+		 Square to = pop_lsb(&b);
+		 if ((pos.attackers_to(to) & pos.pieces(~us)) == 0)
+			 *moveList++ = make_move(from, pop_lsb(&b));
+	 }
+#else
          *moveList++ = make_move(from, pop_lsb(&b));
+#endif
   }
 
   return us == WHITE ? generate_all<WHITE, QUIET_CHECKS>(pos, moveList, ~pos.pieces())

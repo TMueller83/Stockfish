@@ -27,27 +27,9 @@
 ###       Bluefish and Honey benchmarks were modified on 11/19/2019
 ###
 ### Current bench nodes for each version.
-### Based on commits through 11/21/2019:
+### Based on commits through 11/22/2019:
 ### ======================================================
-### Blackfish-XR7.nodes:Nodes searched  : 11584375
-### Blue-Honey-FD-XR7.nodes:Nodes searched  : 5361840
-### Blue-Honey-XR7.nodes:Nodes searched  : 5749094
-### Bluefish-FD-XR7.nodes:Nodes searched  : 6599186
-### Bluefish-XR7.nodes:Nodes searched  : 5909352
-### Honey-FD-XR7.nodes:Nodes searched  : 5030755
-### Honey-XR7.nodes:Nodes searched  : 5068426
-### Stockfish-FD-XR7.nodes:Nodes searched  : 5402694
-### Stockfish-XR7.nodes:Nodes searched  : 4897149
-### Weakfish-XR7.nodes:Nodes searched  : 8055916
 ### ======================================================
-
-####  Always leave the three lines below as is (any subsequent defines will override)
-DATE=$(shell date +"%m%d%y")
-DATE2=$(shell date +"%m%d")
-FEATURE1=add_features
-
-### Uncomment the line below for Honey, comment out for Stockfish
-###	HONEY=yes
 
 ### Fortress Detection code that will help in positions such as this:
 ### 3r4/3r4/2p1k3/p1pbPp1p/Pp1p1PpP/1P1P2R1/2P4R/2K1Q3 w - - 0 6, bm Rxg4

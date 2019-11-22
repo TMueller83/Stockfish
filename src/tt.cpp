@@ -135,9 +135,8 @@ void TranspositionTable::clear() {
 
 TTEntry* TranspositionTable::probe(const Key key, bool& found) const {
 
-#ifdef Noir
   TTEntry* const tte = first_entry(key);
-
+#ifdef Noir
   for (int i = 0; i < ClusterSize; ++i)
       if (!tte[i].key || tte[i].key == key)
       {
@@ -146,7 +145,6 @@ TTEntry* TranspositionTable::probe(const Key key, bool& found) const {
           return found = (bool)tte[i].key, &tte[i];
       }
 #else
-  TTEntry* const tte = first_entry(key);
   const uint16_t key16 = key >> 48;  // Use the high 16 bits as key inside the cluster
 
   for (int i = 0; i < ClusterSize; ++i)
