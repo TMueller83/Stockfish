@@ -91,7 +91,6 @@ constexpr Value WDL_to_value[] = {
     VALUE_DRAW + 2,
     VALUE_TB_WIN - 5 * PawnValueEg
 };
-
 #else
 constexpr Value WDL_to_value[] = {
    -VALUE_MATE + MAX_PLY + 1,

@@ -27,27 +27,19 @@
 ###       Bluefish and Honey benchmarks were modified on 11/19/2019
 ###
 ### Current bench nodes for each version.
-### Based on commits through 11/21/2019:
+### Based on commits through 11/24/2019:
 ### ======================================================
-### Blackfish-XR7.nodes:Nodes searched  : 10927420
-### Blue-Honey-FD-XR7.nodes:Nodes searched  : 5077833
-### Blue-Honey-XR7.nodes:Nodes searched  : 5228545
-### Bluefish-FD-XR7.nodes:Nodes searched  : 4910814
-### Bluefish-XR7.nodes:Nodes searched  : 5581980
-### Honey-FD-XR7.nodes:Nodes searched  : 5464722
-### Honey-XR7.nodes:Nodes searched  : 4830828
-### Stockfish-FD-XR7.nodes:Nodes searched  : 5571427
+### Blue-Honey-FD-XR7.nodes:Nodes searched  : 10210955
+### Blue-Honey-XR7.nodes:Nodes searched  : 5106501
+### Bluefish-FD-XR7.nodes:Nodes searched  : 14128571
+### Bluefish-XR7.nodes:Nodes searched  : 5835710
+### Diamond-XR7.nodes:Nodes searched  : 9413287
+### Honey-FD-XR7.nodes:Nodes searched  : 10868846
+### Honey-XR7.nodes:Nodes searched  : 5143756
+### Stockfish-FD-XR7.nodes:Nodes searched  : 10889802
 ### Stockfish-XR7.nodes:Nodes searched  : 5067870
 ### Weakfish-XR7.nodes:Nodes searched  : 7864364
 ### ======================================================
-
-####  Always leave the three lines below as is (any subsequent defines will override)
-DATE=$(shell date +"%m%d%y")
-DATE2=$(shell date +"%m%d")
-FEATURE1=add_features
-
-### Uncomment the line below for Honey, comment out for Stockfish
-###	HONEY=yes
 
 ### Fortress Detection code that will help in positions such as this:
 ### 3r4/3r4/2p1k3/p1pbPp1p/Pp1p1PpP/1P1P2R1/2P4R/2K1Q3 w - - 0 6, bm Rxg4
@@ -55,7 +47,7 @@ FEATURE1=add_features
 ### https://github.com/jhellis3/Stockfish/tree/game_cycle
 ###	FORTRESS_DETECT = yes
 
-### Blackfish evaluation based on Crystal by Joe Ellis
+### Diamond evaluation based on Crystal by Joe Ellis
 ### https://github.com/jhellis3/Stockfish/tree/crystal
 ###	NOIR = yes
 
@@ -134,21 +126,24 @@ ifeq ($(HONEY),yes)
 endif
 
 ### Note:  For building cur-dev stockfish with the features added.
+ifeq ($(NOIR),yes)
+	CXXFLAGS += -DNoir
+	NAME=Diamond
+endif
 ifneq ($(HONEY),yes)
-	ifeq ($(BLUEFISH),yes)
-		CXXFLAGS += -DBlau
-		PRE=Blue
-	else ifeq ($(WEAKFISH),yes)
-		CXXFLAGS += -DWeakfish
-		PRE=Weak
-	else ifeq ($(NOIR),yes)
-		CXXFLAGS += -DNoir
-		PRE=Black
-	else
-		PRE=Stock
-		CXXFLAGS += -DStockfish
-	endif
+	ifneq ($(NOIR),yes)
+		ifeq ($(BLUEFISH),yes)
+			CXXFLAGS += -DBlau
+			PRE=Blue
+		else ifeq ($(WEAKFISH),yes)
+			CXXFLAGS += -DWeakfish
+			PRE=Weak
+		else
+			PRE=Stock
+			CXXFLAGS += -DStockfish
+		endif
 	NAME=$(PRE)fish$(SUF)
+endif
 	ifeq ($(RELEASEVER),no)
 		ifeq ($(COMP),mingw)
 			EXE = $(NAME)-$(DATE).exe

@@ -148,8 +148,8 @@ void init(OptionsMap& o) {
     o["Bench_KNPS"]               << Option (1500, 500, 6000);//used for UCI Play By Elo
 #endif
     // Score percentage evalaution output, similair to Lc0 output is now the default
-    o["Score_Output"]             << Option("ScorPct-GUI var CentiPawn var ScorPct var ScorPct-GUI"
-											,"ScorPct-GUI");
+    o["Output"]             << Option("CentiPawn var ScorPct-GUI var ScorPct var Centipawn"
+											,"Centipawn");
 #ifdef Add_Features
     o["Tactical"]                 << Option(0, 0, 8);
 #endif

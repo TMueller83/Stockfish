@@ -65,7 +65,7 @@ namespace {
 //#endif
 
 	
-#if (defined Sullivan && defined Add_Features && ReleaseVer)
+#if (defined Add_Features && ReleaseVer)
 const string Version = "XR7 ";
 #else
 const string Version = "";
@@ -165,7 +165,7 @@ const string engine_info(bool to_uci) {
 #elif defined (Weakfish)
 	ss << "Weakfish " << Version << Suffix << setfill('0');
 #elif defined (Noir)
-	ss << "Blackfish " << Version << Suffix << setfill('0');
+	ss << "Diamond " << Version << Suffix << setfill('0');
 #else
     ss << "Stockfish " << Version << Suffix << setfill('0');
 #endif
@@ -321,11 +321,11 @@ void prefetch(void*) {}
 
 void prefetch(void* addr) {
 
-//#  if defined(__INTEL_COMPILER)
+#  if defined(__INTEL_COMPILER)
    // This hack prevents prefetches from being optimized away by
    // Intel compiler. Both MSVC and gcc seem not be affected by this.
    __asm__ ("");
-//#  endif
+#  endif
 
 #  if defined(__INTEL_COMPILER) || defined(_MSC_VER)
   _mm_prefetch((char*)addr, _MM_HINT_T0);

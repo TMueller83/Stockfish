@@ -1,13 +1,13 @@
-### Based on commits through 11/21/2019:
+### Based on commits through 11/23/2019:
 ### ======================================================
-### Blackfish-XR7.nodes:Nodes searched  : 11584375
-### Blue-Honey-FD-XR7.nodes:Nodes searched  : 5361840
-### Blue-Honey-XR7.nodes:Nodes searched  : 5749094
-### Bluefish-FD-XR7.nodes:Nodes searched  : 6599186
-### Bluefish-XR7.nodes:Nodes searched  : 5909352
-### Honey-FD-XR7.nodes:Nodes searched  : 5030755
-### Honey-XR7.nodes:Nodes searched  : 5068426
-### Stockfish-FD-XR7.nodes:Nodes searched  : 5402694
-### Stockfish-XR7.nodes:Nodes searched  : 4897149
-### Weakfish-XR7.nodes:Nodes searched  : 8055916
+### Blackfish-XR7.nodes:Nodes searched  : 9413287
+### Blue-Honey-FD-XR7.nodes:Nodes searched  : 12841852
+### Blue-Honey-XR7.nodes:Nodes searched  : 5545021
+### Bluefish-FD-XR7.nodes:Nodes searched  : 13304261
+### Bluefish-XR7.nodes:Nodes searched  : 5581980
+### Honey-FD-XR7.nodes:Nodes searched  : 11002832
+### Honey-XR7.nodes:Nodes searched  : 5026183
+### Stockfish-FD-XR7.nodes:Nodes searched  : 10889802
+### Stockfish-XR7.nodes:Nodes searched  : 5067870
+### Weakfish-XR7.nodes:Nodes searched  : 7864364
 ### ======================================================

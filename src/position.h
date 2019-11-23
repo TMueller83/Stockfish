@@ -126,7 +126,7 @@ public:
     bool capture_or_promotion(Move m) const;
     bool gives_check(Move m) const;
     bool advanced_pawn_push(Move m) const;
-#if defined (Sullivan) || (Blau) || (Fortress)
+#if defined (Sullivan) || (Blau) || (Fortress) || (Noir)
     bool promotion_pawn_push(Move m) const;
 #endif
     Piece moved_piece(Move m) const;
@@ -335,7 +335,7 @@ inline bool Position::advanced_pawn_push(Move m) const {
         && relative_rank(sideToMove, to_sq(m)) > RANK_5;
 }
 
-#if defined (Sullivan) || (Blau) || (Fortress) //MichaelB7
+#if defined (Sullivan) || (Blau) || (Fortress) || (Noir) //MichaelB7
 inline bool Position::promotion_pawn_push(Move m) const {
     return   type_of(moved_piece(m)) == PAWN
              && relative_rank(sideToMove, from_sq(m)) > RANK_5;

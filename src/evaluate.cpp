@@ -150,7 +150,12 @@ constexpr Score MobilityBonus[][32] = {
   constexpr Score PassedRank[RANK_NB] = {
     S(0, 0), S(10, 28), S(17, 33), S(15, 41), S(62, 72), S(168, 177), S(276, 260)
   };
-
+#ifdef Sullivan
+  // OutpostRank[Rank] contains a bonus according to the rank of the outpost
+  constexpr Score OutpostRank[RANK_NB] = {
+    S(0, 0), S(0, 0), S(0, 0), S(28, 18), S(30, 24), S(32, 19)
+  };
+#endif
   // Assorted bonuses and penalties
   constexpr Score BishopPawns        = S(  3,  7);
   constexpr Score CorneredBishop     = S( 50, 50);
@@ -165,21 +170,10 @@ constexpr Score MobilityBonus[][32] = {
   constexpr Score PawnlessFlank      = S( 17, 95);
   constexpr Score RestrictedPiece    = S(  7,  7);
   constexpr Score ReachableOutpost   = S( 32, 10);
-#ifdef Blau
-  constexpr Score RookOnPawn         = S( 10, 32);
-  constexpr Score RookOnQueenFile    = S( 11,  4);
-#elif (defined Sullivan)
-  constexpr Score RookOnPawn         = S( 10, 22);
-  constexpr Score RookOnQueenFile    = S( 9,  6);
-#else
   constexpr Score RookOnQueenFile    = S(  7,  6);
-#endif
   constexpr Score SliderOnQueen      = S( 59, 18);
   constexpr Score ThreatByKing       = S( 24, 89);
   constexpr Score ThreatByPawnPush   = S( 48, 39);
-#if ((defined Sullivan) || (defined Blau))
-  constexpr Score ThreatByRank       = S( 13,  0);
-#endif
   constexpr Score ThreatBySafePawn   = S(173, 94);
   constexpr Score TrappedRook        = S( 47,  4);
   constexpr Score WeakQueen          = S( 49, 15);
@@ -332,9 +326,10 @@ constexpr Score MobilityBonus[][32] = {
             bb = OutpostRanks & attackedBy[Us][PAWN] & ~pe->pawn_attacks_span(Them);
             if (bb & s)
                 score += Outpost * (Pt == KNIGHT ? 2 : 1);
-
             else if (Pt == KNIGHT && bb & b & ~pos.pieces(Us))
                 score += ReachableOutpost;
+
+
 
             // Knight and Bishop bonus for being right behind a pawn
             if (shift<Down>(pos.pieces(PAWN)) & s)
@@ -374,12 +369,6 @@ constexpr Score MobilityBonus[][32] = {
 
         if (Pt == ROOK)
         {
-#if ((defined Sullivan) || (defined Blau))
-            // Bonus for aligning rook with enemy pawns on the same rank/file
-            if (relative_rank(Us, s) >= RANK_5)
-                score += RookOnPawn * popcount(pos.pieces(Them, PAWN) & PseudoAttacks[ROOK][s]);
-#endif
-
             // Bonus for rook on the same file as a queen
             if (file_bb(s) & pos.pieces(QUEEN))
                 score += RookOnQueenFile;
@@ -556,30 +545,13 @@ constexpr Score MobilityBonus[][32] = {
     {
         b = (defended | weak) & (attackedBy[Us][KNIGHT] | attackedBy[Us][BISHOP]);
         while (b)
-#if ((defined Sullivan) || (defined Blau))
-        {
-            Square s = pop_lsb(&b);
-            score += ThreatByMinor[type_of(pos.piece_on(s))];
-            if (type_of(pos.piece_on(s)) != PAWN)
-                score += ThreatByRank * (int)relative_rank(Them, s);
-        }
 
-#else
             score += ThreatByMinor[type_of(pos.piece_on(pop_lsb(&b)))];
-#endif
+
         b = weak & attackedBy[Us][ROOK];
         while (b)
-#if ((defined Sullivan) || (defined Blau))
-        {
-            Square s = pop_lsb(&b);
-            score += ThreatByRook[type_of(pos.piece_on(s))];
-            if (type_of(pos.piece_on(s)) != PAWN)
-            	score += ThreatByRank * (int)relative_rank(Them, s);
 
-        }
-#else
             score += ThreatByRook[type_of(pos.piece_on(pop_lsb(&b)))];
-#endif
 
         if (weak & attackedBy[Us][KING])
             score += ThreatByKing;

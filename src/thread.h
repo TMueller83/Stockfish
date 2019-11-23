@@ -67,13 +67,14 @@ public:
 #else
   size_t pvIdx, pvLast;
 #endif
+//#ifndef Noir
   uint64_t ttHitAverage;
+//#endif
 #ifdef Noir
   int selDepth;
   bool nmpGuard;
 #else
   int selDepth, nmpMinPly;
-
   Color nmpColor;
 #endif
   std::atomic<uint64_t> nodes, tbHits, bestMoveChanges;
