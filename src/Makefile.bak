@@ -26,20 +26,21 @@
 ### Note: 4 new bench positions were added on 10/17/2019.
 ###       Bluefish and Honey benchmarks were modified on 11/19/2019
 ###
-### Current bench nodes for each version.
-### Based on commits through 11/23/2019:
+### Bench signatures (total nodes searched using bench)
+### Based on commits through 11/25/2019:
 ### ======================================================
-### Blackfish-XR7.nodes:Nodes searched  : 9413287
-### Blue-Honey-FD-XR7.nodes:Nodes searched  : 12841852
-### Blue-Honey-XR7.nodes:Nodes searched  : 5545021
-### Bluefish-FD-XR7.nodes:Nodes searched  : 13304261
-### Bluefish-XR7.nodes:Nodes searched  : 5581980
-### Honey-FD-XR7.nodes:Nodes searched  : 11002832
-### Honey-XR7.nodes:Nodes searched  : 5026183
-### Stockfish-FD-XR7.nodes:Nodes searched  : 10889802
-### Stockfish-XR7.nodes:Nodes searched  : 5067870
-### Weakfish-XR7.nodes:Nodes searched  : 7864364
+### Black-Diamond-XR7.nodes:Nodes searched  : 9311931
+### Blue-Honey-FD-XR7.nodes:Nodes searched  : 13276817
+### Blue-Honey-XR7.nodes:Nodes searched  : 5455321
+### Bluefish-FD-XR7.nodes:Nodes searched  : 12051099
+### Bluefish-XR7.nodes:Nodes searched  : 5589824
+### Honey-FD-XR7.nodes:Nodes searched  : 11434545
+### Honey-XR7.nodes:Nodes searched  : 5092260
+### Stockfish-FD-XR7.nodes:Nodes searched  : 10845732
+### Stockfish-XR7.nodes:Nodes searched  : 5742013
+### Weakfish-XR7.nodes:Nodes searched  : 8134785
 ### ======================================================
+
 ### Fortress Detection code that will help in positions such as this:
 ### 3r4/3r4/2p1k3/p1pbPp1p/Pp1p1PpP/1P1P2R1/2P4R/2K1Q3 w - - 0 6, bm Rxg4
 ### Fortress Detection code by Joe Ellis:
@@ -127,7 +128,7 @@ endif
 ### Note:  For building cur-dev stockfish with the features added.
 ifeq ($(NOIR),yes)
 	CXXFLAGS += -DNoir
-	NAME=Diamond
+	NAME=Black-Diamond
 endif
 ifneq ($(HONEY),yes)
 	ifneq ($(NOIR),yes)

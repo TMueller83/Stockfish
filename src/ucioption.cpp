@@ -94,11 +94,7 @@ void init(OptionsMap& o) {
     o["Best_Move_4"]              << Option(true, on_best_book_move4);
     o["Book_Depth_4"]             << Option(127, 1, 127, on_book_depth4);
 #endif
-#ifdef Weakfish
-    o["Contempt_Value"]           << Option(48, -200, 200);
-#else
     o["Contempt_Value"]           << Option(24, -100, 100);
-#endif
 #ifdef Fortress
     o["Contempt"]                 << Option(false);
 #else

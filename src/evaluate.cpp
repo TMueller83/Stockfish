@@ -150,7 +150,7 @@ constexpr Score MobilityBonus[][32] = {
   constexpr Score PassedRank[RANK_NB] = {
     S(0, 0), S(10, 28), S(17, 33), S(15, 41), S(62, 72), S(168, 177), S(276, 260)
   };
-#ifdef Sullivan
+#if defined (Sullivan) || (Blau) || (Noir)
   // OutpostRank[Rank] contains a bonus according to the rank of the outpost
   constexpr Score OutpostRank[RANK_NB] = {
     S(0, 0), S(0, 0), S(0, 0), S(28, 18), S(30, 24), S(32, 19)
@@ -165,15 +165,30 @@ constexpr Score MobilityBonus[][32] = {
   constexpr Score KnightOnQueen      = S( 16, 12);
   constexpr Score LongDiagonalBishop = S( 45,  0);
   constexpr Score MinorBehindPawn    = S( 18,  3);
+#if defined (Sullivan) || (Blau) || (Noir)
+  constexpr Score Outpost            = S( 18,  6);
+#else
   constexpr Score Outpost            = S( 30, 21);
+#endif
   constexpr Score PassedFile         = S( 11,  8);
   constexpr Score PawnlessFlank      = S( 17, 95);
   constexpr Score RestrictedPiece    = S(  7,  7);
   constexpr Score ReachableOutpost   = S( 32, 10);
+#ifdef Blau
+  constexpr Score RookOnPawn         = S( 10, 32);
+  constexpr Score RookOnQueenFile    = S( 11,  4);
+#elif defined (Sullivan) || (Noir)
+  constexpr Score RookOnPawn         = S( 10, 22);
+  constexpr Score RookOnQueenFile    = S( 9,  6);
+#else
   constexpr Score RookOnQueenFile    = S(  7,  6);
+#endif
   constexpr Score SliderOnQueen      = S( 59, 18);
   constexpr Score ThreatByKing       = S( 24, 89);
   constexpr Score ThreatByPawnPush   = S( 48, 39);
+#if defined (Sullivan) || (Blau) || (Noir)
+  constexpr Score ThreatByRank       = S( 13,  0);
+#endif
   constexpr Score ThreatBySafePawn   = S(173, 94);
   constexpr Score TrappedRook        = S( 47,  4);
   constexpr Score WeakQueen          = S( 49, 15);
@@ -324,12 +339,17 @@ constexpr Score MobilityBonus[][32] = {
         {
             // Bonus if piece is on an outpost square or can reach one
             bb = OutpostRanks & attackedBy[Us][PAWN] & ~pe->pawn_attacks_span(Them);
+#if defined (Sullivan) || (Blau) || (Noir)
+            if (s & bb)
+                score += OutpostRank[relative_rank(Us, s)] * (Pt == KNIGHT ? 2 : 1);
+            else if (Pt == KNIGHT && bb & b & ~pos.pieces(Us))
+                score += Outpost;
+#else
             if (bb & s)
                 score += Outpost * (Pt == KNIGHT ? 2 : 1);
             else if (Pt == KNIGHT && bb & b & ~pos.pieces(Us))
                 score += ReachableOutpost;
-
-
+#endif
 
             // Knight and Bishop bonus for being right behind a pawn
             if (shift<Down>(pos.pieces(PAWN)) & s)
@@ -369,6 +389,11 @@ constexpr Score MobilityBonus[][32] = {
 
         if (Pt == ROOK)
         {
+#if defined (Sullivan) || (Blau || (Noir))
+            // Bonus for aligning rook with enemy pawns on the same rank/file
+            if (relative_rank(Us, s) >= RANK_5)
+                score += RookOnPawn * popcount(pos.pieces(Them, PAWN) & PseudoAttacks[ROOK][s]);
+#endif
             // Bonus for rook on the same file as a queen
             if (file_bb(s) & pos.pieces(QUEEN))
                 score += RookOnQueenFile;
@@ -481,13 +506,24 @@ constexpr Score MobilityBonus[][32] = {
                  + 148 * popcount(unsafeChecks)
                  +  98 * popcount(pos.blockers_for_king(Us))
                  +  69 * kingAttacksCount[Them]
+#if defined (Sullivan) || (Blau) || (Noir) || (Fortress)
                  +   4 * (kingFlankAttack - kingFlankDefense)
+#endif
                  +   3 * kingFlankAttack * kingFlankAttack / 8
                  +       mg_value(mobility[Them] - mobility[Us])
                  - 873 * !pos.count<QUEEN>(Them)
                  - 100 * bool(attackedBy[Us][KNIGHT] & attackedBy[Us][KING])
+#if defined (Sullivan) || (Blau) || (Noir) || (Fortress)
+                 -  35 * bool(attackedBy[Us][BISHOP] & attackedBy[Us][KING])
+#endif
                  -   6 * mg_value(score) / 8
+#if defined (Sullivan) || (Blau) || (Noir) || (Fortress)
                  -   7;
+#else
+                 -   4 * kingFlankDefense
+                 +  37;
+#endif
+
 
     // Transform the kingDanger units into a Score, and subtract it from the evaluation
 
@@ -544,13 +580,30 @@ constexpr Score MobilityBonus[][32] = {
     {
         b = (defended | weak) & (attackedBy[Us][KNIGHT] | attackedBy[Us][BISHOP]);
         while (b)
+#if defined (Sullivan) || (Blau)
+        {
+            Square s = pop_lsb(&b);
+            score += ThreatByMinor[type_of(pos.piece_on(s))];
+            if (type_of(pos.piece_on(s)) != PAWN)
+                score += ThreatByRank * (int)relative_rank(Them, s);
+        }
 
+#else
             score += ThreatByMinor[type_of(pos.piece_on(pop_lsb(&b)))];
-
+#endif
         b = weak & attackedBy[Us][ROOK];
         while (b)
+#if defined (Sullivan) || (Blau)
+        {
+            Square s = pop_lsb(&b);
+            score += ThreatByRook[type_of(pos.piece_on(s))];
+            if (type_of(pos.piece_on(s)) != PAWN)
+                score += ThreatByRank * (int)relative_rank(Them, s);
 
+        }
+#else
             score += ThreatByRook[type_of(pos.piece_on(pop_lsb(&b)))];
+#endif
 
         if (weak & attackedBy[Us][KING])
             score += ThreatByKing;
@@ -737,7 +790,7 @@ constexpr Score MobilityBonus[][32] = {
 
     Value mg = mg_value(score);
     Value eg = eg_value(score);
-#if defined (Sullivan) || (Blau) || (Fortress)
+#if defined (Sullivan) || (Blau) || (Noir) || (Fortress)
     int separation = distance<File>(pos.square<KING>(WHITE), pos.square<KING>(BLACK));
 #endif
     int outflanking =  distance<File>(pos.square<KING>(WHITE), pos.square<KING>(BLACK))
@@ -755,7 +808,7 @@ constexpr Score MobilityBonus[][32] = {
                     + 11 * pos.count<PAWN>()
                     +  9 * outflanking
                     + 21 * pawnsOnBothFlanks
-#if defined (Sullivan) || (defined Blau) || (Fortress)
+#if defined (Sullivan) || (defined Blau) || (Noir) || (Fortress)
                     + 50 * (separation > 3) * (outflanking <= 0)
 #endif
                     + 51 * !pos.non_pawn_material()
@@ -789,7 +842,11 @@ constexpr Score MobilityBonus[][32] = {
     {
         if (   pos.opposite_bishops()
             && pos.non_pawn_material() == 2 * BishopValueMg)
+#if defined (Sullivan) || (Blau) || (Noir) || (Fortress)
+            sf = 16 + 4 * pe->passed_count();
+#else
             sf = 22 ;
+#endif
         else
             sf = std::min(sf, 36 + (pos.opposite_bishops() ? 2 : 7) * pos.count<PAWN>(strongSide));
 
