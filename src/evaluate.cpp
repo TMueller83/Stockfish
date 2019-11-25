@@ -486,7 +486,6 @@ constexpr Score MobilityBonus[][32] = {
                  +       mg_value(mobility[Them] - mobility[Us])
                  - 873 * !pos.count<QUEEN>(Them)
                  - 100 * bool(attackedBy[Us][KNIGHT] & attackedBy[Us][KING])
-                 -  35 * bool(attackedBy[Us][BISHOP] & attackedBy[Us][KING])
                  -   6 * mg_value(score) / 8
                  -   7;
 
@@ -790,7 +789,7 @@ constexpr Score MobilityBonus[][32] = {
     {
         if (   pos.opposite_bishops()
             && pos.non_pawn_material() == 2 * BishopValueMg)
-            sf = 16 + 4 * pe->passed_count();
+            sf = 22 ;
         else
             sf = std::min(sf, 36 + (pos.opposite_bishops() ? 2 : 7) * pos.count<PAWN>(strongSide));
 
