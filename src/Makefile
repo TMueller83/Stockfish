@@ -27,7 +27,7 @@
 ###       Bluefish and Honey benchmarks were modified on 11/19/2019
 ###
 ### Bench signatures (total nodes searched using bench)
-### Based on commits through 11/25/2019:
+### Based on commits through 11/26/2019:
 ### ======================================================
 ### Black-Diamond-XR7.nodes:Nodes searched  : 9311931
 ### Blue-Honey-FD-XR7.nodes:Nodes searched  : 13276817
@@ -46,6 +46,8 @@
 ### Fortress Detection code by Joe Ellis:
 ### https://github.com/jhellis3/Stockfish/tree/game_cycle
 ###	FORTRESS_DETECT = yes
+
+### HONEY=yes
 
 ### Diamond evaluation based on Crystal by Joe Ellis
 ### https://github.com/jhellis3/Stockfish/tree/crystal
@@ -76,12 +78,12 @@ endif
 ###	RASPBERRY=Pi
 
 ### Features include : Cerebellum book functionality, play by Elo (UCI limit strength), keyboard shortcuts and a few other items. Comment out to eliminate
-	FEATURE1=add_features
+	FEATURE1=yes
 
 ### should be no reason to change anything below here!
 ### Only Honey with feature 1 will be publicly distributed at this time
 
-ifeq ($(FEATURE1),add_features)
+ifeq ($(FEATURE1),yes)
 	CXXFLAGS += -DAdd_Features
 	FILES = with_c_book
 	SUF =

@@ -49,7 +49,7 @@ int main(int argc, char* argv[]) {
   Position::init();
   Bitbases::init();
   Endgames::init();
-#ifdef Sullivan
+#ifdef Add_Features
    polybook1.init(Options["Book_File_1"]);  // book idea from Marco Zerbanti
    polybook2.init(Options["Book_File_2"]);
    polybook3.init(Options["Book_File_3"]);

@@ -29,7 +29,6 @@
 #ifdef Add_Features
 #include <fstream>
 #include <unistd.h> //for sleep //MichaelB7
-#include <random> // ELO MichaelB7
 #endif
 
 #include "evaluate.h"
@@ -135,8 +134,6 @@ bool  weakFishSearch;
 bool  fide, jekyll, minOutput, uci_sleep;
 bool limitStrength = false;
 int  intLevel = 40, tactical, uci_elo;
-#else
-int intLevel = 40;
 #endif
 
   // Breadcrumbs are used to mark nodes as being searched by a given thread
@@ -374,10 +371,8 @@ skipLevels:
          if (limitStrength)
          {  //note varietry strength is capped around ~2150-2200 due to its robustness
              benchKnps = 1000 * (Options["Bench_KNPS"]);
-             std::mt19937 gen(now());
-             std::uniform_int_distribution<int> dis(-10, 10);
-             int rand = dis(gen);
-             uci_elo = uci_elo + rand + shallowBlue_adjust;
+             int random = (rand() % 20 - 10);
+             uci_elo = uci_elo + random + shallowBlue_adjust;
              //sync_cout << "Elo " << uci_elo << sync_endl;// for debug
              int ccrlELo = uci_elo;
              if (fide)
@@ -443,7 +438,11 @@ skipLevels:
   if (    Options["MultiPV"] == 1
 #endif
       && !Limits.depth
+#ifdef Add_Features
       && !(Skill(Options["Skill Level"]).enabled() || Options["UCI_LimitStrength"] || limitStrength)
+#else
+      && !(Skill(Options["Skill Level"]).enabled())
+#endif
       &&  rootMoves[0].pv[0] != MOVE_NONE)
   {
       std::map<Move, int64_t> votes;
@@ -478,7 +477,9 @@ skipLevels:
 
   if  (adaptive ) //mutually exclusive with variety
   {
+#ifdef Add_Features
 	  jekyll = false;
+#endif
       size_t i = 0;
       if ( previousScore >= -PawnValueMg && previousScore <= PawnValueMg * 4 )
 	  {
@@ -1085,7 +1086,7 @@ namespace {
         piecesCount = pos.count<ALL_PIECES>();
 #endif
         if (    piecesCount <= TB::Cardinality
-#if defined (Add_Features) || (Sullivan) || (Blau) //MB less probing with 7 MAN EGTB
+#ifdef Add_Features //MB less probing with 7 MAN EGTB
 		        &&  (piecesCount < TB::Cardinality
 		        || (depth >= TB::ProbeDepth && (TB::Cardinality < 7 || TB::SevenManProbe)))
 #else

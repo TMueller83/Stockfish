@@ -119,6 +119,10 @@ void init(OptionsMap& o) {
 #ifdef Add_Features
     o["Adaptive_Play"]            << Option(false); //Adaptive Play change - now simple on/off check box
     o["Variety"]                  << Option(false); // Do not use with Adaptive play
+	o["7 Man Probing"]            << Option(false);
+	o["FastPlay"]                 << Option(false);
+	o["Minimal_Output"]           << Option(false);
+#endif
 #ifdef Weakfish
     o["WeakFish"]                 << Option(true);
 #endif
@@ -127,12 +131,8 @@ void init(OptionsMap& o) {
 #else
     o["Defensive"]                << Option(false); 
 #endif
-    o["BruteForce"]               << Option(false);
     o["Clear_Hash"]               << Option(on_clear_hash);
     o["Clean_Search"]             << Option(false);
-    o["7 Man Probing"]            << Option(false);
-    o["FastPlay"]                 << Option(false);
-    o["Minimal_Output"]           << Option(false);
 #ifdef Add_Features
     o["MultiPV"]                  << Option(1, 1, 256);
 #else
@@ -154,6 +154,7 @@ void init(OptionsMap& o) {
 #else
     o["Slow Mover"]               << Option(84, 10, 1000);
 #endif
+#ifdef Add_Features
     o["NPS_Level"]                << Option(0, 0, 60);// Do not use with other reduce strength levels
                                                       //can be used with adaptive play of variety,
                                                       //sleep is auto-on with this play
