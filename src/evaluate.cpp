@@ -173,7 +173,9 @@ constexpr Score MobilityBonus[][32] = {
   constexpr Score PassedFile         = S( 11,  8);
   constexpr Score PawnlessFlank      = S( 17, 95);
   constexpr Score RestrictedPiece    = S(  7,  7);
+#if defined (Stockfish) || (Weakfish)
   constexpr Score ReachableOutpost   = S( 32, 10);
+#endif
 #ifdef Blau
   constexpr Score RookOnPawn         = S( 10, 32);
   constexpr Score RookOnQueenFile    = S( 11,  4);
