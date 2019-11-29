@@ -510,8 +510,9 @@ constexpr Score MobilityBonus[][32] = {
                  +  69 * kingAttacksCount[Them]
 #if defined (Sullivan) || (Blau) || (Noir) || (Fortress)
                  +   4 * (kingFlankAttack - kingFlankDefense)
-#endif
+#else
                  +   3 * kingFlankAttack * kingFlankAttack / 8
+#endif
                  +       mg_value(mobility[Them] - mobility[Us])
                  - 873 * !pos.count<QUEEN>(Them)
                  - 100 * bool(attackedBy[Us][KNIGHT] & attackedBy[Us][KING])
@@ -947,6 +948,9 @@ Value Eval::evaluate(const Position& pos) {
 /// descriptions and values of each evaluation term. Useful for debugging.
 
 std::string Eval::trace(const Position& pos) {
+
+  if (pos.checkers())
+      return "Total evaluation: none (in check)";
 
   std::memset(scores, 0, sizeof(scores));
 

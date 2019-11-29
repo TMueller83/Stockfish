@@ -188,7 +188,7 @@ void set(istringstream& is) {
     uint64_t num, nodes = 0, cnt = 1;
 
     vector<string> list = setup_bench(pos, args);
-    num = count_if(list.begin(), list.end(), [](string s) { return s.find("go ") == 0; });
+    num = count_if(list.begin(), list.end(), [](string s) { return s.find("go ") == 0 || s.find("eval") == 0; });
 
     TimePoint elapsed = now();
 
@@ -197,12 +197,17 @@ void set(istringstream& is) {
         istringstream is(cmd);
         is >> skipws >> token;
 
-        if (token == "go")
+        if (token == "go" || token == "eval")
         {
             cerr << "\nPosition: " << cnt++ << '/' << num << endl;
-            go(pos, is, states);
-            Threads.main()->wait_for_search_finished();
-            nodes += Threads.nodes_searched();
+            if (token == "go")
+            {
+               go(pos, is, states);
+               Threads.main()->wait_for_search_finished();
+               nodes += Threads.nodes_searched();
+            }
+            else
+               sync_cout << "\n" << Eval::trace(pos) << sync_endl;
         }
         else if (token == "setoption")  setoption(is);
 #ifdef Add_Features

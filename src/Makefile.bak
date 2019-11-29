@@ -27,7 +27,7 @@
 ###       Bluefish and Honey benchmarks were modified on 11/19/2019
 ###
 ### Bench signatures (total nodes searched using bench)
-### Based on commits through 11/26/2019:
+### Based on commits through 11/27/2019:
 ### ======================================================
 ### Black-Diamond-XR7.nodes:Nodes searched  : 9311931
 ### Blue-Honey-FD-XR7.nodes:Nodes searched  : 13276817
@@ -40,6 +40,9 @@
 ### Stockfish-XR7.nodes:Nodes searched  : 5742013
 ### Weakfish-XR7.nodes:Nodes searched  : 8134785
 ### ======================================================
+
+DATE=$(shell date +"%m%d%y")
+DATE2=$(shell date +"%m%d")
 
 ### Fortress Detection code that will help in positions such as this:
 ### 3r4/3r4/2p1k3/p1pbPp1p/Pp1p1PpP/1P1P2R1/2P4R/2K1Q3 w - - 0 6, bm Rxg4
@@ -61,7 +64,7 @@
 ### WEAKFISH = yes
 
 ### Release versions , enter yes and release version below foor releases
-RELEASEVER = yes
+RELEASEVER = no
 RELVERSION = XR7
 
 

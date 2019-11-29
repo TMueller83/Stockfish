@@ -27,19 +27,22 @@
 ###       Bluefish and Honey benchmarks were modified on 11/19/2019
 ###
 ### Bench signatures (total nodes searched using bench)
-### Based on commits through 11/27/2019:
+### Based on commits through 11/29/2019:
 ### ======================================================
-### Black-Diamond-XR7.nodes:Nodes searched  : 9311931
-### Blue-Honey-FD-XR7.nodes:Nodes searched  : 13276817
-### Blue-Honey-XR7.nodes:Nodes searched  : 5455321
-### Bluefish-FD-XR7.nodes:Nodes searched  : 12051099
-### Bluefish-XR7.nodes:Nodes searched  : 5589824
-### Honey-FD-XR7.nodes:Nodes searched  : 11434545
-### Honey-XR7.nodes:Nodes searched  : 5092260
-### Stockfish-FD-XR7.nodes:Nodes searched  : 10845732
-### Stockfish-XR7.nodes:Nodes searched  : 5742013
-### Weakfish-XR7.nodes:Nodes searched  : 8134785
+### Black-Diamond-112919.nodes:Nodes searched  : 9962827
+### Blue-Honey-FD-dev-112919.nodes:Nodes searched  : 12132533
+### Blue-Honey-dev-112919.nodes:Nodes searched  : 5288265
+### Bluefish-112919.nodes:Nodes searched  : 6054655
+### Bluefish-FD-112919.nodes:Nodes searched  : 11285285
+### Honey-FD-dev-112919.nodes:Nodes searched  : 11671502
+### Honey-dev-112919.nodes:Nodes searched  : 5021457
+### Stockfish-112919.nodes:Nodes searched  : 5742013
+### Stockfish-FD-112919.nodes:Nodes searched  : 10437721
+### Weakfish-112919.nodes:Nodes searched  : 8134785
 ### ======================================================
+
+DATE=$(shell date +"%m%d%y")
+DATE2=$(shell date +"%m%d")
 
 ### Fortress Detection code that will help in positions such as this:
 ### 3r4/3r4/2p1k3/p1pbPp1p/Pp1p1PpP/1P1P2R1/2P4R/2K1Q3 w - - 0 6, bm Rxg4
@@ -61,7 +64,7 @@
 ### WEAKFISH = yes
 
 ### Release versions , enter yes and release version below foor releases
-RELEASEVER = yes
+RELEASEVER = no
 RELVERSION = XR7
 
 

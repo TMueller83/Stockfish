@@ -1,4 +1,4 @@
-### Based on commits through 11/26/2019:
+### Based on commits through 11/27/2019:
 ### ======================================================
 ### Black-Diamond-XR7.nodes:Nodes searched  : 9311931
 ### Blue-Honey-FD-XR7.nodes:Nodes searched  : 13276817

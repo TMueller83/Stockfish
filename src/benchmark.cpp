@@ -141,7 +141,7 @@ vector<string> setup_bench(const Position& current, istream& is) {
   string fenFile   = (is >> token) ? token : "default";
   string limitType = (is >> token) ? token : "depth";
 
-  go = "go " + limitType + " " + limit;
+  go = limitType == "eval" ? "eval" : "go " + limitType + " " + limit;
 
   if (fenFile == "default")
       fens = Defaults;
