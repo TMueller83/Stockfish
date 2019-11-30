@@ -27,18 +27,18 @@
 ###       Bluefish and Honey benchmarks were modified on 11/19/2019
 ###
 ### Bench signatures (total nodes searched using bench)
-### Based on commits through 11/29/2019:
+### Based on commits through 12/01/2019:
 ### ======================================================
-### Black-Diamond-112919.nodes:Nodes searched  : 9962827
-### Blue-Honey-FD-dev-112919.nodes:Nodes searched  : 12132533
-### Blue-Honey-dev-112919.nodes:Nodes searched  : 5288265
-### Bluefish-112919.nodes:Nodes searched  : 6054655
-### Bluefish-FD-112919.nodes:Nodes searched  : 11285285
-### Honey-FD-dev-112919.nodes:Nodes searched  : 11671502
-### Honey-dev-112919.nodes:Nodes searched  : 5021457
-### Stockfish-112919.nodes:Nodes searched  : 5742013
-### Stockfish-FD-112919.nodes:Nodes searched  : 10437721
-### Weakfish-112919.nodes:Nodes searched  : 8134785
+### Black-Diamond-120119.nodes:Nodes searched  : 10168238
+### Blue-Honey-FD-dev-120119.nodes:Nodes searched  : 10201513
+### Blue-Honey-dev-120119.nodes:Nodes searched  : 5485616
+### Bluefish-120119.nodes:Nodes searched  : 5288524
+### Bluefish-FD-120119.nodes:Nodes searched  : 12608770
+### Honey-FD-dev-120119.nodes:Nodes searched  : 11167594
+### Honey-dev-120119.nodes:Nodes searched  : 5064780
+### Stockfish-120119.nodes:Nodes searched  : 5258928
+### Stockfish-FD-120119.nodes:Nodes searched  : 12388660
+### Weakfish-120119.nodes:Nodes searched  : 7790771
 ### ======================================================
 
 DATE=$(shell date +"%m%d%y")
