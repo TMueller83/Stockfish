@@ -27,18 +27,18 @@
 ###       Bluefish and Honey benchmarks were modified on 11/19/2019
 ###
 ### Bench signatures (total nodes searched using bench)
-### Based on commits through 12/02/2019:
+### Based on commits through 12/04/2019:
 ### ======================================================
-### Black-Diamond-120219.nodes:Nodes searched  : 10168238
-### Blue-Honey-FD-dev-120219.nodes:Nodes searched  : 10201513
-### Blue-Honey-dev-120219.nodes:Nodes searched  : 5485616
-### Bluefish-120219.nodes:Nodes searched  : 5288524
-### Bluefish-FD-120219.nodes:Nodes searched  : 12608770
-### Honey-FD-dev-120219.nodes:Nodes searched  : 11167594
-### Honey-dev-120219.nodes:Nodes searched  : 5064780
-### Stockfish-120219.nodes:Nodes searched  : 5258928
-### Stockfish-FD-120219.nodes:Nodes searched  : 12388660
-### Weakfish-120219.nodes:Nodes searched  : 7790771
+### Black-Diamond-120419.nodes:Nodes searched  : 10168238
+### Blue-Honey-FD-dev-120419.nodes:Nodes searched  : 10201513
+### Blue-Honey-dev-120419.nodes:Nodes searched  : 5485616
+### Bluefish-120419.nodes:Nodes searched  : 5288524
+### Bluefish-FD-120419.nodes:Nodes searched  : 12608770
+### Honey-FD-dev-120419.nodes:Nodes searched  : 11167594
+### Honey-dev-120419.nodes:Nodes searched  : 5064780
+### Stockfish-120419.nodes:Nodes searched  : 5122362
+### Stockfish-FD-120419.nodes:Nodes searched  : 11714004
+### Weakfish-120419.nodes:Nodes searched  : 7655430
 ### ======================================================
 
 DATE=$(shell date +"%m%d%y")
