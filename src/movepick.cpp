@@ -34,6 +34,7 @@ namespace {
 
   // partial_insertion_sort() sorts moves in descending order up to and including
   // a given limit. The order of moves smaller than the limit is left unspecified.
+#if defined (Stockfish)
   void partial_insertion_sort(ExtMove* begin, ExtMove* end, int limit) {
 
     for (ExtMove *sortedEnd = begin, *p = begin + 1; p < end; ++p)
@@ -46,8 +47,20 @@ namespace {
             *q = tmp;
         }
   }
+#else
+void partial_insertion_sort(ExtMove* begin, ExtMove* end) {
 
-} // namespace
+	for (ExtMove *sortedEnd = begin, *p = begin + 1; p < end; ++p)
+        {
+            ExtMove tmp = *p, *q;
+            *p = *++sortedEnd;
+            for (q = sortedEnd; q != begin && *(q - 1) < tmp; --q)
+                 *q = *(q - 1);
+            *q = tmp;
+        }
+  }
+#endif
+ } // namespace
 
 
 /// Constructors of the MovePicker class. As arguments we pass information
@@ -210,7 +223,11 @@ top:
           endMoves = generate<QUIETS>(pos, cur);
 
           score<QUIETS>();
+#if defined (Stockfish)
           partial_insertion_sort(cur, endMoves, -3000 * depth);
+#else
+          partial_insertion_sort(cur, endMoves);
+#endif
       }
       ++stage;
       /* fallthrough */
