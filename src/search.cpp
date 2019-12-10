@@ -82,9 +82,9 @@ namespace {
   constexpr uint64_t ttHitAverageResolution = 1024;
 
   // Razor and futility margins
-  constexpr int RazorMargin = 661;
+  constexpr int RazorMargin = 594;
   Value futility_margin(Depth d, bool improving) {
-    return Value(198 * (d - improving));
+    return Value(232 * (d - improving));
   }
 
   // Reductions lookup table, initialized at startup
@@ -1675,8 +1675,7 @@ moves_loop: // When in check, search starts from here
 #endif
 
       // Last captures extension
-      else if (   PvNode
-               && PieceValue[EG][pos.captured_piece()] > PawnValueEg
+      else if (   PieceValue[EG][pos.captured_piece()] > PawnValueEg
                && pos.non_pawn_material() <= 2 * RookValueMg)
           extension = 1;
 
