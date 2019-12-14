@@ -25,6 +25,9 @@
 #include <iostream>
 #include <sstream>
 
+#include <fstream>
+#include <unistd.h> //for sleep //MichaelB7
+
 #include "evaluate.h"
 #include "misc.h"
 #include "movegen.h"
@@ -40,6 +43,7 @@
 namespace Search {
 
   LimitsType Limits;
+  bool adaptive;
 }
 
 namespace Tablebases {
@@ -249,6 +253,10 @@ namespace {
     Move best = MOVE_NONE;
   };
 
+bool  fide, jekyll, uci_sleep;
+bool limitStrength = false;
+int  tactical, uci_elo;
+
   // Breadcrumbs are used to mark nodes as being searched by a given thread
   struct Breadcrumb {
     std::atomic<Thread*> thread;
@@ -369,6 +377,14 @@ void MainThread::search() {
       return;
   }
 
+
+    adaptive            = Options["Adaptive_Play"];
+    fide                = Options["FIDE_Ratings"];
+    jekyll              = Options["Variety"];
+    tactical            = Options["Tactical"];
+    uci_elo             = Options["Engine_Elo"];
+    uci_sleep           = Options["UCI_Sleep"];
+
   Color us = rootPos.side_to_move();
   Time.init(rootPos.variant(), Limits, us, rootPos.game_ply());
   TT.new_search();
@@ -383,6 +399,37 @@ void MainThread::search() {
   }
   else
   {
+         if (Options["UCI_LimitStrength"])
+         {
+             uci_elo = (Options["UCI_Elo"]);
+             limitStrength = true;
+	     jekyll=true; //on with uci_elo, variety gets turned off with adaptive
+         }
+         if (limitStrength)
+         {  //note varietry strength is capped around ~2150-2200 due to its robustness
+             int benchKnps = 1000 * 1500;
+             int random = (rand() % 20 - 10);
+             uci_elo = uci_elo + random + 35;
+             //sync_cout << "Elo " << uci_elo << sync_endl;// for debug
+             int ccrlELo = uci_elo;
+             if (fide)
+                 uci_elo = (((uci_elo * 10) / 7) - 1200);  //shallowBlue adj was only required to get CCRL rating correct
+             uci_elo += 200; //  to offset Elo loss with variety
+             uci_elo = std::min(uci_elo, 3200);
+			 
+             int NodesToSearch  =  pow(1.00382, (uci_elo - 999)) * 48;
+             //sync_cout << "Nodes To Search: " << NodesToSearch << sync_endl;//for debug
+             Limits.nodes = NodesToSearch;
+             Limits.nodes *= Time.optimum()/1000;
+             Limits.nodes = clamp(Limits.nodes, (int64_t) 48,Limits.nodes);
+             //int sleepValue = Time.optimum() * double(1 - Limits.nodes/benchKnps);
+             //sync_cout << "Sleep time: " << sleepValue << sync_endl;//for debug
+             //sync_cout << "Limit Nodes: " <<  Limits.nodes << sync_endl;//for debug
+             if (uci_sleep)
+                 std::this_thread::sleep_for (std::chrono::milliseconds(Time.optimum()) * double(1 - Limits.nodes/benchKnps));
+             uci_elo =  ccrlELo - 35;
+         }
+
       for (Thread* th : Threads)
       {
           th->bestMoveChanges = 0;
@@ -451,21 +498,57 @@ void MainThread::search() {
 
   previousScore = bestThread->rootMoves[0].score;
 
-#ifdef USELONGESTPV
-  if (longestPVThread != this)
-      sync_cout << UCI::pv(longestPVThread->rootPos, longestPVThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << sync_endl;
-#else
+
   // Send again PV info if we have a new best thread
   if (bestThread != this)
       sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << sync_endl;
-#endif
 
-  // Best move could be MOVE_NONE when searching on a terminal position
+  if  (adaptive ) //mutually exclusive with variety
+  {
+	  jekyll = false;
+      size_t i = 0;
+      if ( previousScore >= -PawnValueMg && previousScore <= PawnValueMg * 4 )
+	  {
+          while (i+1 < rootMoves.size() && bestThread->rootMoves[i+1].score > previousScore)
+          ++i;
+          previousScore = bestThread->rootMoves[i].score;
+          sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << sync_endl;
+          sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[i].pv[0], rootPos.is_chess960());
+	  }
+      else if ( previousScore > PawnValueMg * 4  && previousScore <  PawnValueMg * 7 )
+      {
+          while (i+1 < rootMoves.size() && bestThread->rootMoves[i+1].score < previousScore
+                && previousScore + PawnValueMg/2  > bestThread->rootMoves[i+1].score)
+		  {
+              ++i;
+              break;
+          }
+          previousScore = bestThread->rootMoves[i].score;
+          while (i+1 < rootMoves.size() && bestThread->rootMoves[i+1].score > previousScore
+                && previousScore + PawnValueMg/2  < bestThread->rootMoves[i+1].score)
+          {
+              ++i;
+              previousScore = bestThread->rootMoves[i-1].score;
+
+          }
+          previousScore = bestThread->rootMoves[i].score;
+          sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << sync_endl;
+          sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[i].pv[0], rootPos.is_chess960());
+      }
+      else
+      {
+          sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[0].pv[0], rootPos.is_chess960());
+          if (bestThread->rootMoves[0].pv.size() > 1 || bestThread->rootMoves[0].extract_ponder_from_tt(rootPos))
+              std::cout << " ponder " << UCI::move(bestThread->rootMoves[0].pv[1], rootPos.is_chess960());
+      }
+  }
+  else
+  {
   sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[0].pv[0], rootPos.is_chess960());
 
   if (bestThread->rootMoves[0].pv.size() > 1 || bestThread->rootMoves[0].extract_ponder_from_tt(rootPos))
       std::cout << " ponder " << UCI::move(bestThread->rootMoves[0].pv[1], rootPos.is_chess960());
-
+  }
   std::cout << sync_endl;
 }
 
@@ -523,6 +606,7 @@ void Thread::search() {
   int intLevel = int(floatLevel) +
                  ((floatLevel - int(floatLevel)) * 1024 > rng.rand<unsigned>() % 1024  ? 1 : 0);
   Skill skill(intLevel);
+  if (tactical) multiPV = pow(2, tactical);
 
   // When playing with strength handicap enable MultiPV search that we will
   // use behind the scenes to retrieve a set of possible moves.

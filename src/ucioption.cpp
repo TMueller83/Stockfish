@@ -66,6 +66,9 @@ void init(OptionsMap& o) {
   o["Hash"]                  << Option(16, 1, MaxHashMB, on_hash_size);
   o["Clear Hash"]            << Option(on_clear_hash);
   o["Ponder"]                << Option(false);
+
+  o["Adaptive_Play"]            << Option(false); //Adaptive Play change - now simple on/off check box
+  o["Variety"]                  << Option(false); // Do not use with Adaptive play
   o["MultiPV"]               << Option(1, 1, 500);
   o["Skill Level"]           << Option(20, 0, 20);
   o["Move Overhead"]         << Option(30, 0, 5000);
@@ -75,8 +78,10 @@ void init(OptionsMap& o) {
   o["UCI_Chess960"]          << Option(false);
   o["UCI_Variant"]           << Option(variants.front().c_str(), variants);
   o["UCI_AnalyseMode"]       << Option(false);
+  o["UCI_Sleep"]             << Option(false);
+  o["FIDE_Ratings"]          << Option(true);
   o["UCI_LimitStrength"]     << Option(false);
-  o["UCI_Elo"]               << Option(1350, 1350, 2850);
+  o["UCI_Elo"]               << Option(1750, 1000, 2900);
   o["SyzygyPath"]            << Option("<empty>", on_tb_path);
   o["SyzygyProbeDepth"]      << Option(1, 1, 100);
   o["Syzygy50MoveRule"]      << Option(true);
