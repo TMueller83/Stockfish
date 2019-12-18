@@ -73,7 +73,7 @@ namespace {
 
   // Razor and futility margins
   constexpr int RazorMargin[VARIANT_NB] = {
-  661,
+  594,
 #ifdef ANTI
   2234,
 #endif
@@ -109,7 +109,7 @@ namespace {
 #endif
   };
   constexpr int FutilityMarginFactor[VARIANT_NB] = {
-  198,
+  232,
 #ifdef ANTI
   611,
 #endif
@@ -1062,7 +1062,7 @@ namespace {
             ss->staticEval = eval = evaluate(pos) + bonus;
         }
         else
-            ss->staticEval = eval = -(ss-1)->staticEval + 2 * Eval::Tempo[pos.variant()];
+            ss->staticEval = eval = -(ss-1)->staticEval + 2 * Eval::Tempo;
 
         tte->save(posKey, VALUE_NONE, ttPv, BOUND_NONE, DEPTH_NONE, MOVE_NONE, eval);
     }
@@ -1098,8 +1098,8 @@ namespace {
         &&  eval <= alpha - RazorMargin[pos.variant()])
         return qsearch<NT>(pos, ss, alpha, beta);
 
-    improving =   ss->staticEval >= (ss-2)->staticEval
-               || (ss-2)->staticEval == VALUE_NONE;
+    improving =  (ss-2)->staticEval == VALUE_NONE ? (ss->staticEval >= (ss-4)->staticEval
+              || (ss-4)->staticEval == VALUE_NONE) : ss->staticEval >= (ss-2)->staticEval;
 
     // Step 8. Futility pruning: child node (~30 Elo)
 #ifdef EXTINCTION
@@ -1377,12 +1377,6 @@ moves_loop: // When in check, search starts from here
       else if (    givesCheck
                && (pos.is_discovery_check_on_king(~us, move) || pos.see_ge(move)))
           extension = 1;
-#ifdef ANTI
-      else if (    pos.is_anti() // Capture extension (all moves are captures)
-               && !moveCountPruning
-               &&  pos.capture_count(move) == 1)
-          extension = 1;
-#endif
 
       // Passed pawn extension
       else if (   move == ss->killers[0]
@@ -1739,7 +1733,7 @@ moves_loop: // When in check, search starts from here
         else
             ss->staticEval = bestValue =
             (ss-1)->currentMove != MOVE_NULL ? evaluate(pos)
-                                             : -(ss-1)->staticEval + 2 * Eval::Tempo[pos.variant()];
+                                             : -(ss-1)->staticEval + 2 * Eval::Tempo;
 
         // Stand pat. Return immediately if static value is at least beta
         if (bestValue >= beta)
@@ -2015,7 +2009,7 @@ moves_loop: // When in check, search starts from here
     // RootMoves are already sorted by score in descending order
     Value topScore = rootMoves[0].score;
     int delta = std::min(topScore - rootMoves[multiPV - 1].score, PawnValueMg);
-    int weakness = 125 - level * 9/4;
+    int weakness = 120 - 2 * level;
     int maxScore = -VALUE_INFINITE;
 
     // Choose best move. For each move score we add two terms, both dependent on
@@ -2139,8 +2133,6 @@ bool RootMove::extract_ponder_from_tt(Position& pos) {
     bool ttHit;
 
     assert(pv.size() == 1);
-    if (pv[0] == MOVE_NONE) // Not pondering
-        return false;
 
     if (pv[0] == MOVE_NONE)
         return false;
