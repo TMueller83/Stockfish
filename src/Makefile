@@ -242,8 +242,9 @@ endif
 endif
 
 ifeq ($(KERNEL),Darwin)
-	CXXFLAGS += -arch $(arch) -mmacosx-version-min=10.9
-	LDFLAGS += -arch $(arch) -mmacosx-version-min=10.9
+	ifndef MACOSX_DEPLOYMENT_TARGET
+	export MACOSX_DEPLOYMENT_TARGET=10.9
+	endif
 endif
 
 ### Travis CI script uses COMPILER to overwrite CXX
