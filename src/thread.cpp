@@ -169,8 +169,12 @@ void ThreadPool::clear() {
   main()->callsCnt = 0;
   main()->previousScore = VALUE_INFINITE;
   main()->previousTimeReduction = 1.0;
-}
 
+#ifndef Stockfish
+  for (int i = 0; i < 4; ++i)
+      main()->iterValue[i] = VALUE_ZERO;
+#endif
+}
 /// ThreadPool::start_thinking() wakes up main thread waiting in idle_loop() and
 /// returns immediately. Main thread will wake up other threads and start the search.
 
@@ -209,9 +213,11 @@ void ThreadPool::start_thinking(Position& pos, StateListPtr& states,
   for (Thread* th : *this)
   {
 #ifdef Noir
-      th->nodes = th->tbHits = th->nmpGuard = 0;
-#else
+      th->nodes = th->tbHits = th->bestMoveChanges = th->nmpGuard = 0;
+#elif defined (Stockfish)
       th->nodes = th->tbHits = th->nmpMinPly = 0;
+#else
+      th->nodes = th->tbHits = th->bestMoveChanges = th->nmpMinPly = 0;
 #endif
 #if defined (Sullivan) || (Blau) || (Fortress)
       th->extension = th->nodes = th->tbHits = th->nmpMinPly = 0;

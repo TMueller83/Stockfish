@@ -27,18 +27,18 @@
 ###       Bluefish and Honey benchmarks were modified on 11/19/2019
 ###
 ### Bench signatures (total nodes searched using bench)
-### Based on commits through 12/10/2019:
+### Based on commits through 12/19/2019:
 ### ======================================================
-### Black-Diamond-121019.nodes:Nodes searched  : 10608712
-### Blue-Honey-FD-dev-121019.nodes:Nodes searched  : 12134893
-### Blue-Honey-dev-121019.nodes:Nodes searched  : 5789923
-### Bluefish-121019.nodes:Nodes searched  : 5727015
-### Bluefish-FD-121019.nodes:Nodes searched  : 13321636
-### Honey-FD-dev-121019.nodes:Nodes searched  : 11822014
-### Honey-dev-121019.nodes:Nodes searched  : 5479223
-### Stockfish-121019.nodes:Nodes searched  : 5371271
-### Stockfish-FD-121019.nodes:Nodes searched  : 11882741
-### Weakfish-121019.nodes:Nodes searched  : 8068718
+### Black-Diamond-121919.nodes:Nodes searched  : 10536172
+### Blue-Honey-FD-dev-121919.nodes:Nodes searched  : 12023043
+### Blue-Honey-dev-121919.nodes:Nodes searched  : 5365254
+### Bluefish-121919.nodes:Nodes searched  : 6046874
+### Bluefish-FD-121919.nodes:Nodes searched  : 13639099
+### Honey-FD-dev-121919.nodes:Nodes searched  : 12800432
+### Honey-dev-121919.nodes:Nodes searched  : 4999134
+### Stockfish-121919.nodes:Nodes searched  : 5371271
+### Stockfish-FD-121919.nodes:Nodes searched  : 12638310
+### Weakfish-121919.nodes:Nodes searched  : 8077948
 ### ======================================================
 
 DATE=$(shell date +"%m%d%y")
@@ -401,8 +401,9 @@ endif
 endif
 
 ifeq ($(KERNEL),Darwin)
-	CXXFLAGS += -arch $(arch) -mmacosx-version-min=10.14
-	LDFLAGS += -arch $(arch) -mmacosx-version-min=10.14
+	ifndef MACOSX_DEPLOYMENT_TARGET
+	export MACOSX_DEPLOYMENT_TARGET=10.14
+	endif
 endif
 
 ### Travis CI script uses COMPILER to overwrite CXX
