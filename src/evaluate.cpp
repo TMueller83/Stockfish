@@ -192,7 +192,11 @@ constexpr Score MobilityBonus[][32] = {
   constexpr Score ThreatByRank       = S( 13,  0);
 #endif
   constexpr Score ThreatBySafePawn   = S(173, 94);
+#if defined (Stockfish) || (Weakfish)
   constexpr Score TrappedRook        = S( 52, 10);
+#else
+  constexpr Score TrappedRook        = S( 47,  4);
+#endif
   constexpr Score WeakQueen          = S( 49, 15);
 
 
@@ -273,10 +277,15 @@ constexpr Score MobilityBonus[][32] = {
 
     // Find our pawns that are blocked or on the first two ranks
     Bitboard b = pos.pieces(Us, PAWN) & (shift<Down>(pos.pieces()) | LowRanks);
-
+#if defined (Stockfish) || (Weakfish)
     // Squares occupied by those pawns, by our king or queen, by blockers to attacks on our king
     // or controlled by enemy pawns are excluded from the mobility area.
     mobilityArea[Us] = ~(b | pos.pieces(Us, KING, QUEEN) | pos.blockers_for_king(Us) | pe->pawn_attacks(Them));
+#else
+    // Squares occupied by those pawns, by our king or queen or controlled by
+    // enemy pawns are excluded from the mobility area.
+    mobilityArea[Us] = ~(b | pos.pieces(Us, KING, QUEEN) | pe->pawn_attacks(Them));
+#endif
 
     // Initialize attackedBy[] for king and pawns
     attackedBy[Us][KING] = pos.attacks_from<KING>(ksq);
@@ -510,9 +519,8 @@ constexpr Score MobilityBonus[][32] = {
                  +  69 * kingAttacksCount[Them]
 #if defined (Sullivan) || (Blau) || (Noir) || (Fortress)
                  +   4 * (kingFlankAttack - kingFlankDefense)
-#else
-                 +   3 * kingFlankAttack * kingFlankAttack / 8
 #endif
+                 +   3 * kingFlankAttack * kingFlankAttack / 8
                  +       mg_value(mobility[Them] - mobility[Us])
                  - 873 * !pos.count<QUEEN>(Them)
                  - 100 * bool(attackedBy[Us][KNIGHT] & attackedBy[Us][KING])
@@ -695,7 +703,11 @@ constexpr Score MobilityBonus[][32] = {
             Square blockSq = s + Up;
 
             // Adjust bonus based on the king's proximity
+#if defined (Stockfish) || (Weakfish)
             bonus += make_score(0, (  (king_proximity(Them, blockSq) * 19) / 4
+#else
+            bonus += make_score(0, (  king_proximity(Them, blockSq) * 5
+#endif
                                      - king_proximity(Us,   blockSq) *  2) * w);
 
             // If blockSq is not the queening square then consider also a second push

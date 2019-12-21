@@ -80,12 +80,19 @@ namespace {
 
   constexpr uint64_t ttHitAverageWindow     = 4096;
   constexpr uint64_t ttHitAverageResolution = 1024;
-
+#if defined (Stockfish) || (Weakfish)
   // Razor and futility margins
   constexpr int RazorMargin = 594;
   Value futility_margin(Depth d, bool improving) {
     return Value(232 * (d - improving));
   }
+#else
+  // Razor and futility margins
+  constexpr int RazorMargin = 661;
+  Value futility_margin(Depth d, bool improving) {
+    return Value(198 * (d - improving));
+  }
+#endif
 
   // Reductions lookup table, initialized at startup
   int Reductions[MAX_MOVES]; // [depth or moveNumber]
@@ -186,11 +193,7 @@ int  intLevel = 40, tactical, uci_elo;
   Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth = 0);
 
   Value value_to_tt(Value v, int ply);
-#ifdef Stockfish
   Value value_from_tt(Value v, int ply, int r50c);
-#else //jorg
-  Value value_from_tt(Value v, int ply);
-#endif
   void update_pv(Move* pv, Move move, Move* childPv);
   void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus);
   void update_quiet_stats(const Position& pos, Stack* ss, Move move, int bonus);
@@ -398,16 +401,12 @@ skipLevels:
          }
 #endif
       for (Thread* th : Threads)
-#ifdef Stockfish
       {
           th->bestMoveChanges = 0;
           if (th != this)
               th->start_searching();
       }
-#else
-        if (th != this)
-            th->start_searching();
-#endif
+
       Thread::search(); // Let's start searching!
 #ifdef Add_Features
     }
@@ -559,8 +558,9 @@ void Thread::search() {
 #ifdef Add_Features
   TB::SevenManProbe = Options["7 Man Probing"];
 #endif
-
+#if defined (Stockfish) || (Weakfish)
   int iterIdx = 0;
+#endif
   std::memset(ss-7, 0, 10 * sizeof(Stack));
   for (int i = 7; i > 0; i--)
 
@@ -570,12 +570,8 @@ void Thread::search() {
 
   bestValue = delta = alpha = -VALUE_INFINITE;
   beta = VALUE_INFINITE;
-#ifdef Stockfish
+#if defined (Stockfish) || (Weakfish)
   if (mainThread)
-#else
-  if (mainThread && mainThread->previousScore != VALUE_INFINITE)
-#endif
-#ifdef Stockfish
   {
       if (mainThread->previousScore == VALUE_INFINITE)
           for (int i=0; i<4; ++i)
@@ -584,9 +580,6 @@ void Thread::search() {
           for (int i=0; i<4; ++i)
               mainThread->iterValue[i] = mainThread->previousScore;
   }
-#else
- for (int i = 0; i < 4; ++i)
-     mainThread->iterValue[i] = mainThread->previousScore;
 #endif
   size_t multiPV = Options["MultiPV"];
   PRNG rng(now());
@@ -796,8 +789,12 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
           && !Threads.stop
           && !mainThread->stopOnPonderhit)
       {
+#if defined (Stockfish) || (Weakfish)
           double fallingEval = (354 +  6 * (mainThread->previousScore - bestValue)
                                     +  6 * (mainThread->iterValue[iterIdx]  - bestValue)) / 692.0;
+#else
+          double fallingEval = (354 + 10 * (mainThread->previousScore - bestValue)) / 692.0;
+#endif
           fallingEval = clamp(fallingEval, 0.5, 1.5);
 
           // If the bestMove is stable over several iterations, reduce time accordingly
@@ -824,9 +821,10 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
                   Threads.stop = true;
           }
       }
-
+#if defined (Stockfish) || (Weakfish)
       mainThread->iterValue[iterIdx] = bestValue;
       iterIdx = (iterIdx + 1) & 3;
+#endif
   }
 
   if (!mainThread)
@@ -859,11 +857,7 @@ namespace {
 		&& std::abs(ttValue) >= VALUE_MATE_IN_MAX_PLY
         && pos.count<ALL_PIECES>() < 8)
         ttHit = true;
-#ifdef Stockfish
     ttValue = ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
-#else
-    ttValue = ttHit ? value_from_tt(tte->value(), ss->ply) : VALUE_NONE;
-#endif
     ttMove = ttHit ? tte->move() : MOVE_NONE;
     return tte;
   }
@@ -960,11 +954,7 @@ namespace {
     posKey = pos.key() ^ Key(excludedMove) << 16;
 #endif
     tte = TT.probe(posKey, ttHit);
-#ifdef Stockfish
     ttValue = ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
-#else
-    ttValue = ttHit ? value_from_tt(tte->value(), ss->ply) : VALUE_NONE;
-#endif
     ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
               : ttHit    ? tte->move() : MOVE_NONE;
     ttPv = PvNode || (ttHit && tte->is_pv());
@@ -1058,11 +1048,7 @@ namespace {
 #else
     tte = TT.probe(posKey, ttHit);
 #endif
-#ifdef Stockfish
     ttValue = ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
-#else
-    ttValue = ttHit ? value_from_tt(tte->value(), ss->ply) : VALUE_NONE;
-#endif
     ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
               : ttHit    ? tte->move() : MOVE_NONE;
 
@@ -1116,15 +1102,7 @@ namespace {
                 update_continuation_histories(ss, pos.moved_piece(ttMove), to_sq(ttMove), penalty);
             }
         }
-#ifdef Stockfish
         return ttValue;
-#else
-		if (pos.rule50_count() < 90
-            && (   abs(ttValue) < VALUE_MATE_IN_MAX_PLY
-			|| VALUE_MATE - abs(ttValue) < 100 - pos.rule50_count() + ss->ply
-            || ttValue != VALUE_DRAW))
-					return ttValue;
-#endif
     }
 
     // Step 5. Tablebases probe
@@ -1317,9 +1295,14 @@ namespace {
 #endif
         &&  eval <= alpha - RazorMargin)
         return qsearch<NT>(pos, ss, alpha, beta);
-
+#if defined (Stockfish) || (Weakfish)
     improving =  (ss-2)->staticEval == VALUE_NONE ? (ss->staticEval >= (ss-4)->staticEval
               || (ss-4)->staticEval == VALUE_NONE) : ss->staticEval >= (ss-2)->staticEval;
+#else
+    improving =   ss->staticEval >= (ss-2)->staticEval
+               || (ss-2)->staticEval == VALUE_NONE;
+#endif
+
 
     // Step 8. Futility pruning: child node (~49 Elo)
     if (   !PvNode
@@ -1477,11 +1460,7 @@ namespace {
 #else
         tte = TT.probe(posKey, ttHit);
 #endif
-#ifdef Stockfish
         ttValue = ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
-#else
-        ttValue = ttHit ? value_from_tt(tte->value(), ss->ply) : VALUE_NONE;
-#endif
         ttMove = ttHit ? tte->move() : MOVE_NONE;
     }
 
@@ -1678,7 +1657,12 @@ moves_loop: // When in check, search starts from here
 
           // that multiple moves fail high, and we can prune the whole subtree by returning
           // a soft bound.
+#if defined (Stockfish) || (Weakfish)
           else if (singularBeta >= beta)
+#else
+          else if (   eval >= beta
+                   && singularBeta >= beta)
+#endif
               return singularBeta;
       }
 
@@ -1687,9 +1671,9 @@ moves_loop: // When in check, search starts from here
 #if defined (Sullivan) || (Blau) || (Fortress) || (Noir)
 
        else if (    givesCheck
-#ifndef Noir
                && (pos.is_discovery_check_on_king(~us, move) || pos.see_ge(move))
-               //&& ++thisThread->extension < thisThread->nodes.load(std::memory_order_relaxed) /4 //MichaelB7
+#ifndef Noir
+               && ++thisThread->extension < thisThread->nodes.load(std::memory_order_relaxed) /4 //MichaelB7
 #endif
                 )
                extension = 1;
@@ -1714,12 +1698,17 @@ moves_loop: // When in check, search starts from here
 #endif
 
       // Last captures extension
+#if defined (Stockfish) || (Weakfish)
       else if (   PieceValue[EG][pos.captured_piece()] > PawnValueEg
                && pos.non_pawn_material() <= 2 * RookValueMg)
           extension = 1;
 
       // Last captures extension
       else if (   PieceValue[EG][pos.captured_piece()] > PawnValueEg
+#else
+      else if (   PvNode
+               && PieceValue[EG][pos.captured_piece()] > PawnValueEg
+#endif
                && pos.non_pawn_material() <= 2 * RookValueMg)
           extension = 1;
 
@@ -2090,11 +2079,7 @@ moves_loop: // When in check, search starts from here
 #else
     tte = TT.probe(posKey, ttHit);
 #endif
-#ifdef Stockfish
     ttValue = ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
-#else
-	ttValue = ttHit ? value_from_tt(tte->value(), ss->ply) : VALUE_NONE;
-#endif
     ttMove = ttHit ? tte->move() : MOVE_NONE;
     pvHit = ttHit && tte->is_pv();
 
@@ -2215,7 +2200,13 @@ moves_loop: // When in check, search starts from here
                        && !pos.capture(move);
 
       // Don't search moves with negative SEE values
+#if defined (Stockfish) || (Weakfish)
       if (  (!inCheck || evasionPrunable) && !pos.see_ge(move))
+#else
+      if (  (!inCheck || evasionPrunable)
+          && !(givesCheck && pos.is_discovery_check_on_king(~pos.side_to_move(), move))
+          && !pos.see_ge(move))
+#endif
           continue;
 #ifdef Noir
       }
@@ -2307,19 +2298,12 @@ moves_loop: // When in check, search starts from here
   // value_from_tt() is the inverse of value_to_tt(): It adjusts a mate score
   // from the transposition table (which refers to the plies to mate/be mated
   // from current position) to "plies to mate/be mated from the root".
-#ifdef Stockfish
   Value value_from_tt(Value v, int ply, int r50c) {
     return  v == VALUE_NONE             ? VALUE_NONE
           : v >= VALUE_MATE_IN_MAX_PLY  ? VALUE_MATE - v > 99 - r50c ? VALUE_MATE_IN_MAX_PLY  : v - ply
           : v <= VALUE_MATED_IN_MAX_PLY ? VALUE_MATE + v > 99 - r50c ? VALUE_MATED_IN_MAX_PLY : v + ply : v;
   }
-#else
-  Value value_from_tt(Value v, int ply) {
-    return  v == VALUE_NONE             ? VALUE_NONE
-          : v >= VALUE_MATE_IN_MAX_PLY  ? v - ply
-          : v <= VALUE_MATED_IN_MAX_PLY ? v + ply : v;
-  }
-#endif
+
 
   // update_pv() adds current move and appends child pv[]
 
@@ -2495,7 +2479,11 @@ string UCI::pv(const Position& pos, Depth depth, Value alpha, Value beta) {
 
   for (size_t i = 0; i < multiPV; ++i)
   {
+#if defined (Stockfish) || (Weakfish)
       bool updated = rootMoves[i].score != -VALUE_INFINITE;
+#else
+      bool updated = (i <= pvIdx && rootMoves[i].score != -VALUE_INFINITE);
+#endif
 
       if (depth == 1 && !updated)
           continue;
