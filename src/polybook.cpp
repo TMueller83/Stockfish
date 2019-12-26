@@ -386,7 +386,8 @@ void PolyBook::init(const std::string& bookfile)
     keycount = filesize / 16;
     polyhash = new PolyHash[keycount];
 
-    fread(polyhash, 1, filesize, fpt);
+    if (fread(polyhash, 1, filesize, fpt) != 0)
+        {fread(polyhash, 1, filesize, fpt);}
     fclose(fpt);
 
     for (int i = 0; i<keycount; i++)
@@ -491,7 +492,7 @@ Key PolyBook::polyglot_key(const Position & pos)
     if (pos.can_castle(WHITE_OOO)) key ^= PG.Zobrist.castle[1];
     if (pos.can_castle(BLACK_OO))  key ^= PG.Zobrist.castle[2];
     if (pos.can_castle(BLACK_OOO)) key ^= PG.Zobrist.castle[3];
-    
+
     if (pos.ep_square() != SQ_NONE)
         key ^= PG.Zobrist.enpassant[file_of(pos.ep_square())];
 
@@ -738,4 +739,3 @@ uint16_t PolyBook::swap_uint16(uint16_t d)
 
     return a;
 }
-
