@@ -526,7 +526,10 @@ ifeq ($(OS), Android)
 	CXXFLAGS += -fPIE
 	LDFLAGS += -fPIE -pie
 endif
-
+### 3.10 madvise + transparent huge pages
+ifeq ($(KERNEL),Linux)
+	CXXFLAGS += -DUSE_MADVISE_HUGEPAGE
+endif
 
 ### ==========================================================================
 ### Section 4. Public targets
