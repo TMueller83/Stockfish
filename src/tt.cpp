@@ -1,3 +1,5 @@
+
+
 /*
  Honey, a UCI chess playing engine derived from Stockfish and Glaurung 2.1
  Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
@@ -19,9 +21,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef USE_MADVISE_HUGEPAGE
 #include <cstdlib>   // aligned_alloc, malloc
-#endif
 #include <cstring>   // For std::memset
 #include <iostream>
 #include <thread>
@@ -84,20 +84,23 @@ void TTEntry::save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev) 
 /// of clusters and each cluster consists of ClusterSize number of TTEntry.
 
 void TranspositionTable::resize(size_t mbSize) {
-#ifdef USE_MADVISE_HUGEPAGE
+
   size_t allocSize;
-#endif
 
   Threads.main()->wait_for_search_finished();
 
   clusterCount = mbSize * 1024 * 1024 / sizeof(Cluster);
 
   free(mem);
-#ifndef USE_MADVISE_HUGEPAGE
-  mem = malloc(clusterCount * sizeof(Cluster) + CacheLineSize - 1);
-#endif
+  allocSize = clusterCount * sizeof(Cluster) + CacheLineSize - 1;
+
 #ifdef USE_MADVISE_HUGEPAGE
-  mem = malloc(clusterCount * sizeof(Cluster) + CacheLineSize - 1);
+  // align by 2 MB to make the allocation huge page friendly
+  mem = aligned_alloc(2 * 1024 * 1024, allocSize);
+#else
+  // we'll use the plain old alloc when huge pages are not
+  // enabled. aligned_alloc() is necessarily not available on Windows.
+  mem = malloc(allocSize);
 #endif
 
   if (!mem)
