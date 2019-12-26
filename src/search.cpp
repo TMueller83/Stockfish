@@ -82,9 +82,9 @@ namespace {
   constexpr uint64_t ttHitAverageResolution = 1024;
 #if defined (Stockfish) || (Weakfish)
   // Razor and futility margins
-  constexpr int RazorMargin = 594;
+  constexpr int RazorMargin = 531;
   Value futility_margin(Depth d, bool improving) {
-    return Value(232 * (d - improving));
+    return Value(217 * (d - improving));
   }
 #else
   // Razor and futility margins
@@ -98,7 +98,11 @@ namespace {
   int Reductions[MAX_MOVES]; // [depth or moveNumber]
   Depth reduction(bool i, Depth d, int mn) {
     int r = Reductions[d] * Reductions[mn];
+#if defined (Stockfish) || (Weakfish)
+    return (r + 511) / 1024 + (!i && r > 1007);
+#else
     return (r + 520) / 1024 + (!i && r > 999);
+#endif
   }
 
   constexpr int futility_move_count(bool improving, Depth depth) {
@@ -107,7 +111,11 @@ namespace {
 
   // History and stats update bonus, based on depth
   int stat_bonus(Depth d) {
-    return d > 17 ? -8 : 22 * d * d + 151 * d - 140;
+#if defined (Stockfish) || (Weakfish)
+  return d > 15 ? -8 : 19 * d * d + 155 * d - 132;
+#else
+  return d > 17 ? -8 : 22 * d * d + 151 * d - 140;
+#endif
   }
 
   // Add a small random component to draw evaluations to avoid 3fold-blindness
@@ -234,7 +242,11 @@ int  intLevel = 40, tactical, uci_elo;
 void Search::init() {
 	
   for (int i = 1; i < MAX_MOVES; ++i)
+#if defined (Stockfish) || (Weakfish)
+      Reductions[i] = int((24.8 + std::log(Threads.size()) / 2) * std::log(i));
+#else
       Reductions[i] = int((23.4 + std::log(Threads.size()) / 2) * std::log(i));
+#endif
 }
 /// Search::clear() resets search state to its initial value
 
@@ -658,17 +670,20 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
           if (rootDepth >= 4)
           {
               Value previousScore = rootMoves[pvIdx].previousScore;
+
 #if defined (Sullivan) || (Blau) || (Fortress) || (Noir)
               delta = Value(20 + abs(previousScore) / 64);
 #else
-              delta = Value(21 + abs(previousScore) / 128);
+              delta = Value(21 + abs(previousScore) / 256);
 #endif
               alpha = std::max(previousScore - delta,-VALUE_INFINITE);
               beta  = std::min(previousScore + delta, VALUE_INFINITE);
-
-		// Adjust contempt based on root move's previousScore (dynamic contempt)
+#if defined (Sullivan) || (Blau) || (Fortress) || (Noir)
+			  // Adjust contempt based on root move's previousScore (dynamic contempt)
               dct = ctempt * (ct + (111 - ct / 2) * previousScore / (abs(previousScore) + 176)) + defensive;
-
+#else
+              dct = ctempt * (ct + (102 - ct / 2) * previousScore / (abs(previousScore) + 157)) + defensive;
+#endif
               contempt = (us == WHITE ?  make_score(dct, dct / 2)
                        : -make_score(dct, dct / 2));
        }
@@ -790,16 +805,16 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
           && !mainThread->stopOnPonderhit)
       {
 #if defined (Stockfish) || (Weakfish)
-          double fallingEval = (354 +  6 * (mainThread->previousScore - bestValue)
-                                    +  6 * (mainThread->iterValue[iterIdx]  - bestValue)) / 692.0;
+          double fallingEval = (332 +  6 * (mainThread->previousScore - bestValue)
+                                    +  6 * (mainThread->iterValue[iterIdx]  - bestValue)) / 704.0;
 #else
           double fallingEval = (354 + 10 * (mainThread->previousScore - bestValue)) / 692.0;
 #endif
           fallingEval = clamp(fallingEval, 0.5, 1.5);
 
           // If the bestMove is stable over several iterations, reduce time accordingly
-          timeReduction = lastBestMoveDepth + 9 < completedDepth ? 1.97 : 0.98;
-          double reduction = (1.36 + mainThread->previousTimeReduction) / (2.29 * timeReduction);
+          timeReduction = lastBestMoveDepth + 9 < completedDepth ? 1.94 : 0.91;
+          double reduction = (1.41 + mainThread->previousTimeReduction) / (2.27 * timeReduction);
 
           // Use part of the gained time from a previous stable move for the current move
           for (Thread* th : Threads)
@@ -1309,7 +1324,11 @@ namespace {
 #ifdef Weakfish
         && !weakFishSearch
 #endif
-        &&  depth < 7
+#if defined (Stockfish) || (Weakfish)
+		&&  depth < 6
+#else
+		&&  depth < 7
+#endif
 #ifdef Fortress
         &&  !gameCycle
 #endif
@@ -1320,14 +1339,17 @@ namespace {
     // Step 9. Null move search with verification search (~39 Elo)
     if (   !PvNode
         && (ss-1)->currentMove != MOVE_NULL
-        && (ss-1)->statScore < 22661
-        &&  eval >= beta
+#if defined (Stockfish) || (Weakfish)
+		&& (ss-1)->statScore < 23405
+#else
+		&& (ss-1)->statScore < 22661
+#endif
+		&&  eval >= beta
 #ifdef Sullivan
         &&  ss->staticEval >= beta - 33 * depth + 299
 #else  /// commit 0e295feev NMP Tweaks by VoyageOne
         &&  eval >= ss->staticEval
-        &&  ss->staticEval >= beta - 33 * depth + 299 - improving * 30
-
+        &&  ss->staticEval >= beta - 32 * depth + 317 - improving * 30
 #endif
         && !excludedMove
 #ifdef Sullivan  //authored by Jörg Oster originally, in corchess by Ivan Ilvec
@@ -1341,7 +1363,11 @@ namespace {
         assert(eval - beta >= 0);
 
         // Null move dynamic reduction based on depth and value
-        Depth R = ((835 + 70 * depth) / 256 + std::min(int(eval - beta) / 185, 3));
+#if defined (Stockfish) || (Weakfish)
+        Depth R = (854 + 68 * depth) / 258 + std::min(int(eval - beta) / 192, 3);
+#else
+		Depth R = ((835 + 70 * depth) / 256 + std::min(int(eval - beta) / 185, 3));
+#endif
 
         ss->currentMove = MOVE_NULL;
         ss->continuationHistory = &thisThread->continuationHistory[0][0][NO_PIECE][0];
@@ -1410,7 +1436,11 @@ namespace {
         &&  depth >= 5
         &&  abs(beta) < VALUE_MATE_IN_MAX_PLY)
     {
+#if defined (Stockfish) || (Weakfish)
+        Value raisedBeta = std::min(beta + 189 - 45 * improving, VALUE_INFINITE);
+#else
         Value raisedBeta = std::min(beta + 191 - 46 * improving, VALUE_INFINITE);
+#endif
         MovePicker mp(pos, ttMove, raisedBeta - ss->staticEval, &thisThread->captureHistory);
         int probCutCount = 0;
 
@@ -1590,14 +1620,25 @@ moves_loop: // When in check, search starts from here
                                 if (   lmrDepth < 6
 #endif
 					&& !inCheck
-					&& ss->staticEval + 250 + 211 * lmrDepth <= alpha)
-					continue;
-				// Prune moves with negative SEE (~10 Elo)
-				if (!pos.see_ge(move, Value(-(31 - std::min(lmrDepth, 18)) * lmrDepth * lmrDepth)))
-					continue;
+#if defined (Stockfish) || (Weakfish)
+                    && ss->staticEval + 255 + 182 * lmrDepth <= alpha)
+                         continue;
+                    // Prune moves with negative SEE (~10 Elo)
+                    if (!pos.see_ge(move, Value(-(32 - std::min(lmrDepth, 18)) * lmrDepth * lmrDepth)))
+                        continue;
+             }
+                    else if (!pos.see_ge(move, Value(-194) * depth)) // (~20 Elo)
+                        continue;
+#else
+                    && ss->staticEval + 250 + 211 * lmrDepth <= alpha)
+                         continue;
+                    // Prune moves with negative SEE (~10 Elo)
+				    if (!pos.see_ge(move, Value(-(31 - std::min(lmrDepth, 18)) * lmrDepth * lmrDepth)))
+                         continue;
 			}
-			else if (!pos.see_ge(move, Value(-199) * depth)) // (~20 Elo)
-                  continue;
+                    else if (!pos.see_ge(move, Value(-199) * depth)) // (~20 Elo)
+                         continue;
+#endif
 		}
 
       // Step 14. Extensions (~74 Elo)
@@ -1760,15 +1801,23 @@ moves_loop: // When in check, search starts from here
               || ss->staticEval + PieceValue[EG][pos.captured_piece()] <= alpha
               || cutNode
 #ifndef Noir
-              || thisThread->ttHitAverage < 384 * ttHitAverageResolution * ttHitAverageWindow / 1024
+#if defined (Stockfish) || (Weakfish)
+              || thisThread->ttHitAverage < 375 * ttHitAverageResolution * ttHitAverageWindow / 1024
+#else
+			  || thisThread->ttHitAverage < 384 * ttHitAverageResolution * ttHitAverageWindow / 1024
 #endif
-               ))
+#endif
+      ))
       {
-          Depth r = reduction(improving, depth, moveCount);
+           Depth r = reduction(improving, depth, moveCount);
 #ifndef Noir
-          // Decrease reduction if the ttHit running average is large
-          if (thisThread->ttHitAverage > 544 * ttHitAverageResolution * ttHitAverageWindow / 1024)
-              r--;
+#if defined (Stockfish) || (Weakfish)
+           if (thisThread->ttHitAverage > 500 * ttHitAverageResolution * ttHitAverageWindow / 1024)
+#else
+           // Decrease reduction if the ttHit running average is large
+           if (thisThread->ttHitAverage > 544 * ttHitAverageResolution * ttHitAverageWindow / 1024)
+#endif
+               r--;
 #endif
 
           // Reduction if other threads are searching this position.
@@ -1779,8 +1828,12 @@ moves_loop: // When in check, search starts from here
           if (ttPv)
               r -= 2;
 
-          // Decrease reduction if opponent's move count is high (~4 Elo)
+           // Decrease reduction if opponent's move count is high (~10 Elo)
+#if defined (Stockfish) || (Weakfish)
+          if ((ss-1)->moveCount > 14)
+#else
           if ((ss-1)->moveCount > 15)
+#endif
               r--;
 
           // Decrease reduction if ttMove has been singularly extended (~3 Elo)
@@ -1811,7 +1864,7 @@ moves_loop: // When in check, search starts from here
                              + (*contHist[0])[movedPiece][to_sq(move)]
                              + (*contHist[1])[movedPiece][to_sq(move)]
                              + (*contHist[3])[movedPiece][to_sq(move)]
-                             - 4729;
+                             - 4926;
 
               // Reset statScore to zero if negative and most stats shows >= 0
               if (    ss->statScore < 0
@@ -1820,12 +1873,18 @@ moves_loop: // When in check, search starts from here
                   && thisThread->mainHistory[us][from_to(move)] >= 0)
                   ss->statScore = 0;
 
-              // Decrease/increase reduction by comparing opponent's stat score (~8 Elo)
+              // Decrease/increase reduction by comparing opponent's stat score (~10 Elo)
+#if defined (Stockfish) || (Weakfish)
+              if (ss->statScore >= -102 && (ss-1)->statScore < -114)
+                  r--;
+              else if ((ss-1)->statScore >= -116 && ss->statScore < -154)
+                 r++;
+#else
               if (ss->statScore >= -99 && (ss-1)->statScore < -116)
                   r--;
-
               else if ((ss-1)->statScore >= -117 && ss->statScore < -144)
-                  r++;
+                 r++;
+#endif
 
               // Decrease/increase reduction for moves with a good/bad history (~26 Elo)
               r -= ss->statScore / 16384;
@@ -2137,7 +2196,7 @@ moves_loop: // When in check, search starts from here
         if (PvNode && bestValue > alpha)
             alpha = bestValue;
 
-        futilityBase = bestValue + 153;
+        futilityBase = bestValue + 154;
     }
 #if defined (Fortress) || (Noir)
     if (gameCycle && !inCheck)
