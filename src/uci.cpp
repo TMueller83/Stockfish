@@ -358,11 +358,11 @@ string UCI::value(Value v) {
   if ( Options["Output"] == "ScorPct-GUI")
        ss << "cp " << fixed << setprecision(0) << 10000 * (pow (sf,(sf * vs /1000)))
 	  / (pow(sf,(sf * vs /1000)) + 1);
-	
+
   // Centipawn scoring, value times centipawn factor
   // SF values the raw score of pawns much higher than 100, see types.h
   // The higher raw score allows for greater precison in many evaluation functions
-  else if (Options["Output"] == "CentiPawn")
+  else if (Options["Output"] == "Centipawn")
 	  ss << fixed << setprecision(0) << "cp " << (vs * vf);
 
   else ss << "cp " << fixed << setprecision(2) << 100 * (pow (sf,(sf * vs /1000)))

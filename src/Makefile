@@ -27,18 +27,18 @@
 ###       Bluefish and Honey benchmarks were modified on 11/19/2019
 ###
 ### Bench signatures (total nodes searched using bench)
-### Based on commits through 12/26/2019:
+### Based on commits through 12/27/2019:
 ### ======================================================
-### Black-Diamond-122619.nodes:Nodes searched  : 10781517
-### Blue-Honey-FD-dev-122619.nodes:Nodes searched  : 12849810
-### Blue-Honey-dev-122619.nodes:Nodes searched  : 5681654
-### Bluefish-122619.nodes:Nodes searched  : 5980074
-### Bluefish-FD-122619.nodes:Nodes searched  : 12401349
-### Honey-FD-dev-122619.nodes:Nodes searched  : 10368956
+### Black-Diamond-122719.nodes:Nodes searched  : 10781517
+### Bluefish-122719.nodes:Nodes searched  : 5980074
+### Bluefish-FD-122719.nodes:Nodes searched  : 12401349
+### Blue-Honey-dev-122719.nodes:Nodes searched  : 5681654
+### Blue-Honey-FD-dev-122719.nodes:Nodes searched  : 12849810
 ### Honey-dev-122619.nodes:Nodes searched  : 4871412
-### Stockfish-122619.nodes:Nodes searched  : 5180012
-### Stockfish-FD-122619.nodes:Nodes searched  : 13557702
-### Weakfish-122619.nodes:Nodes searched  : 8454676
+### Honey-FD-dev-122719.nodes:Nodes searched  : 10368956
+### Stockfish-122719.nodes:Nodes searched  : 5180012
+### Stockfish-FD-122719.nodes:Nodes searched  : 13557702
+### Weakfish-122719.nodes:Nodes searched  : 8454676
 ### ======================================================
 
 DATE=$(shell date +"%m%d%y")
@@ -302,7 +302,7 @@ endif
 
 ### 3.1 Selecting compiler (default = gcc)
 
-CXXFLAGS += -Wall -Wcast-qual -fno-exceptions -std=c++11 $(EXTRACXXFLAGS)
+CXXFLAGS += -Wall -Wcast-qual -Wno-unused-result -fno-exceptions -std=c++11 $(EXTRACXXFLAGS)
 DEPENDFLAGS += -std=c++11
 LDFLAGS += $(EXTRALDFLAGS)
 

@@ -385,9 +385,7 @@ void PolyBook::init(const std::string& bookfile)
 
     keycount = filesize / 16;
     polyhash = new PolyHash[keycount];
-
-    if (fread(polyhash, 1, filesize, fpt) != 0)
-        {fread(polyhash, 1, filesize, fpt);}
+    fread(polyhash, 1, filesize, fpt);
     fclose(fpt);
 
     for (int i = 0; i<keycount; i++)

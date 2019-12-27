@@ -119,9 +119,9 @@ void init(OptionsMap& o) {
 #ifdef Add_Features
     o["Adaptive_Play"]            << Option(false); //Adaptive Play change - now simple on/off check box
     o["Variety"]                  << Option(false); // Do not use with Adaptive play
-	o["7 Man Probing"]            << Option(false);
-	o["FastPlay"]                 << Option(false);
-	o["Minimal_Output"]           << Option(false);
+	  o["7 Man Probing"]            << Option(false);
+	  o["FastPlay"]                 << Option(false);
+	  o["Minimal_Output"]           << Option(false);
 #endif
 #ifdef Weakfish
     o["WeakFish"]                 << Option(true);
@@ -129,7 +129,7 @@ void init(OptionsMap& o) {
 #if defined (Sullivan) || (Blau) || (Fortress)
     o["Defensive"]                << Option(true);
 #else
-    o["Defensive"]                << Option(false); 
+    o["Defensive"]                << Option(false);
 #endif
     o["Clear_Hash"]               << Option(on_clear_hash);
     o["Clean_Search"]             << Option(false);
@@ -144,8 +144,8 @@ void init(OptionsMap& o) {
     o["Bench_KNPS"]               << Option (1500, 500, 6000);//used for UCI Play By Elo
 #endif
     // Score percentage evalaution output, similair to Lc0 output is now the default
-    o["Output"]             << Option("CentiPawn var ScorPct-GUI var ScorPct var Centipawn"
-											,"Centipawn");
+    o["Output"]                   << Option("Centipawn var ScorPct-GUI var ScorPct var Centipawn"
+											                     ,"Centipawn");
 #ifdef Add_Features
     o["Tactical"]                 << Option(0, 0, 8);
 #endif

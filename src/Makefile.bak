@@ -27,18 +27,18 @@
 ###       Bluefish and Honey benchmarks were modified on 11/19/2019
 ###
 ### Bench signatures (total nodes searched using bench)
-### Based on commits through 12/23/2019:
+### Based on commits through 12/26/2019:
 ### ======================================================
-### Black-Diamond-122319.nodes:Nodes searched  : 9311931
-### Bluefish-122319.nodes:Nodes searched  : 5589824
-### Bluefish-FD-122319.nodes:Nodes searched  : 12051099
-### Blue-Honey-dev-122319.nodes:Nodes searched  : 5455321
-### Blue-Honey-FD-dev-122319.nodes:Nodes searched  : 13276817
-### Honey-dev-122319.nodes:Nodes searched  : 5092260
-### Honey-FD-dev-122319.nodes:Nodes searched  : 11434545
-### Stockfish-122319.nodes:Nodes searched  : 5371271
-### Stockfish-FD-122319.nodes:Nodes searched  : 12914146
-### Weakfish-122319.nodes:Nodes searched  : 7061019
+### Black-Diamond-122619.nodes:Nodes searched  : 10781517
+### Blue-Honey-FD-dev-122619.nodes:Nodes searched  : 12849810
+### Blue-Honey-dev-122619.nodes:Nodes searched  : 5681654
+### Bluefish-122619.nodes:Nodes searched  : 5980074
+### Bluefish-FD-122619.nodes:Nodes searched  : 12401349
+### Honey-FD-dev-122619.nodes:Nodes searched  : 10368956
+### Honey-dev-122619.nodes:Nodes searched  : 4871412
+### Stockfish-122619.nodes:Nodes searched  : 5180012
+### Stockfish-FD-122619.nodes:Nodes searched  : 13557702
+### Weakfish-122619.nodes:Nodes searched  : 8454676
 ### ======================================================
 
 DATE=$(shell date +"%m%d%y")
@@ -302,7 +302,7 @@ endif
 
 ### 3.1 Selecting compiler (default = gcc)
 
-CXXFLAGS += -Wall -Wcast-qual -fno-exceptions -std=c++11 $(EXTRACXXFLAGS)
+CXXFLAGS += -Wall -Wcast-qual -Wno-unused-result -fno-exceptions -std=c++11 $(EXTRACXXFLAGS)
 DEPENDFLAGS += -std=c++11
 LDFLAGS += $(EXTRALDFLAGS)
 
@@ -526,7 +526,10 @@ ifeq ($(OS), Android)
 	CXXFLAGS += -fPIE
 	LDFLAGS += -fPIE -pie
 endif
-
+### 3.10 madvise + transparent huge pages
+ifeq ($(KERNEL),Linux)
+	CXXFLAGS += -DUSE_MADVISE_HUGEPAGE
+endif
 
 ### ==========================================================================
 ### Section 4. Public targets
