@@ -27,18 +27,19 @@
 ###       Bluefish and Honey benchmarks were modified on 11/19/2019
 ###
 ### Bench signatures (total nodes searched using bench)
-### Based on commits through 12/27/2019:
+### Based on commits through 12/28/2019:
 ### ======================================================
-### Black-Diamond-122719.nodes:Nodes searched  : 10781517
-### Bluefish-122719.nodes:Nodes searched  : 5980074
-### Bluefish-FD-122719.nodes:Nodes searched  : 12401349
-### Blue-Honey-dev-122719.nodes:Nodes searched  : 5681654
-### Blue-Honey-FD-dev-122719.nodes:Nodes searched  : 12849810
-### Honey-dev-122619.nodes:Nodes searched  : 4871412
-### Honey-FD-dev-122719.nodes:Nodes searched  : 10368956
-### Stockfish-122719.nodes:Nodes searched  : 5180012
-### Stockfish-FD-122719.nodes:Nodes searched  : 13557702
-### Weakfish-122719.nodes:Nodes searched  : 8454676
+### Black-Diamond-122819.nodes:Nodes searched  : 10294816
+### Blue-Honey-FD-dev-122819.nodes:Nodes searched  : 12849810
+### Blue-Honey-dev-122819.nodes:Nodes searched  : 5227989
+### Bluefish-122819.nodes:Nodes searched  : 6163601
+### Bluefish-FD-122819.nodes:Nodes searched  : 12401349
+### Honey-FD-dev-122819.nodes:Nodes searched  : 10368956
+### Honey-LEBMC.nodes:Nodes searched  : 5040040
+### Honey-dev-122819.nodes:Nodes searched  : 5040040
+### Stockfish-122819.nodes:Nodes searched  : 5184081
+### Stockfish-FD-122819.nodes:Nodes searched  : 11307657
+### Weakfish-122819.nodes:Nodes searched  : 8454717
 ### ======================================================
 
 DATE=$(shell date +"%m%d%y")
