@@ -900,9 +900,11 @@ constexpr Score MobilityBonus[][32] = {
 
     // Early exit if score is high
     Value v = (mg_value(score) + eg_value(score)) / 2;
-    if (abs(v) > LazyThreshold + pos.non_pawn_material() / 64)
+    if(!T){//Fix for UCI command 'eval';
+     if ( (pos.this_thread()->bestMoveChanges < 13)
+       && (abs(v) > LazyThreshold + pos.non_pawn_material() / 64))
        return pos.side_to_move() == WHITE ? v : -v;
-
+    }
     // Main evaluation begins here
 
     initialize<WHITE>();
