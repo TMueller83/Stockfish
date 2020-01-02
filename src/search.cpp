@@ -240,7 +240,7 @@ int  intLevel = 40, tactical, uci_elo;
 /// Search::init() is called at startup to initialize various lookup tables
 
 void Search::init() {
-	
+
   for (int i = 1; i < MAX_MOVES; ++i)
 #if defined (Stockfish) || (Weakfish)
       Reductions[i] = int((24.8 + std::log(Threads.size()) / 2) * std::log(i));
@@ -294,7 +294,7 @@ void MainThread::search() {
     uci_elo             = Options["Engine_Elo"];
     uci_sleep           = Options["UCI_Sleep"];
 
-	
+
 #endif
 
   Color us = rootPos.side_to_move();
@@ -355,7 +355,7 @@ void MainThread::search() {
 				 limitStrength = true;
 				 jekyll = true;
 			 }
-		  
+
          if (Options["Engine_Level"] == "World_Champion")
              uci_elo = 2900;
          else if (Options["Engine_Level"] == "Super_GM")
@@ -398,7 +398,7 @@ skipLevels:
                  uci_elo = (((uci_elo * 10) / 7) - 1200);  //shallowBlue adj was only required to get CCRL rating correct
              uci_elo += 200; //  to offset Elo loss with variety
              uci_elo = std::min(uci_elo, 3200);
-			 
+
              int NodesToSearch  =  pow(1.00382, (uci_elo - 999)) * 48;
              //sync_cout << "Nodes To Search: " << NodesToSearch << sync_endl;//for debug
              Limits.nodes = NodesToSearch;
@@ -1342,14 +1342,14 @@ namespace {
 #if defined (Stockfish) || (Weakfish)
 		&& (ss-1)->statScore < 23405
 #else
-		&& (ss-1)->statScore < 22661
+		&& (ss-1)->statScore < 23397
 #endif
 		&&  eval >= beta
-#ifdef Sullivan
+#if defined (Stockfish) || (Weakfish)
         &&  ss->staticEval >= beta - 33 * depth + 299
 #else  /// commit 0e295feev NMP Tweaks by VoyageOne
         &&  eval >= ss->staticEval
-        &&  ss->staticEval >= beta - 32 * depth + 317 - improving * 30
+        &&  ss->staticEval >= beta - 32 * depth + 292 - improving * 30
 #endif
         && !excludedMove
 #ifdef Sullivan  //authored by Jörg Oster originally, in corchess by Ivan Ilvec
@@ -1583,7 +1583,7 @@ moves_loop: // When in check, search starts from here
 #if defined (Fortress) || (Noir)
                 // Step 13. Pruning at shallow depth (~204 Elo)
                 if (  !PvNode
-#else	
+#else
 		// Step 13. Pruning at shallow depth (~204 Elo)
 		if (  !rootNode
 #endif
@@ -1595,7 +1595,7 @@ moves_loop: // When in check, search starts from here
 		{
 			// Skip quiet moves if movecount exceeds our FutilityMoveCount threshold
 			moveCountPruning = moveCount >= futility_move_count(improving, depth);
-			
+
 			if (
 				!captureOrPromotion
 				&& !givesCheck
@@ -1606,13 +1606,13 @@ moves_loop: // When in check, search starts from here
 			{
 				// Reduced depth of the next LMR search
 				int lmrDepth = std::max(newDepth - reduction(improving, depth, moveCount), 0);
-				
+
 				// Countermoves based pruning (~20 Elo)
 				if (   lmrDepth < 4 + ((ss-1)->statScore > 0 || (ss-1)->moveCount == 1)
 					&& (*contHist[0])[movedPiece][to_sq(move)] < CounterMovePruneThreshold
 					&& (*contHist[1])[movedPiece][to_sq(move)] < CounterMovePruneThreshold)
 					continue;
-				
+
 				// Futility pruning: parent node (~2 Elo)
 #if defined (Fortress) || (Noir)
                                 if (   lmrDepth < 3
@@ -1725,7 +1725,7 @@ moves_loop: // When in check, search starts from here
                           || (pos.advanced_pawn_push(move)
                           && pos.pawn_passed(us, to_sq(move)))))
           extension = 1;
-		  
+
 #else
       else if (    givesCheck
                && (pos.is_discovery_check_on_king(~us, move) || pos.see_ge(move)))
@@ -2051,7 +2051,7 @@ moves_loop: // When in check, search starts from here
 #else
                   depth, bestMove, ss->staticEval);
 #endif
-			
+
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
 
     return bestValue;
@@ -2117,7 +2117,7 @@ moves_loop: // When in check, search starts from here
 
     if (alpha >= mate_in(ss->ply+1))
         return alpha;
-#else	  
+#else
     // Check for an immediate draw or maximum ply reached
     if (   pos.is_draw(ss->ply)
         || ss->ply >= MAX_PLY)
@@ -2313,7 +2313,7 @@ moves_loop: // When in check, search starts from here
           }
        }
     }
-	  
+
 #if defined (Add_Features)
 	  if (!adaptive && jekyll && (bestValue + (255 * PawnValueEg / (uci_elo/10)) >= 0 ))
         {
