@@ -50,6 +50,10 @@ typedef bool(*fun3_t)(HANDLE, CONST GROUP_AFFINITY*, PGROUP_AFFINITY);
 #include "misc.h"
 #include "thread.h"
 
+#ifdef USE_MADVISE_HUGEPAGE
+  #include <sys/mman.h>
+#endif
+
 using namespace std;
 
 namespace {
@@ -216,6 +220,25 @@ void prefetch(void* addr) {
 }
 
 #endif
+
+
+/// large_page_alloc() is a version of malloc() which tries to return
+/// a block of memory aligned on large pages on systems which support
+/// them. On other systems this is just a normal malloc() call.
+void* large_page_alloc(size_t size) {
+
+   void* addr = nullptr;
+
+#ifdef USE_MADVISE_HUGEPAGE
+    addr = aligned_alloc(2 * 1024 * 1024, size);
+    if (addr)
+        madvise(addr, size, MADV_HUGEPAGE);
+#endif
+
+    if (!addr)
+        addr = malloc(size);
+    return addr;
+}
 
 namespace WinProcGroup {
 

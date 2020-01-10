@@ -31,6 +31,7 @@
 
 const std::string engine_info(bool to_uci = false);
 void prefetch(void* addr);
+void* large_page_alloc(size_t size);
 void start_logger(const std::string& fname);
 
 void dbg_hit_on(bool b);
