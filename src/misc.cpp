@@ -225,19 +225,19 @@ void prefetch(void* addr) {
 /// large_page_alloc() is a version of malloc() which tries to return
 /// a block of memory aligned on large pages on systems which support
 /// them. On other systems this is just a normal malloc() call.
+
 void* large_page_alloc(size_t size) {
 
-   void* addr = nullptr;
-
 #ifdef USE_MADVISE_HUGEPAGE
-    addr = aligned_alloc(2 * 1024 * 1024, size);
+    size_t alignment = 2 * 1024 * 1024;
+    void* addr = aligned_alloc(alignment, size);
     if (addr)
         madvise(addr, size, MADV_HUGEPAGE);
+    return addr ? addr : malloc(size);
+#else
+    return malloc(size);
 #endif
 
-    if (!addr)
-        addr = malloc(size);
-    return addr;
 }
 
 namespace WinProcGroup {
