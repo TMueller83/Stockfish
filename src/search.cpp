@@ -1339,18 +1339,11 @@ namespace {
     // Step 9. Null move search with verification search (~39 Elo)
     if (   !PvNode
         && (ss-1)->currentMove != MOVE_NULL
-#if defined (Stockfish) || (Weakfish)
-		&& (ss-1)->statScore < 23405
-#else
-		&& (ss-1)->statScore < 23397
-#endif
-		&&  eval >= beta
-#if defined (Stockfish) || (Weakfish)
-        &&  ss->staticEval >= beta - 33 * depth + 299
-#else  /// commit 0e295feev NMP Tweaks by VoyageOne
+
+	      && (ss-1)->statScore < 23397
+	      &&  eval >= beta
         &&  eval >= ss->staticEval
         &&  ss->staticEval >= beta - 32 * depth + 292 - improving * 30
-#endif
         && !excludedMove
 #ifdef Sullivan  //authored by Jörg Oster originally, in corchess by Ivan Ilvec
         && thisThread->selDepth + 3 > thisThread->rootDepth
@@ -1615,13 +1608,17 @@ moves_loop: // When in check, search starts from here
 
 				// Futility pruning: parent node (~2 Elo)
 #if defined (Fortress) || (Noir)
-                                if (   lmrDepth < 3
+                if (   lmrDepth < 3
 #else
-                                if (   lmrDepth < 6
+                if (   lmrDepth < 6
 #endif
-					&& !inCheck
+                    && !inCheck
 #if defined (Stockfish) || (Weakfish)
-                    && ss->staticEval + 255 + 182 * lmrDepth <= alpha)
+                    && ss->staticEval + 255 + 182 * lmrDepth <= alpha
+                    &&  thisThread->mainHistory[us][from_to(move)]
+                    + (*contHist[0])[movedPiece][to_sq(move)]
+                    + (*contHist[1])[movedPiece][to_sq(move)]
+                    + (*contHist[3])[movedPiece][to_sq(move)] < 30000)
                          continue;
                     // Prune moves with negative SEE (~10 Elo)
                     if (!pos.see_ge(move, Value(-(32 - std::min(lmrDepth, 18)) * lmrDepth * lmrDepth)))
@@ -1630,10 +1627,14 @@ moves_loop: // When in check, search starts from here
                     else if (!pos.see_ge(move, Value(-194) * depth)) // (~20 Elo)
                         continue;
 #else
-                    && ss->staticEval + 250 + 211 * lmrDepth <= alpha)
+                    && ss->staticEval + 250 + 211 * lmrDepth <= alpha
+                    &&  thisThread->mainHistory[us][from_to(move)]
+                    + (*contHist[0])[movedPiece][to_sq(move)]
+                    + (*contHist[1])[movedPiece][to_sq(move)]
+                    + (*contHist[3])[movedPiece][to_sq(move)] < 30000)
                          continue;
                     // Prune moves with negative SEE (~10 Elo)
-				    if (!pos.see_ge(move, Value(-(31 - std::min(lmrDepth, 18)) * lmrDepth * lmrDepth)))
+                    if (!pos.see_ge(move, Value(-(31 - std::min(lmrDepth, 18)) * lmrDepth * lmrDepth)))
                          continue;
 			}
                     else if (!pos.see_ge(move, Value(-199) * depth)) // (~20 Elo)

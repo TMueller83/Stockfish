@@ -811,6 +811,9 @@ constexpr Score MobilityBonus[][32] = {
     int outflanking =  distance<File>(pos.square<KING>(WHITE), pos.square<KING>(BLACK))
                      - distance<Rank>(pos.square<KING>(WHITE), pos.square<KING>(BLACK));
 
+    bool infiltration =   rank_of(pos.square<KING>(WHITE)) > RANK_4
+                       || rank_of(pos.square<KING>(BLACK)) < RANK_5;
+
     bool pawnsOnBothFlanks =   (pos.pieces(PAWN) & QueenSide)
                             && (pos.pieces(PAWN) & KingSide);
 
@@ -822,13 +825,14 @@ constexpr Score MobilityBonus[][32] = {
     int complexity =   9 * pe->passed_count()
                     + 11 * pos.count<PAWN>()
                     +  9 * outflanking
+                    + 12 * infiltration
                     + 21 * pawnsOnBothFlanks
 #if defined (Sullivan) || (defined Blau) || (Noir) || (Fortress)
                     + 50 * (separation > 3) * (outflanking <= 0)
 #endif
                     + 51 * !pos.non_pawn_material()
                     - 43 * almostUnwinnable
-                    - 95 ;
+                    - 100 ;
 
 
     // Now apply the bonus: note that we find the attacking side by extracting the
