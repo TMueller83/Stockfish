@@ -1321,7 +1321,7 @@ namespace {
 #endif
 
 
-    // Step 8. Futility pruning: child node (~49 Elo)
+    // Step 8. Futility pruning: child node (~50 Elo)
     if (   !PvNode
 #ifdef Weakfish
         && !weakFishSearch
@@ -1475,7 +1475,7 @@ namespace {
     } //End early Pruning
 #endif
 
-    // Step 11. Internal iterative deepening (~0 Elo)
+    // Step 11. Internal iterative deepening (~1 Elo)
     if (depth >= 7 && !ttMove)
     {
         search<NT>(pos, ss, alpha, beta, depth - 7, cutNode);
@@ -1848,7 +1848,7 @@ moves_loop: // When in check, search starts from here
           if (!captureOrPromotion)
 #endif
           {
-              // Increase reduction if ttMove is a capture (~4 Elo)
+              // Increase reduction if ttMove is a capture (~5 Elo)
               if (ttCapture)
                   r++;
 
