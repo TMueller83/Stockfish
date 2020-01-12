@@ -3,7 +3,7 @@
  Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
  Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad (Stockfish Authors)
  Copyright (C) 2015-2016 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Stockfish Authors)
- Copyright (C) 2017-2019 Michael Byrne, Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Honey Authors)
+ Copyright (C) 2017-2020 Michael Byrne, Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Honey Authors)
 
  Honey is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -93,7 +93,7 @@ class TranspositionTable {
   };
 
 #ifndef Noir
-static_assert(CacheLineSize % sizeof(Cluster) == 0, "Cluster size incorrect"); 
+static_assert(CacheLineSize % sizeof(Cluster) == 0, "Cluster size incorrect");
 #endif
 
 public:

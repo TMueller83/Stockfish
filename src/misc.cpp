@@ -3,7 +3,7 @@
  Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
  Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad (Stockfish Authors)
  Copyright (C) 2015-2016 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Stockfish Authors)
- Copyright (C) 2017-2019 Michael Byrne, Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Honey Authors)
+ Copyright (C) 2017-2020 Michael Byrne, Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Honey Authors)
 
  Honey is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -64,20 +64,20 @@ namespace {
 //#define Stockfish
 //#endif
 
-	
+
 #if (defined Add_Features && ReleaseVer)
 const string Version = "XR7 ";
 #else
 const string Version = "";
 #endif
 
-	
+
 #ifdef Fortress
 const string Suffix = "FD ";
 #else
 const string Suffix = "";
 #endif
-	
+
 /// Our fancy logging facility. The trick here is to replace cin.rdbuf() and
 /// cout.rdbuf() with two Tie objects that tie cin and cout to a file stream. We
 /// can toggle the logging of std::cout and std:cin at runtime whilst preserving
@@ -238,7 +238,7 @@ const std::string compiler_info() {
      compiler += "(unknown version)";
   #endif
 
-  #if defined(__APPLE__) 
+  #if defined(__APPLE__)
      compiler += " on macOS";
   #elif defined(__CYGWIN__)
      compiler += " on Cygwin";
