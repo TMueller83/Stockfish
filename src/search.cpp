@@ -635,6 +635,8 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
   contempt = (us == WHITE ?  make_score(ct, ct / 2)
                           : -make_score(ct, ct / 2));
 
+  int searchAgainCounter = 0;
+
   // Iterative deepening loop until requested to stop or the target depth is reached
   while (   ++rootDepth < MAX_PLY
          && !Threads.stop
@@ -651,6 +653,9 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
 
       size_t pvFirst = 0;
       pvLast = 0;
+
+      if (!Threads.increaseDepth)
+         searchAgainCounter++;
 
       // MultiPV loop. We perform a full root search for each PV line
       for (pvIdx = 0; pvIdx < multiPV && !Threads.stop; ++pvIdx)
@@ -699,7 +704,7 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
 #ifdef Noir
               bestValue = ::search<PV>(rootPos, ss, alpha, beta, rootDepth, false);
 #else
-              Depth adjustedDepth = std::max(1, rootDepth - failedHighCnt);
+              Depth adjustedDepth = std::max(1, rootDepth - failedHighCnt - searchAgainCounter);
               bestValue = ::search<PV>(rootPos, ss, alpha, beta, adjustedDepth, false);
 #endif
 
@@ -835,6 +840,11 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
               else
                   Threads.stop = true;
           }
+          else if (   Threads.increaseDepth
+                   && Time.elapsed() > Time.optimum() * fallingEval * reduction * bestMoveInstability * 0.6)
+                   Threads.increaseDepth = false;
+          else
+                   Threads.increaseDepth = true;
       }
 #if defined (Stockfish) || (Weakfish)
       mainThread->iterValue[iterIdx] = bestValue;
@@ -1784,7 +1794,7 @@ moves_loop: // When in check, search starts from here
       // Step 15. Make the move
       pos.do_move(move, st, givesCheck);
 
-      // Step 16. Reduced depth search (LMR, ~208 Elo). If the move fails high it will be
+      // Step 16. Reduced depth search (LMR, ~210 Elo). If the move fails high it will be
       // re-searched at full depth..
 #ifdef Weakfish
       if (    !weakFishSearch && depth >= 3
