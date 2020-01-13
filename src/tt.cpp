@@ -90,16 +90,11 @@ void TranspositionTable::resize(size_t mbSize) {
   clusterCount = mbSize * 1024 * 1024 / sizeof(Cluster);
 
   free(mem);
+
   allocSize = clusterCount * sizeof(Cluster) + CacheLineSize - 1;
 
-#ifdef USE_MADVISE_HUGEPAGE
-  // align by 2 MB to make the allocation huge page friendly
-  mem = aligned_alloc(2 * 1024 * 1024, allocSize);
-#else
-  // we'll use the plain old alloc when huge pages are not
-  // enabled. aligned_alloc() is necessarily not available on Windows.
-  mem = malloc(allocSize);
-#endif
+  mem = large_page_alloc(clusterCount * sizeof(Cluster) + CacheLineSize - 1);
+
 
   if (!mem)
   {

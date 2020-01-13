@@ -185,12 +185,13 @@ void set(istringstream& is) {
   void bench(Position& pos, istream& args, StateListPtr& states) {
 
     string token;
-    uint64_t num, nodes = 0, cnt = 1;
+    uint64_t num, lap_nodes = 0, nodes = 0, cnt = 1;
 
     vector<string> list = setup_bench(pos, args);
     num = count_if(list.begin(), list.end(), [](string s) { return s.find("go ") == 0 || s.find("eval") == 0; });
 
     TimePoint elapsed = now();
+    TimePoint lap_time_elapsed = elapsed;
 
     for (const auto& cmd : list)
     {
@@ -199,12 +200,18 @@ void set(istringstream& is) {
 
         if (token == "go" || token == "eval")
         {
+
             cerr << "\nPosition: " << cnt++ << '/' << num << endl;
             if (token == "go")
             {
+               lap_time_elapsed = now();
                go(pos, is, states);
                Threads.main()->wait_for_search_finished();
                nodes += Threads.nodes_searched();
+               lap_nodes = Threads.nodes_searched();
+               lap_time_elapsed = now() - lap_time_elapsed + 1;
+               cerr << "Nodes/Second: " << lap_nodes / lap_time_elapsed << "k" << endl;
+               //cerr << "k" << endl;
             }
             else
                sync_cout << "\n" << Eval::trace(pos) << sync_endl;
