@@ -50,12 +50,12 @@ echo ""
 mv benchnodes.txt benchnodes_old.txt
 echo "$( date +'Based on commits through %m/%d/%Y:')">> benchnodes.txt
 echo "======================================================">> benchnodes.txt
-grep 'searched' *.nodes  /dev/null >> benchnodes.txt
+grep -E 'searched|Nodes/second' *.bench  /dev/null >> benchnodes.txt
 echo "======================================================">> benchnodes.txt
 sed -i -e  's/^/### /g' benchnodes.txt
 #rm *.nodes benchnodes.txt-e
 echo "$(<benchnodes.txt)"
-sed -i.bak -e '30,42d' ../src/Makefile
+sed -i.bak -e '30,52d' ../src/Makefile
 sed '29r benchnodes.txt' <../src/Makefile >../src/Makefile.tmp
 mv ../src/Makefile.tmp ../src/Makefile
 
