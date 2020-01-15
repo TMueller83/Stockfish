@@ -70,7 +70,7 @@ namespace {
 
 
 #if (defined Add_Features && ReleaseVer)
-const string Version = "XR7 ";
+const string Version = "XI ";
 #else
 const string Version = "";
 #endif

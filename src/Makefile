@@ -27,18 +27,28 @@
 ###       Bluefish and Honey benchmarks were modified on 11/19/2019
 ###
 ### Bench signatures (total nodes searched using bench)
-### Based on commits through 01/13/2020:
+### Based on commits through 01/15/2020:
 ### ======================================================
-### Black-Diamond-011320.nodes:Nodes searched  : 11044958
-### Bluefish-011320.nodes:Nodes searched  : 5820302
-### Bluefish-FD-011320.nodes:Nodes searched  : 12686516
-### Blue-Honey-dev-011320.nodes:Nodes searched  : 5323111
-### Blue-Honey-FD-dev-011320.nodes:Nodes searched  : 11289115
-### Honey-dev-011320.nodes:Nodes searched  : 5042953
-### Honey-FD-dev-011320.nodes:Nodes searched  : 11464269
-### Stockfish-011320.nodes:Nodes searched  : 4586187
-### Stockfish-FD-011320.nodes:Nodes searched  : 9705942
-### Weakfish-011320.nodes:Nodes searched  : 6999755
+### Black-Diamond-XI.bench:Nodes searched  : 8961713
+### Black-Diamond-XI.bench:Nodes/second    : 2455936
+### Bluefish-FD-XI.bench:Nodes searched  : 13164161
+### Bluefish-FD-XI.bench:Nodes/second    : 2437807
+### Bluefish-XI.bench:Nodes searched  : 5999271
+### Bluefish-XI.bench:Nodes/second    : 2430822
+### Blue-Honey-FD-XI.bench:Nodes searched  : 10203366
+### Blue-Honey-FD-XI.bench:Nodes/second    : 2469950
+### Blue-Honey-XI.bench:Nodes searched  : 4707870
+### Blue-Honey-XI.bench:Nodes/second    : 2501524
+### Honey-FD-XI.bench:Nodes searched  : 11067955
+### Honey-FD-XI.bench:Nodes/second    : 2539686
+### Honey-XI.bench:Nodes searched  : 5048600
+### Honey-XI.bench:Nodes/second    : 2383663
+### Stockfish-FD-XI.bench:Nodes searched  : 10599640
+### Stockfish-FD-XI.bench:Nodes/second    : 2474239
+### Stockfish-XI.bench:Nodes searched  : 5156767
+### Stockfish-XI.bench:Nodes/second    : 2493601
+### Weakfish-XI.bench:Nodes searched  : 6999755
+### Weakfish-XI.bench:Nodes/second    : 3641912
 ### ======================================================
 
 DATE=$(shell date +"%m%d%y")
@@ -64,8 +74,8 @@ DATE2=$(shell date +"%m%d")
 ### WEAKFISH = yes
 
 ### Release versions , enter yes and release version below foor releases
-RELEASEVER = no
-RELVERSION = XR7
+RELEASEVER = yes
+RELVERSION = XI
 
 
 ### TEST versions, enter yes and labels below to build named test exe's
@@ -617,7 +627,7 @@ profile-build: config-sanity objclean profileclean
 	@$(MAKE) ARCH=$(ARCH) COMP=$(COMP) profileclean
 	strip $(EXE)
 #	@cp $(EXE) /Users/michaelbyrne/cluster.mfb
-	$(EXE) bench > /dev/null 2> $(EXE).nodes && wait
+	$(EXE) bench > /dev/null 2> $(EXE).bench && wait
 	rm -f *.o syzygy/*.o llvm-profdata
 #	touch * syzygy/*
 #	cp $(EXE) /opt/picochess/engines/armv7l
