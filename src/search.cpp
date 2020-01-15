@@ -841,6 +841,7 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
                   Threads.stop = true;
           }
           else if (   Threads.increaseDepth
+                   && !mainThread->ponder
                    && Time.elapsed() > Time.optimum() * fallingEval * reduction * bestMoveInstability * 0.6)
                    Threads.increaseDepth = false;
           else
@@ -1626,15 +1627,15 @@ moves_loop: // When in check, search starts from here
 #endif
                     && !inCheck
 #if defined (Stockfish) || (Weakfish)
-                    && ss->staticEval + 255 + 182 * lmrDepth <= alpha
+                    && ss->staticEval + 235 + 172 * lmrDepth <= alpha
                     &&  thisThread->mainHistory[us][from_to(move)]
                     + (*contHist[0])[movedPiece][to_sq(move)]
                     + (*contHist[1])[movedPiece][to_sq(move)]
-                    + (*contHist[3])[movedPiece][to_sq(move)] < 30000)
+                    + (*contHist[3])[movedPiece][to_sq(move)] < 25000)
                          continue;
-                    // Prune moves with negative SEE (~10 Elo)
+                    // Prune moves with negative SEE (~20 Elo)
                     if (!pos.see_ge(move, Value(-(32 - std::min(lmrDepth, 18)) * lmrDepth * lmrDepth)))
-                        continue;
+                             continue;
              }
                     else if (!pos.see_ge(move, Value(-194) * depth)) // (~20 Elo)
                         continue;
@@ -1804,7 +1805,7 @@ moves_loop: // When in check, search starts from here
 #if defined (Fortress) || (Noir)
           &&  !gameCycle
 #endif
-          &&  moveCount > 1 + 2 * rootNode
+          &&  moveCount > 1 + rootNode + (rootNode && bestValue < alpha)
           && (!rootNode || thisThread->best_move_count(move) == 0)
 #if defined (Fortress) || (Noir)
           &&  thisThread->selDepth > depth
@@ -1902,11 +1903,16 @@ moves_loop: // When in check, search starts from here
               // Decrease/increase reduction for moves with a good/bad history (~26 Elo)
               r -= ss->statScore / 16384;
           }
+
+          // Increase reduction for captures/promotions if late move and at low depth
+          else if (depth < 8 && moveCount > 2)
+              r++;
+
 #if defined (Fortress) || (Noir)
           Depth rr = newDepth / (2 + ss->ply / 3);
-
           r -= rr;
 #endif
+
           Depth d = clamp(newDepth - r, 1, newDepth);
 
           value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, d, true);
