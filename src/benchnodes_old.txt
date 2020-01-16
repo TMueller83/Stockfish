@@ -1,23 +1,23 @@
-### Based on commits through 01/15/2020:
+### Based on commits through 01/16/2020:
 ### ======================================================
 ### Black-Diamond-XI.bench:Nodes searched  : 8961713
-### Black-Diamond-XI.bench:Nodes/second    : 2491440
+### Black-Diamond-XI.bench:Nodes/second    : 2451234
 ### Bluefish-FD-XI.bench:Nodes searched  : 13164161
-### Bluefish-FD-XI.bench:Nodes/second    : 2430605
+### Bluefish-FD-XI.bench:Nodes/second    : 2381360
 ### Bluefish-XI.bench:Nodes searched  : 5999271
-### Bluefish-XI.bench:Nodes/second    : 2411282
+### Bluefish-XI.bench:Nodes/second    : 2375948
 ### Blue-Honey-FD-XI.bench:Nodes searched  : 10203366
-### Blue-Honey-FD-XI.bench:Nodes/second    : 2439829
+### Blue-Honey-FD-XI.bench:Nodes/second    : 2343984
 ### Blue-Honey-XI.bench:Nodes searched  : 4707870
-### Blue-Honey-XI.bench:Nodes/second    : 2470026
+### Blue-Honey-XI.bench:Nodes/second    : 2384939
 ### Honey-FD-XI.bench:Nodes searched  : 11067955
-### Honey-FD-XI.bench:Nodes/second    : 2535033
+### Honey-FD-XI.bench:Nodes/second    : 2440025
 ### Honey-XI.bench:Nodes searched  : 5048600
-### Honey-XI.bench:Nodes/second    : 2421390
+### Honey-XI.bench:Nodes/second    : 2381415
 ### Stockfish-FD-XI.bench:Nodes searched  : 10599640
-### Stockfish-FD-XI.bench:Nodes/second    : 2474239
+### Stockfish-FD-XI.bench:Nodes/second    : 2426102
 ### Stockfish-XI.bench:Nodes searched  : 5156767
-### Stockfish-XI.bench:Nodes/second    : 2524115
+### Stockfish-XI.bench:Nodes/second    : 2505717
 ### Weakfish-XI.bench:Nodes searched  : 6999755
-### Weakfish-XI.bench:Nodes/second    : 3647605
+### Weakfish-XI.bench:Nodes/second    : 3458376
 ### ======================================================

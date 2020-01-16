@@ -13,7 +13,7 @@ start=`date +%s`
 #ARCH="ARCH=x86-32-old"
 #ARCH="ARCH=x86-32"
 #ARCH="ARCH=general-64"
-#ARCH="ARCH=x86_64"
+#ARCH="ARCH=x86-64"
 ARCH="ARCH=x86-64-modern"
 #ARCH="ARCH=x86-64-bmi2"
 #ARCH="ARCH=armv7"
