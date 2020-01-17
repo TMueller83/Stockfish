@@ -80,29 +80,18 @@ namespace {
 
   constexpr uint64_t ttHitAverageWindow     = 4096;
   constexpr uint64_t ttHitAverageResolution = 1024;
-#if defined (Stockfish) || (Weakfish)
+
   // Razor and futility margins
   constexpr int RazorMargin = 531;
   Value futility_margin(Depth d, bool improving) {
     return Value(217 * (d - improving));
   }
-#else
-  // Razor and futility margins
-  constexpr int RazorMargin = 661;
-  Value futility_margin(Depth d, bool improving) {
-    return Value(198 * (d - improving));
-  }
-#endif
 
   // Reductions lookup table, initialized at startup
   int Reductions[MAX_MOVES]; // [depth or moveNumber]
   Depth reduction(bool i, Depth d, int mn) {
     int r = Reductions[d] * Reductions[mn];
-#if defined (Stockfish) || (Weakfish)
     return (r + 511) / 1024 + (!i && r > 1007);
-#else
-    return (r + 520) / 1024 + (!i && r > 999);
-#endif
   }
 
   constexpr int futility_move_count(bool improving, Depth depth) {
@@ -111,11 +100,7 @@ namespace {
 
   // History and stats update bonus, based on depth
   int stat_bonus(Depth d) {
-#if defined (Stockfish) || (Weakfish)
-  return d > 15 ? -8 : 19 * d * d + 155 * d - 132;
-#else
-  return d > 17 ? -8 : 22 * d * d + 151 * d - 140;
-#endif
+    return d > 15 ? -8 : 19 * d * d + 155 * d - 132;
   }
 
   // Add a small random component to draw evaluations to avoid 3fold-blindness
@@ -242,11 +227,7 @@ int  intLevel = 40, tactical, uci_elo;
 void Search::init() {
 
   for (int i = 1; i < MAX_MOVES; ++i)
-#if defined (Stockfish) || (Weakfish)
       Reductions[i] = int((24.8 + std::log(Threads.size()) / 2) * std::log(i));
-#else
-      Reductions[i] = int((23.4 + std::log(Threads.size()) / 2) * std::log(i));
-#endif
 }
 /// Search::clear() resets search state to its initial value
 
@@ -1143,8 +1124,8 @@ namespace {
 #endif
         if (    piecesCount <= TB::Cardinality
 #ifdef Add_Features //MB less probing with 7 MAN EGTB
-		        &&  (piecesCount < TB::Cardinality
-		        || (depth >= TB::ProbeDepth && (TB::Cardinality < 7 || TB::SevenManProbe)))
+		  &&  (piecesCount < TB::Cardinality
+		  || (depth >= TB::ProbeDepth && (TB::Cardinality < 7 || TB::SevenManProbe)))
 #else
 		        && (piecesCount < TB::Cardinality || depth >= TB::ProbeDepth)
 #endif
@@ -1323,25 +1304,16 @@ namespace {
 #endif
         &&  eval <= alpha - RazorMargin)
         return qsearch<NT>(pos, ss, alpha, beta);
-#if defined (Stockfish) || (Weakfish)
+
     improving =  (ss-2)->staticEval == VALUE_NONE ? (ss->staticEval >= (ss-4)->staticEval
               || (ss-4)->staticEval == VALUE_NONE) : ss->staticEval >= (ss-2)->staticEval;
-#else
-    improving =   ss->staticEval >= (ss-2)->staticEval
-               || (ss-2)->staticEval == VALUE_NONE;
-#endif
-
 
     // Step 8. Futility pruning: child node (~50 Elo)
     if (   !PvNode
 #ifdef Weakfish
         && !weakFishSearch
 #endif
-#if defined (Stockfish) || (Weakfish)
 		&&  depth < 6
-#else
-		&&  depth < 7
-#endif
 #ifdef Fortress
         &&  !gameCycle
 #endif
@@ -1358,7 +1330,7 @@ namespace {
         &&  eval >= ss->staticEval
         &&  ss->staticEval >= beta - 32 * depth + 292 - improving * 30
         && !excludedMove
-#ifdef Sullivan  //authored by Jörg Oster originally, in corchess by Ivan Ilvec
+#if defined (Sullivan) || (Bluefish)  //authored by Jörg Oster originally, in corchess by Ivan Ilvec
         && thisThread->selDepth + 3 > thisThread->rootDepth
 #endif
         &&  pos.non_pawn_material(us)
@@ -1369,11 +1341,7 @@ namespace {
         assert(eval - beta >= 0);
 
         // Null move dynamic reduction based on depth and value
-#if defined (Stockfish) || (Weakfish)
         Depth R = (854 + 68 * depth) / 258 + std::min(int(eval - beta) / 192, 3);
-#else
-		Depth R = ((835 + 70 * depth) / 256 + std::min(int(eval - beta) / 185, 3));
-#endif
 
         ss->currentMove = MOVE_NULL;
         ss->continuationHistory = &thisThread->continuationHistory[0][0][NO_PIECE][0];
@@ -1442,11 +1410,7 @@ namespace {
         &&  depth >= 5
         &&  abs(beta) < VALUE_MATE_IN_MAX_PLY)
     {
-#if defined (Stockfish) || (Weakfish)
         Value raisedBeta = std::min(beta + 189 - 45 * improving, VALUE_INFINITE);
-#else
-        Value raisedBeta = std::min(beta + 191 - 46 * improving, VALUE_INFINITE);
-#endif
         MovePicker mp(pos, ttMove, raisedBeta - ss->staticEval, &thisThread->captureHistory);
         int probCutCount = 0;
 
@@ -1626,7 +1590,6 @@ moves_loop: // When in check, search starts from here
                 if (   lmrDepth < 6
 #endif
                     && !inCheck
-#if defined (Stockfish) || (Weakfish)
                     && ss->staticEval + 235 + 172 * lmrDepth <= alpha
                     &&  thisThread->mainHistory[us][from_to(move)]
                     + (*contHist[0])[movedPiece][to_sq(move)]
@@ -1639,20 +1602,7 @@ moves_loop: // When in check, search starts from here
              }
                     else if (!pos.see_ge(move, Value(-194) * depth)) // (~20 Elo)
                         continue;
-#else
-                    && ss->staticEval + 250 + 211 * lmrDepth <= alpha
-                    &&  thisThread->mainHistory[us][from_to(move)]
-                    + (*contHist[0])[movedPiece][to_sq(move)]
-                    + (*contHist[1])[movedPiece][to_sq(move)]
-                    + (*contHist[3])[movedPiece][to_sq(move)] < 30000)
-                         continue;
-                    // Prune moves with negative SEE (~10 Elo)
-                    if (!pos.see_ge(move, Value(-(31 - std::min(lmrDepth, 18)) * lmrDepth * lmrDepth)))
-                         continue;
-			}
-                    else if (!pos.see_ge(move, Value(-199) * depth)) // (~20 Elo)
-                         continue;
-#endif
+
 		}
 
       // Step 14. Extensions (~74 Elo)
@@ -1753,17 +1703,7 @@ moves_loop: // When in check, search starts from here
 #endif
 
       // Last captures extension
-#if defined (Stockfish) || (Weakfish)
       else if (   PieceValue[EG][pos.captured_piece()] > PawnValueEg
-               && pos.non_pawn_material() <= 2 * RookValueMg)
-          extension = 1;
-
-      // Last captures extension
-      else if (   PieceValue[EG][pos.captured_piece()] > PawnValueEg
-#else
-      else if (   PvNode
-               && PieceValue[EG][pos.captured_piece()] > PawnValueEg
-#endif
                && pos.non_pawn_material() <= 2 * RookValueMg)
           extension = 1;
 
@@ -1842,12 +1782,8 @@ moves_loop: // When in check, search starts from here
           if (ttPv)
               r -= 2;
 
-           // Decrease reduction if opponent's move count is high (~10 Elo)
-#if defined (Stockfish) || (Weakfish)
+          // Decrease reduction if opponent's move count is high (~5 Elo)
           if ((ss-1)->moveCount > 14)
-#else
-          if ((ss-1)->moveCount > 15)
-#endif
               r--;
 
           // Decrease reduction if ttMove has been singularly extended (~3 Elo)
@@ -1888,17 +1824,10 @@ moves_loop: // When in check, search starts from here
                   ss->statScore = 0;
 
               // Decrease/increase reduction by comparing opponent's stat score (~10 Elo)
-#if defined (Stockfish) || (Weakfish)
               if (ss->statScore >= -102 && (ss-1)->statScore < -114)
                   r--;
               else if ((ss-1)->statScore >= -116 && ss->statScore < -154)
-                 r++;
-#else
-              if (ss->statScore >= -99 && (ss-1)->statScore < -116)
-                  r--;
-              else if ((ss-1)->statScore >= -117 && ss->statScore < -144)
-                 r++;
-#endif
+                  r++;
 
               // Decrease/increase reduction for moves with a good/bad history (~26 Elo)
               r -= ss->statScore / 16384;
