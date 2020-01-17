@@ -82,17 +82,17 @@ void TTEntry::save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev) 
 /// of clusters and each cluster consists of ClusterSize number of TTEntry.
 
 void TranspositionTable::resize(size_t mbSize) {
-
+#ifdef USE_MADVISE_HUGEPAGE
   size_t allocSize;
-
+#endif
   Threads.main()->wait_for_search_finished();
 
   clusterCount = mbSize * 1024 * 1024 / sizeof(Cluster);
 
   free(mem);
-
+#ifdef USE_MADVISE_HUGEPAGE
   allocSize = clusterCount * sizeof(Cluster) + CacheLineSize - 1;
-
+#endif
   mem = large_page_alloc(clusterCount * sizeof(Cluster) + CacheLineSize - 1);
 
 
