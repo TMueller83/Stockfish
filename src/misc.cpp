@@ -64,10 +64,6 @@ namespace {
 
 /// Version number. If Version is left empty, then compile date in the format
 /// DD-MM-YY and show in engine_info.
-//#ifndef Sullivan
-//#define Stockfish
-//#endif
-
 
 #if (defined Add_Features && ReleaseVer)
 const string Version = "XI ";

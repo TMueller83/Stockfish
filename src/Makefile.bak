@@ -30,25 +30,25 @@
 ### Based on commits through 01/16/2020:
 ### ======================================================
 ### Black-Diamond-XI.bench:Nodes searched  : 8961713
-### Black-Diamond-XI.bench:Nodes/second    : 2458631
+### Black-Diamond-XI.bench:Nodes/second    : 2451234
 ### Bluefish-FD-XI.bench:Nodes searched  : 13164161
-### Bluefish-FD-XI.bench:Nodes/second    : 2366378
+### Bluefish-FD-XI.bench:Nodes/second    : 2381360
 ### Bluefish-XI.bench:Nodes searched  : 5999271
-### Bluefish-XI.bench:Nodes/second    : 2369380
+### Bluefish-XI.bench:Nodes/second    : 2375948
 ### Blue-Honey-FD-XI.bench:Nodes searched  : 10203366
-### Blue-Honey-FD-XI.bench:Nodes/second    : 2358069
+### Blue-Honey-FD-XI.bench:Nodes/second    : 2343984
 ### Blue-Honey-XI.bench:Nodes searched  : 4707870
-### Blue-Honey-XI.bench:Nodes/second    : 2480437
+### Blue-Honey-XI.bench:Nodes/second    : 2384939
 ### Honey-FD-XI.bench:Nodes searched  : 11067955
-### Honey-FD-XI.bench:Nodes/second    : 2463925
+### Honey-FD-XI.bench:Nodes/second    : 2440025
 ### Honey-XI.bench:Nodes searched  : 5048600
-### Honey-XI.bench:Nodes/second    : 2380292
+### Honey-XI.bench:Nodes/second    : 2381415
 ### Stockfish-FD-XI.bench:Nodes searched  : 10599640
-### Stockfish-FD-XI.bench:Nodes/second    : 2432784
+### Stockfish-FD-XI.bench:Nodes/second    : 2426102
 ### Stockfish-XI.bench:Nodes searched  : 5156767
-### Stockfish-XI.bench:Nodes/second    : 2516723
+### Stockfish-XI.bench:Nodes/second    : 2505717
 ### Weakfish-XI.bench:Nodes searched  : 6999755
-### Weakfish-XI.bench:Nodes/second    : 3535229
+### Weakfish-XI.bench:Nodes/second    : 3458376
 ### ======================================================
 
 DATE=$(shell date +"%m%d%y")
@@ -490,7 +490,7 @@ ifeq ($(popcnt),yes)
 	else ifeq ($(comp),icc)
 		CXXFLAGS += -msse4 -DUSE_POPCNT
 	else
-		CXXFLAGS += -msse4 -mpopcnt -DUSE_POPCNT -mtune=znver3
+		CXXFLAGS += -msse4 -mpopcnt -DUSE_POPCNT
 	endif
 endif
 

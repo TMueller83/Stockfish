@@ -27,28 +27,28 @@
 ###       Bluefish and Honey benchmarks were modified on 11/19/2019
 ###
 ### Bench signatures (total nodes searched using bench)
-### Based on commits through 01/16/2020:
+### Based on commits through 01/20/2020:
 ### ======================================================
-### Black-Diamond-XI.bench:Nodes searched  : 8961713
-### Black-Diamond-XI.bench:Nodes/second    : 2451234
-### Bluefish-FD-XI.bench:Nodes searched  : 13164161
-### Bluefish-FD-XI.bench:Nodes/second    : 2381360
-### Bluefish-XI.bench:Nodes searched  : 5999271
-### Bluefish-XI.bench:Nodes/second    : 2375948
-### Blue-Honey-FD-XI.bench:Nodes searched  : 10203366
-### Blue-Honey-FD-XI.bench:Nodes/second    : 2343984
-### Blue-Honey-XI.bench:Nodes searched  : 4707870
-### Blue-Honey-XI.bench:Nodes/second    : 2384939
-### Honey-FD-XI.bench:Nodes searched  : 11067955
-### Honey-FD-XI.bench:Nodes/second    : 2440025
-### Honey-XI.bench:Nodes searched  : 5048600
-### Honey-XI.bench:Nodes/second    : 2381415
+### Black-Diamond-XI.bench:Nodes searched  : 9307126
+### Black-Diamond-XI.bench:Nodes/second    : 1847751
+### Blue-Honey-FD-XI.bench:Nodes searched  : 10167923
+### Blue-Honey-FD-XI.bench:Nodes/second    : 1865331
+### Blue-Honey-XI.bench:Nodes searched  : 4503961
+### Blue-Honey-XI.bench:Nodes/second    : 1870415
+### Bluefish-FD-XI.bench:Nodes searched  : 11194740
+### Bluefish-FD-XI.bench:Nodes/second    : 1906136
+### Bluefish-XI.bench:Nodes searched  : 5681412
+### Bluefish-XI.bench:Nodes/second    : 1900773
+### Honey-FD-XI.bench:Nodes searched  : 10870206
+### Honey-FD-XI.bench:Nodes/second    : 1907723
+### Honey-XI.bench:Nodes searched  : 4731324
+### Honey-XI.bench:Nodes/second    : 1892529
 ### Stockfish-FD-XI.bench:Nodes searched  : 10599640
-### Stockfish-FD-XI.bench:Nodes/second    : 2426102
+### Stockfish-FD-XI.bench:Nodes/second    : 1950255
 ### Stockfish-XI.bench:Nodes searched  : 5156767
-### Stockfish-XI.bench:Nodes/second    : 2505717
+### Stockfish-XI.bench:Nodes/second    : 1951842
 ### Weakfish-XI.bench:Nodes searched  : 6999755
-### Weakfish-XI.bench:Nodes/second    : 3458376
+### Weakfish-XI.bench:Nodes/second    : 2730013
 ### ======================================================
 
 DATE=$(shell date +"%m%d%y")
