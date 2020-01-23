@@ -74,8 +74,8 @@ DATE2=$(shell date +"%m%d")
 ### WEAKFISH = yes
 
 ### Release versions , enter yes and release version below foor releases
-RELEASEVER = yes
-RELVERSION = XI
+RELEASEVER = no
+RELVERSION = 
 
 
 ### TEST versions, enter yes and labels below to build named test exe's
