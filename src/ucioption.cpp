@@ -47,6 +47,7 @@ void on_logger(const Option& o) { start_logger(o); }
 void on_threads(const Option& o) { Threads.set(o); }
 void on_tb_path(const Option& o) { Tablebases::init(o); }
 #ifdef Add_Features
+void on_large_pages(const Option& o) { TT.resize(0); }  // warning is ok, will be removed
 void on_book_file1(const Option& o) { polybook1.init(o); }
 void on_book_file2(const Option& o) { polybook2.init(o); }
 void on_book_file3(const Option& o) { polybook3.init(o); }
@@ -119,9 +120,10 @@ void init(OptionsMap& o) {
 #ifdef Add_Features
     o["Adaptive_Play"]            << Option(false); //Adaptive Play change - now simple on/off check box
     o["Variety"]                  << Option(false); // Do not use with Adaptive play
-	  o["7 Man Probing"]            << Option(false);
-	  o["FastPlay"]                 << Option(false);
-	  o["Minimal_Output"]           << Option(false);
+    o["7 Man Probing"]            << Option(false);
+    o["FastPlay"]                 << Option(false);
+    o["Minimal_Output"]           << Option(false);
+    o["Large Pages"]           << Option(false, on_large_pages);
 #endif
 #ifdef Weakfish
     o["WeakFish"]                 << Option(true);
@@ -180,9 +182,9 @@ void init(OptionsMap& o) {
     o["Syzygy50MoveRule"]         << Option(true);
     o["SyzygyProbeLimit"]         << Option(7, 0, 7);
 #ifndef Add_Features
-	//Stockfish method of play by Elo, a very nice implementation.
-	o["UCI_LimitStrength"]        << Option(false);
-	o["UCI_Elo"]                  << Option(1350, 1350, 2850);
+     //Stockfish method of play by Elo, a very nice implementation.
+     o["UCI_LimitStrength"]        << Option(false);
+     o["UCI_Elo"]                  << Option(1350, 1350, 2850);
 #endif
 }
 

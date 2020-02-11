@@ -340,6 +340,16 @@ void prefetch(void* addr) {
 /// a block of memory aligned on large pages on systems which support
 /// them. On other systems this is just a normal malloc() call.
 
+#ifdef WINDOWS
+void* aligned_ttmem_alloc(size_t allocSize, void*& mem) {
+
+  constexpr size_t alignment = 64; // assumed cache line size
+  size_t size = allocSize + alignment - 1; // allocate some extra space
+  mem = malloc(size);
+  void* ret = reinterpret_cast<void*>((uintptr_t(mem) + alignment - 1) & ~uintptr_t(alignment - 1));
+  return ret;
+}
+#else
 void* large_page_alloc(size_t size) {
 
 #ifdef USE_MADVISE_HUGEPAGE
@@ -353,7 +363,7 @@ void* large_page_alloc(size_t size) {
 #endif
 
 }
-
+#endif
 namespace WinProcGroup {
 
 #ifndef _WIN32

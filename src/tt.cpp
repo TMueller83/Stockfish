@@ -33,7 +33,9 @@
 #include "thread.h"
 #include "tt.h"
 #include "uci.h"
-
+#ifdef WINDOWS
+#include "windows.h"
+#endif
 TranspositionTable TT; // Our global transposition table
 
 /// TTEntry::save populates the TTEntry with a new node's data, possibly
@@ -80,7 +82,83 @@ void TTEntry::save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev) 
 /// TranspositionTable::resize() sets the size of the transposition table,
 /// measured in megabytes. Transposition table consists of a power of 2 number
 /// of clusters and each cluster consists of ClusterSize number of TTEntry.
+#ifdef WINDOWS
+void TranspositionTable::resize(size_t mbSize) {
 
+  Threads.main()->wait_for_search_finished();
+
+  if (mbSize == 0)
+      mbSize = mbSize_last_used;
+
+  if (mbSize == 0)
+      return;
+
+  mbSize_last_used = mbSize;
+
+  Try_Get_LockMemory_Privileges();
+
+  size_t newClusterCount = mbSize * 1024 * 1024 / sizeof(Cluster);
+
+  if (newClusterCount == clusterCount)
+  {
+      if ((use_large_pages == 1) && (large_pages_used))      
+          return;
+      if ((use_large_pages == 0) && (large_pages_used == false))
+          return;
+  }
+
+  clusterCount = newClusterCount;
+ 
+  if (use_large_pages < 1)
+  {
+      if (mem != NULL)
+      {
+          if (large_pages_used)
+              VirtualFree(mem, 0, MEM_RELEASE);
+          else          
+              free(mem);
+      }
+      uint64_t memsize = clusterCount * sizeof(Cluster) + CacheLineSize - 1;
+      mem = calloc(memsize, 1);
+      large_pages_used = false;
+  }
+  else
+  {
+      if (mem != NULL)
+      {
+          if (large_pages_used)
+              VirtualFree(mem, 0, MEM_RELEASE);
+          else
+              free(mem);
+      }
+
+      int64_t memsize = clusterCount * sizeof(Cluster);
+      mem = VirtualAlloc(NULL, memsize, MEM_LARGE_PAGES | MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+      if (mem == NULL)
+      {
+          std::cerr << "Failed to allocate " << mbSize
+              << "MB Large Page Memory for transposition table, switching to default" << std::endl;
+
+          use_large_pages = 0;
+          mem = malloc(clusterCount * sizeof(Cluster) + CacheLineSize - 1);
+          large_pages_used = false;
+      }
+      else
+      {
+          sync_cout << "info string Hash LargePages " << (memsize >> 20) << " Mb" << sync_endl;
+          large_pages_used = true;
+      }
+        
+  }
+
+  if (!mem)
+  {
+      std::cerr << "Failed to allocate " << mbSize
+                << "MB for transposition table." << std::endl;
+      exit(EXIT_FAILURE);
+  }
+
+#else
 void TranspositionTable::resize(size_t mbSize) {
 #ifdef USE_MADVISE_HUGEPAGE
   size_t allocSize;
@@ -102,7 +180,7 @@ void TranspositionTable::resize(size_t mbSize) {
                 << "MB for transposition table." << std::endl;
       exit(EXIT_FAILURE);
   }
-
+#endif
 #ifdef USE_MADVISE_HUGEPAGE
   // Request huge pages in case aligned_alloc() didn't already provide them. We
   // don't care if this call fails, and the call may fail if transparent huge
@@ -192,7 +270,17 @@ TTEntry* TranspositionTable::probe(const Key key, bool& found) const {
 
 /// TranspositionTable::hashfull() returns an approximation of the hashtable
 /// occupation during a search. The hash is x permill full, as per UCI protocol.
+#ifdef WINDOWS
+int TranspositionTable::hashfull() const {
 
+  int cnt = 0;
+  for (int i = 0; i < 1000; ++i)
+      for (int j = 0; j < ClusterSize; ++j)
+          cnt += (table[i].entry[j].genBound8 & 0xF8) == generation8;
+
+  return cnt / ClusterSize;
+}
+#else
 int TranspositionTable::hashfull() const {
 
   int cnt = 0;
@@ -202,3 +290,4 @@ int TranspositionTable::hashfull() const {
 
   return cnt * 1000 / (ClusterSize * (1000 / ClusterSize));
 }
+#endif
