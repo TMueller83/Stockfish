@@ -27,47 +27,29 @@
 ###       Bluefish and Honey benchmarks were modified on 11/19/2019
 ###
 ### Bench signatures (total nodes searched using bench)
-### Based on commits through 02/07/2020:
+### Based on commits through 02/13/2020:
 ### ======================================================
-### Black-Diamond-XI.exe.bench:Nodes searched  : 9307126
-### Black-Diamond-XI.exe.bench:Nodes/second    : 2221801
-### Bluefish-FD-XI.exe.bench:Nodes searched  : 11194740
-### Bluefish-FD-XI.exe.bench:Nodes/second    : 2332237
-### Bluefish-XI.exe.bench:Nodes searched  : 5681412
-### Bluefish-XI.exe.bench:Nodes/second    : 2277119
-### Blue-Honey-FD-XI.exe.bench:Nodes searched  : 10167923
-### Blue-Honey-FD-XI.exe.bench:Nodes/second    : 2285440
-### Blue-Honey-XI.exe.bench:Nodes searched  : 4503961
-### Blue-Honey-XI.exe.bench:Nodes/second    : 2247485
-### Honey-FD-XI.exe.bench:Nodes searched  : 10870206
-### Honey-FD-XI.exe.bench:Nodes/second    : 2346256
-### Honey-XI.exe.bench:Nodes searched  : 4731324
-### Honey-XI.exe.bench:Nodes/second    : 2195509
-### Stockfish-FD-XI.exe.bench:Nodes searched  : 10599640
-### Stockfish-FD-XI.exe.bench:Nodes/second    : 2342979
-### Stockfish-XI.exe.bench:Nodes searched  : 5156767
-### Stockfish-XI.exe.bench:Nodes/second    : 2334435
-### Weakfish-XI.exe.bench:Nodes searched  : 6999755
-### Weakfish-XI.exe.bench:Nodes/second    : 3234637
+### Black-Diamond-XI-LP.exe.bench:Nodes searched  : 9307126
+### Black-Diamond-XI-LP.exe.bench:Nodes/second    : 2329693
+### Bluefish-FD-XI-LP.exe.bench:Nodes searched  : 11194740
+### Bluefish-FD-XI-LP.exe.bench:Nodes/second    : 2464715
+### Bluefish-XI-LP.exe.bench:Nodes searched  : 5681412
+### Bluefish-XI-LP.exe.bench:Nodes/second    : 2382143
+### Blue-Honey-FD-XI-LP.exe.bench:Nodes searched  : 10167923
+### Blue-Honey-FD-XI-LP.exe.bench:Nodes/second    : 2375682
+### Blue-Honey-XI-LP.exe.bench:Nodes searched  : 4503961
+### Blue-Honey-XI-LP.exe.bench:Nodes/second    : 2325225
+### Honey-FD-XI-LP.exe.bench:Nodes searched  : 10870206
+### Honey-FD-XI-LP.exe.bench:Nodes/second    : 2433446
+### Honey-XI-LP.exe.bench:Nodes searched  : 4731324
+### Honey-XI-LP.exe.bench:Nodes/second    : 2348051
+### Stockfish-FD-XI-LP.exe.bench:Nodes searched  : 10599640
+### Stockfish-FD-XI-LP.exe.bench:Nodes/second    : 2459883
+### Stockfish-XI-LP.exe.bench:Nodes searched  : 5156767
+### Stockfish-XI-LP.exe.bench:Nodes/second    : 2461463
+### Weakfish-XI-LP.exe.bench:Nodes searched  : 6999755
+### Weakfish-XI-LP.exe.bench:Nodes/second    : 3355587
 ### ======================================================
-
-DATE=$(shell date +"%m%d%y")
-DATE2=$(shell date +"%m%d")
-
-### Fortress Detection code that will help in positions such as this:
-### 3r4/3r4/2p1k3/p1pbPp1p/Pp1p1PpP/1P1P2R1/2P4R/2K1Q3 w - - 0 6, bm Rxg4
-### Fortress Detection code by Joe Ellis:
-### https://github.com/jhellis3/Stockfish/tree/game_cycle
-###	FORTRESS_DETECT = yes
-
-### HONEY=yes
-
-### Diamond evaluation based on Crystal by Joe Ellis
-### https://github.com/jhellis3/Stockfish/tree/crystal
-###	NOIR = yes
-
-### Bluefish evaluation by Eelco de Groot
-### http://talkchess.com/forum3/viewtopic.php?f=2&t=71929
 ###	BLUEFISH = yes
 
 ### Weakfish has about 90% of the search code Elo improvements removed
@@ -76,6 +58,8 @@ DATE2=$(shell date +"%m%d")
 ### Release versions , enter yes and release version below foor releases
 RELEASEVER = yes
 RELVERSION = XI
+### Large Pages
+RELVERLP = -LP
 
 
 ### TEST versions, enter yes and labels below to build named test exe's
@@ -133,9 +117,9 @@ ifeq ($(HONEY),yes)
 	ifeq ($(RELEASEVER),yes)
         CXXFLAGS += -DReleaseVer
 		ifeq ($(COMP),mingw)
-			EXE = $(NAME)-$(RELVERSION).exe
+			EXE = $(NAME)-$(RELVERSION)$(RELVERLP).exe
 		else
-			EXE = $(NAME)-$(RELVERSION)
+			EXE = $(NAME)-$(RELVERSION)$(RELVERLP)
 		endif
 	endif
 endif
@@ -169,7 +153,7 @@ endif
 	ifeq ($(RELEASEVER),yes)
 		CXXFLAGS += -DReleaseVer
 		ifeq ($(COMP),mingw)
-			EXE = $(NAME)-$(RELVERSION).exe
+			EXE = $(NAME)-$(RELVERSION)$(RELVERLP).exe
 		else
 		EXE = $(NAME)-$(RELVERSION)
 		endif
@@ -238,7 +222,8 @@ popcnt = no
 sse = no
 pext = no
 native = no
-
+threadripper = yes
+largepages = yes
 ### 2.2 Architecture specific
 
 ### native
@@ -346,7 +331,12 @@ endif
 
 ifeq ($(COMP),mingw)
 	comp=mingw
-
+	ifeq ($(threadripper), yes)
+	CXXFLAGS += --param l2-cache-size=512 -l3-cache-size=16384
+	ifeq ($(largepages),yes)
+		CXXFLAGS += -DLargePages
+	endif
+	endif
 	ifeq ($(KERNEL),Linux)
 		ifeq ($(bits),64)
 			ifeq ($(shell which x86_64-w64-mingw32-c++-posix),)

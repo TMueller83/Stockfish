@@ -97,7 +97,12 @@ static_assert(CacheLineSize % sizeof(Cluster) == 0, "Cluster size incorrect");
 #endif
 
 public:
+#ifdef LargePages
+  TranspositionTable() { mbSize_last_used = 0;  mbSize_last_used = 0; }
+ ~TranspositionTable() {}
+#else
  ~TranspositionTable() { free(mem); }
+#endif
   void new_search() { generation8 += 8; } // Lower 3 bits are used by PV flag and Bound
   TTEntry* probe(const Key key, bool& found) const;
   int hashfull() const;
@@ -115,7 +120,10 @@ public:
 
 private:
   friend struct TTEntry;
-
+#ifdef LargePages
+  int64_t  mbSize_last_used;
+  bool large_pages_used;
+#endif
   size_t clusterCount;
   Cluster* table;
   void* mem;

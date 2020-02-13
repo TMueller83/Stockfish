@@ -47,6 +47,9 @@ void on_logger(const Option& o) { start_logger(o); }
 void on_threads(const Option& o) { Threads.set(o); }
 void on_tb_path(const Option& o) { Tablebases::init(o); }
 #ifdef Add_Features
+#ifdef LargePages
+void on_large_pages(const Option& o) { TT.resize(0); }  // warning is ok, will be removed
+#endif
 void on_book_file1(const Option& o) { polybook1.init(o); }
 void on_book_file2(const Option& o) { polybook2.init(o); }
 void on_book_file3(const Option& o) { polybook3.init(o); }
@@ -122,6 +125,9 @@ void init(OptionsMap& o) {
 	  o["7 Man Probing"]            << Option(false);
 	  o["FastPlay"]                 << Option(false);
 	  o["Minimal_Output"]           << Option(false);
+#endif
+#ifdef LargePages
+    o["Large Pages"]              << Option(true, on_large_pages);
 #endif
 #ifdef Weakfish
     o["WeakFish"]                 << Option(true);

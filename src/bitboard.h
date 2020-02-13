@@ -76,7 +76,15 @@ extern uint8_t PopCnt16[1 << 16];
 extern uint8_t SquareDistance[SQUARE_NB][SQUARE_NB];
 
 extern Bitboard SquareBB[SQUARE_NB];
+extern Bitboard FileBB[FILE_NB];
+extern Bitboard RankBB[RANK_NB];
+extern Bitboard ForwardRanksBB[COLOR_NB][RANK_NB];
+extern Bitboard BetweenBB[SQUARE_NB][SQUARE_NB];
 extern Bitboard LineBB[SQUARE_NB][SQUARE_NB];
+extern Bitboard DistanceRingBB[SQUARE_NB][8];
+extern Bitboard ForwardFileBB[COLOR_NB][SQUARE_NB];
+extern Bitboard PassedPawnMask[COLOR_NB][SQUARE_NB];
+extern Bitboard PawnAttackSpan[COLOR_NB][SQUARE_NB];
 extern Bitboard PseudoAttacks[PIECE_TYPE_NB][SQUARE_NB];
 extern Bitboard PawnAttacks[COLOR_NB][SQUARE_NB];
 
