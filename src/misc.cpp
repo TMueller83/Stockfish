@@ -70,11 +70,10 @@ namespace {
 /// Version number. If Version is left empty, then compile date in the format
 /// DD-MM-YY and show in engine_info.
 
-
 #if defined (LargePages) && defined (ReleaseVer)
-const string Version = "XI-LP ";
+const string Version = "";
 #elif (defined Add_Features && ReleaseVer)
-const string Version = "XI ";
+const string Version = "";
 #else
 const string Version = "";
 #endif
@@ -361,6 +360,33 @@ void* large_page_alloc(size_t size) {
 #endif
 
 }
+
+/// aligned_ttmem_alloc will return suitably aligned memory, and if possible use large pages.
+/// The returned pointer is the aligned one, while the mem argument is the one that needs to be passed to free.
+/// With c++17 some of this functionality can be simplified.
+#if defined(__linux__) && !defined(__ANDROID__)
+
+void* aligned_ttmem_alloc(size_t allocSize, void*& mem) {
+
+  constexpr size_t alignment = 2 * 1024 * 1024; // assumed 2MB page sizes
+  size_t size = ((allocSize + alignment - 1) / alignment) * alignment; // multiple of alignment
+  mem = aligned_alloc(alignment, size);
+  madvise(mem, allocSize, MADV_HUGEPAGE);
+  return mem;
+}
+
+#else
+
+void* aligned_ttmem_alloc(size_t allocSize, void*& mem) {
+
+  constexpr size_t alignment = 64; // assumed cache line size
+  size_t size = allocSize + alignment - 1; // allocate some extra space
+  mem = malloc(size);
+  void* ret = reinterpret_cast<void*>((uintptr_t(mem) + alignment - 1) & ~uintptr_t(alignment - 1));
+  return ret;
+}
+
+#endif
 
 namespace WinProcGroup {
 

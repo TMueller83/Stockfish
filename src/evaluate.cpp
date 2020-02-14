@@ -627,7 +627,6 @@ constexpr Score MobilityBonus[][32] = {
     b =   attackedBy[Them][ALL_PIECES]
        & ~stronglyProtected
        &  attackedBy[Us][ALL_PIECES];
-
     score += RestrictedPiece * popcount(b);
 
     // Protected or unattacked squares
@@ -802,16 +801,15 @@ constexpr Score MobilityBonus[][32] = {
   template<Tracing T>
   Score Evaluation<T>::initiative(Score score) const {
 
+
     Value mg = mg_value(score);
     Value eg = eg_value(score);
 #if defined (Sullivan) || (Blau) || (Noir) || (Fortress)
     int separation = distance<File>(pos.square<KING>(WHITE), pos.square<KING>(BLACK));
 #endif
+
     int outflanking =  distance<File>(pos.square<KING>(WHITE), pos.square<KING>(BLACK))
                      - distance<Rank>(pos.square<KING>(WHITE), pos.square<KING>(BLACK));
-
-    bool infiltration =   rank_of(pos.square<KING>(WHITE)) > RANK_4
-                       || rank_of(pos.square<KING>(BLACK)) < RANK_5;
 
     bool pawnsOnBothFlanks =   (pos.pieces(PAWN) & QueenSide)
                             && (pos.pieces(PAWN) & KingSide);
@@ -820,18 +818,21 @@ constexpr Score MobilityBonus[][32] = {
                            &&  outflanking < 0
                            && !pawnsOnBothFlanks;
 
+    bool infiltration = rank_of(pos.square<KING>(WHITE)) > RANK_4
+                     || rank_of(pos.square<KING>(BLACK)) < RANK_5;
+
     // Compute the initiative bonus for the attacking side
     int complexity =   9 * pe->passed_count()
                     + 11 * pos.count<PAWN>()
                     +  9 * outflanking
-                    + 12 * infiltration
                     + 21 * pawnsOnBothFlanks
 #if defined (Sullivan) || (defined Blau) || (Noir) || (Fortress)
                     + 50 * (separation > 3) * (outflanking <= 0)
 #endif
+                    + 24 * infiltration
                     + 51 * !pos.non_pawn_material()
                     - 43 * almostUnwinnable
-                    - 100 ;
+                    -110 ;
 
 
     // Now apply the bonus: note that we find the attacking side by extracting the

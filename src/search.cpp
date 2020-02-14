@@ -1305,8 +1305,8 @@ namespace {
         &&  eval <= alpha - RazorMargin)
         return qsearch<NT>(pos, ss, alpha, beta);
 
-    improving =  (ss-2)->staticEval == VALUE_NONE ? (ss->staticEval >= (ss-4)->staticEval
-              || (ss-4)->staticEval == VALUE_NONE) : ss->staticEval >= (ss-2)->staticEval;
+    improving =  (ss-2)->staticEval == VALUE_NONE ? (ss->staticEval > (ss-4)->staticEval
+              || (ss-4)->staticEval == VALUE_NONE) : ss->staticEval > (ss-2)->staticEval;
 
     // Step 8. Futility pruning: child node (~50 Elo)
     if (   !PvNode
@@ -1328,7 +1328,7 @@ namespace {
 	      && (ss-1)->statScore < 23397
 	      &&  eval >= beta
         &&  eval >= ss->staticEval
-        &&  ss->staticEval >= beta - 32 * depth + 292 - improving * 30
+        &&  ss->staticEval >= beta - 32 * depth - 30 * improving + 120 * ttPv + 292
         && !excludedMove
 #if defined (Sullivan) || (Bluefish)  //authored by Jörg Oster originally, in corchess by Ivan Ilvec
         && thisThread->selDepth + 3 > thisThread->rootDepth
@@ -1595,15 +1595,17 @@ moves_loop: // When in check, search starts from here
                     + (*contHist[0])[movedPiece][to_sq(move)]
                     + (*contHist[1])[movedPiece][to_sq(move)]
                     + (*contHist[3])[movedPiece][to_sq(move)] < 25000)
-                         continue;
-                    // Prune moves with negative SEE (~20 Elo)
-                    if (!pos.see_ge(move, Value(-(32 - std::min(lmrDepth, 18)) * lmrDepth * lmrDepth)))
-                             continue;
-             }
-                    else if (!pos.see_ge(move, Value(-194) * depth)) // (~20 Elo)
-                        continue;
 
-		}
+									 continue;
+
+								 // Prune moves with negative SEE (~20 Elo)
+								 if (!pos.see_ge(move, Value(-(32 - std::min(lmrDepth, 18)) * lmrDepth * lmrDepth)))
+									 continue;
+							 }
+							 else if (!pos.see_ge(move, Value(-194) * depth)) // (~25 Elo)
+								 continue;
+						 }
+
 
       // Step 14. Extensions (~74 Elo)
 
@@ -1644,7 +1646,7 @@ moves_loop: // When in check, search starts from here
 #if defined (Fortress) || (Noir)
           Value singularBeta = std::max(ttValue - 2 * depth, mated_in(ss->ply));
 #else
-          Value singularBeta = ttValue - 2 * depth;
+          Value singularBeta = ttValue - (((ttPv && !PvNode) + 4) * depth) / 2;
 #endif
           Depth halfDepth = depth / 2;
           ss->excludedMove = move;
@@ -1745,7 +1747,8 @@ moves_loop: // When in check, search starts from here
 #if defined (Fortress) || (Noir)
           &&  !gameCycle
 #endif
-          &&  moveCount > 1 + rootNode + (rootNode && bestValue < alpha)
+          &&  moveCount > 1 + 2 * rootNode
+
           && (!rootNode || thisThread->best_move_count(move) == 0)
 #if defined (Fortress) || (Noir)
           &&  thisThread->selDepth > depth
@@ -1808,7 +1811,7 @@ moves_loop: // When in check, search starts from here
               // hence break make_move(). (~2 Elo)
               else if (    type_of(move) == NORMAL
                        && !pos.see_ge(reverse_move(move)))
-                  r -= 2;
+                  r -= 2 + ttPv;
 
               ss->statScore =  thisThread->mainHistory[us][from_to(move)]
                              + (*contHist[0])[movedPiece][to_sq(move)]

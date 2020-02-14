@@ -22,7 +22,7 @@ ARCH="ARCH=x86-64-modern"
 
 #COMP="COMP=clang"
 #COMP="COMP=gcc"
-COMP="COMP=mingw"
+COMP="COMP=gcc"
 #COMP="COMP=icc"
 
 #BUILD="build"
