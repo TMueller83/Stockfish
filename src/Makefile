@@ -30,26 +30,48 @@
 ### Based on commits through 02/14/2020:
 ### ======================================================
 ### Black-Diamond-021420.bench:Nodes searched  : 9250474
-### Black-Diamond-021420.bench:Nodes/second    : 1739137
+### Black-Diamond-021420.bench:Nodes/second    : 1769409
 ### Blue-Honey-FD-dev-021420.bench:Nodes searched  : 11361435
-### Blue-Honey-FD-dev-021420.bench:Nodes/second    : 1858265
+### Blue-Honey-FD-dev-021420.bench:Nodes/second    : 1826890
 ### Blue-Honey-dev-021420.bench:Nodes searched  : 5110083
-### Blue-Honey-dev-021420.bench:Nodes/second    : 1774950
+### Blue-Honey-dev-021420.bench:Nodes/second    : 1737532
 ### Bluefish-021420.bench:Nodes searched  : 4968942
-### Bluefish-021420.bench:Nodes/second    : 1683816
+### Bluefish-021420.bench:Nodes/second    : 1755189
 ### Bluefish-FD-021420.bench:Nodes searched  : 12025060
-### Bluefish-FD-021420.bench:Nodes/second    : 1815925
+### Bluefish-FD-021420.bench:Nodes/second    : 1806106
 ### Honey-FD-dev-021420.bench:Nodes searched  : 10669457
-### Honey-FD-dev-021420.bench:Nodes/second    : 1774103
+### Honey-FD-dev-021420.bench:Nodes/second    : 1816696
 ### Honey-dev-021420.bench:Nodes searched  : 4263073
-### Honey-dev-021420.bench:Nodes/second    : 1718981
+### Honey-dev-021420.bench:Nodes/second    : 1691024
 ### Stockfish-021420.bench:Nodes searched  : 4932981
-### Stockfish-021420.bench:Nodes/second    : 1757385
+### Stockfish-021420.bench:Nodes/second    : 1767460
 ### Stockfish-FD-021420.bench:Nodes searched  : 10472411
-### Stockfish-FD-021420.bench:Nodes/second    : 1854837
+### Stockfish-FD-021420.bench:Nodes/second    : 1812149
 ### Weakfish-021420.bench:Nodes searched  : 7560778
-### Weakfish-021420.bench:Nodes/second    : 2679226
+### Weakfish-021420.bench:Nodes/second    : 2420223
 ### ======================================================
+
+
+
+DATE=$(shell date +"%m%d%y")
+DATE2=$(shell date +"%m%d")
+
+### Fortress Detection code that will help in positions such as this:
+### 3r4/3r4/2p1k3/p1pbPp1p/Pp1p1PpP/1P1P2R1/2P4R/2K1Q3 w - - 0 6, bm Rxg4
+### Fortress Detection code by Joe Ellis:
+### https://github.com/jhellis3/Stockfish/tree/game_cycle
+###	FORTRESS_DETECT = yes
+
+### HONEY=yes
+
+### Diamond evaluation based on Crystal by Joe Ellis
+### https://github.com/jhellis3/Stockfish/tree/crystal
+###	NOIR = yes
+
+### Bluefish evaluation by Eelco de Groot
+### http://talkchess.com/forum3/viewtopic.php?f=2&t=71929
+###	BLUEFISH = yes
+
 ### Weakfish has about 90% of the search code Elo improvements removed
 ### WEAKFISH = yes
 
