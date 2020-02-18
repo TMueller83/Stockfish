@@ -14,14 +14,15 @@ start=`date +%s`
 #ARCH="ARCH=x86-32"
 #ARCH="ARCH=general-64"
 #ARCH="ARCH=x86-64"
-ARCH="ARCH=x86-64-modern"
+#ARCH="ARCH=x86-64-modern"
+ARCH="ARCH=x86-64-amd"
 #ARCH="ARCH=x86-64-bmi2"
 #ARCH="ARCH=armv7"
 #ARCH="ARCH=ppc-32"
 #ARCH="ARCH=ppc-64comp"
 
-COMP="COMP=clang"
-#COMP="COMP=mingw"
+#COMP="COMP=clang"
+COMP="COMP=mingw"
 #COMP="COMP=gcc"
 #COMP="COMP=icc"
 
