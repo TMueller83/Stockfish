@@ -321,19 +321,18 @@ Value Endgame<KQKR>::operator()(const Position& pos) const {
   return strongSide == pos.side_to_move() ? result : -result;
 }
 
-/// KNN vs KP. Simply push the opposing king to the corner
+
+/// KNN vs KP. Very drawish, but there are some mate opportunities if we can
+//  press the weakSide King to a corner before the pawn advances too much.
 template<>
 Value Endgame<KNNKP>::operator()(const Position& pos) const {
 
   assert(verify_material(pos, strongSide, 2 * KnightValueMg, 0));
   assert(verify_material(pos, weakSide, VALUE_ZERO, 1));
-#ifdef Stockfish  //Rocky640 -> github.com/official-stockfish/Stockfish/issues/2417  8/4n3/8/2n5/kp1N2P1/8/8/3K4 b - -
-  Value result =  2 * KnightValueEg
-#else
-  Value result =  KnightValueEg
-#endif
-                - PawnValueEg
-                + PushToEdges[pos.square<KING>(weakSide)];
+
+  Value result =      PawnValueEg
+               +  2 * PushToEdges[pos.square<KING>(weakSide)]
+               - 10 * relative_rank(weakSide, pos.square<PAWN>(weakSide));
 
   return strongSide == pos.side_to_move() ? result : -result;
 }
