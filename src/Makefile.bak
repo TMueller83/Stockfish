@@ -28,28 +28,28 @@
 ###
 ### Bench signatures (total nodes searched using bench)
 ### Based on commits through 02/21/2020:
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+### ======================================================
+### Black-Diamond-022120.bench:Nodes searched  : 8633985
+### Black-Diamond-022120.bench:Nodes/second    : 1653703
+### Blue-Honey-FD-dev-022120.bench:Nodes searched  : 10516364
+### Blue-Honey-FD-dev-022120.bench:Nodes/second    : 1608252
+### Blue-Honey-dev-022120.bench:Nodes searched  : 4668931
+### Blue-Honey-dev-022120.bench:Nodes/second    : 1590235
+### Bluefish-022120.bench:Nodes searched  : 5060942
+### Bluefish-022120.bench:Nodes/second    : 1633615
+### Bluefish-FD-022120.bench:Nodes searched  : 12406248
+### Bluefish-FD-022120.bench:Nodes/second    : 1661699
+### Honey-FD-dev-022120.bench:Nodes searched  : 10849616
+### Honey-FD-dev-022120.bench:Nodes/second    : 1638667
+### Honey-dev-022120.bench:Nodes searched  : 4622717
+### Honey-dev-022120.bench:Nodes/second    : 1591296
+### Stockfish-022120.bench:Nodes searched  : 4981770
+### Stockfish-022120.bench:Nodes/second    : 1726185
+### Stockfish-FD-022120.bench:Nodes searched  : 10757514
+### Stockfish-FD-022120.bench:Nodes/second    : 1666797
+### Weakfish-022120.bench:Nodes searched  : 7520762
+### Weakfish-022120.bench:Nodes/second    : 2350972
+### ======================================================
 
 
 DATE=$(shell date +"%m%d%y")
