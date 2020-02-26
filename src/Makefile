@@ -50,6 +50,22 @@
 ### Weakfish-022520.bench:Nodes searched  : 7689664
 ### Weakfish-022520.bench:Nodes/second    : 2409797
 ### ======================================================
+
+
+
+
+DATE=$(shell date +"%m%d%y")
+DATE2=$(shell date +"%m%d")
+
+### Fortress Detection code that will help in positions such as this:
+### 3r4/3r4/2p1k3/p1pbPp1p/Pp1p1PpP/1P1P2R1/2P4R/2K1Q3 w - - 0 6, bm Rxg4
+### Fortress Detection code by Joe Ellis:
+### https://github.com/jhellis3/Stockfish/tree/game_cycle
+###	FORTRESS_DETECT = yes
+
+### HONEY=yes
+
+### Diamond evaluation based on Crystal by Joe Ellis
 ### https://github.com/jhellis3/Stockfish/tree/crystal
 ###	NOIR = yes
 
