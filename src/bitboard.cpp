@@ -48,6 +48,10 @@ Magic BishopMagics[SQUARE_NB];
 namespace {
 #ifdef Add_Features  //Niklas Fiekas fast magics
 #ifdef LargePages
+  // De Bruijn sequences. See chessprogramming.wikispaces.com/BitScan
+  const uint64_t DeBruijn64 = 0x3F79D71B4CB0A89ULL;
+  const uint32_t DeBruijn32 = 0x783A9B23;
+
   int MSBTable[256];            // To implement software msb()
   Square BSFTable[SQUARE_NB];   // To implement software bitscan
 #endif

@@ -27,31 +27,29 @@
 ### Note: 4 new bench positions were added on 10/17/2019.
 ###       Bluefish and Honey benchmarks were modified on 11/19/2019
 ###
-### Bench signatures (total nodes searched using bench)
-### Based on commits through 02/25/2020:
+### Based on commits through 02/26/2020:
 ### ======================================================
-### Black-Diamond-022520.bench:Nodes searched  : 9381187
-### Black-Diamond-022520.bench:Nodes/second    : 1636634
-### Blue-Honey-FD-dev-022520.bench:Nodes searched  : 11380008
-### Blue-Honey-FD-dev-022520.bench:Nodes/second    : 1646413
-### Blue-Honey-dev-022520.bench:Nodes searched  : 5285739
-### Blue-Honey-dev-022520.bench:Nodes/second    : 1733597
-### Bluefish-022520.bench:Nodes searched  : 5554560
-### Bluefish-022520.bench:Nodes/second    : 1676089
-### Bluefish-FD-022520.bench:Nodes searched  : 10674277
-### Bluefish-FD-022520.bench:Nodes/second    : 1624205
-### Honey-FD-dev-022520.bench:Nodes searched  : 9013074
-### Honey-FD-dev-022520.bench:Nodes/second    : 1641127
-### Honey-dev-022520.bench:Nodes searched  : 4440840
-### Honey-dev-022520.bench:Nodes/second    : 1672632
-### Stockfish-022520.bench:Nodes searched  : 4697493
-### Stockfish-022520.bench:Nodes/second    : 1656379
-### Stockfish-FD-022520.bench:Nodes searched  : 13609372
-### Stockfish-FD-022520.bench:Nodes/second    : 1600725
-### Weakfish-022520.bench:Nodes searched  : 7689664
-### Weakfish-022520.bench:Nodes/second    : 2409797
+### Black-Diamond-022620.exe.bench:Nodes searched  : 9381187
+### Black-Diamond-022620.exe.bench:Nodes/second    : 2155603
+### Bluefish-022620.exe.bench:Nodes searched  : 5554560
+### Bluefish-022620.exe.bench:Nodes/second    : 2204190
+### Bluefish-FD-022620.exe.bench:Nodes searched  : 10674277
+### Bluefish-FD-022620.exe.bench:Nodes/second    : 2204973
+### Blue-Honey-dev-022620.exe.bench:Nodes searched  : 5285739
+### Blue-Honey-dev-022620.exe.bench:Nodes/second    : 2192343
+### Blue-Honey-FD-dev-022620.exe.bench:Nodes searched  : 11380008
+### Blue-Honey-FD-dev-022620.exe.bench:Nodes/second    : 2240159
+### Honey-dev-022620.exe.bench:Nodes searched  : 4440840
+### Honey-dev-022620.exe.bench:Nodes/second    : 2146370
+### Honey-FD-dev-022620.exe.bench:Nodes searched  : 9013074
+### Honey-FD-dev-022620.exe.bench:Nodes/second    : 2249893
+### Stockfish-022620.exe.bench:Nodes searched  : 4697493
+### Stockfish-022620.exe.bench:Nodes/second    : 2066648
+### Stockfish-FD-022620.exe.bench:Nodes searched  : 13609372
+### Stockfish-FD-022620.exe.bench:Nodes/second    : 2082854
+### Weakfish-022620.exe.bench:Nodes searched  : 7689664
+### Weakfish-022620.exe.bench:Nodes/second    : 3119539
 ### ======================================================
-
 
 
 
