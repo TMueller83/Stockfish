@@ -27,29 +27,15 @@
 ###       Bluefish and Honey benchmarks were modified on 11/19/2019
 ###
 ### Bench signatures (total nodes searched using bench)
-### Based on commits through 02/21/2020:
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+### Based on commits through 02/25/2020:
+### ======================================================
+### Black-Diamond-022520.bench:Nodes searched  : 9381187
+### Black-Diamond-022520.bench:Nodes/second    : 1619959
+### Honey-dev-022520.bench:Nodes searched  : 4423250
+### Honey-dev-022520.bench:Nodes/second    : 1584258
+### Stockfish-022520.bench:Nodes searched  : 4697493
+### Stockfish-022520.bench:Nodes/second    : 1725116
+### ======================================================
 
 
 DATE=$(shell date +"%m%d%y")

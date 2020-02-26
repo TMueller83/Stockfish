@@ -27,43 +27,29 @@
 ###       Bluefish and Honey benchmarks were modified on 11/19/2019
 ###
 ### Bench signatures (total nodes searched using bench)
-### Based on commits through 02/21/2020:
+### Based on commits through 02/25/2020:
 ### ======================================================
-### Black-Diamond-022120.bench:Nodes searched  : 8633985
-### Black-Diamond-022120.bench:Nodes/second    : 1653703
-### Blue-Honey-FD-dev-022120.bench:Nodes searched  : 10516364
-### Blue-Honey-FD-dev-022120.bench:Nodes/second    : 1608252
-### Blue-Honey-dev-022120.bench:Nodes searched  : 4668931
-### Blue-Honey-dev-022120.bench:Nodes/second    : 1590235
-### Bluefish-022120.bench:Nodes searched  : 5060942
-### Bluefish-022120.bench:Nodes/second    : 1633615
-### Bluefish-FD-022120.bench:Nodes searched  : 12406248
-### Bluefish-FD-022120.bench:Nodes/second    : 1661699
-### Honey-FD-dev-022120.bench:Nodes searched  : 10849616
-### Honey-FD-dev-022120.bench:Nodes/second    : 1638667
-### Honey-dev-022120.bench:Nodes searched  : 4622717
-### Honey-dev-022120.bench:Nodes/second    : 1591296
-### Stockfish-022120.bench:Nodes searched  : 4981770
-### Stockfish-022120.bench:Nodes/second    : 1726185
-### Stockfish-FD-022120.bench:Nodes searched  : 10757514
-### Stockfish-FD-022120.bench:Nodes/second    : 1666797
-### Weakfish-022120.bench:Nodes searched  : 7520762
-### Weakfish-022120.bench:Nodes/second    : 2350972
+### Black-Diamond-022520.bench:Nodes searched  : 9381187
+### Black-Diamond-022520.bench:Nodes/second    : 1636634
+### Blue-Honey-FD-dev-022520.bench:Nodes searched  : 11380008
+### Blue-Honey-FD-dev-022520.bench:Nodes/second    : 1646413
+### Blue-Honey-dev-022520.bench:Nodes searched  : 5285739
+### Blue-Honey-dev-022520.bench:Nodes/second    : 1733597
+### Bluefish-022520.bench:Nodes searched  : 5554560
+### Bluefish-022520.bench:Nodes/second    : 1676089
+### Bluefish-FD-022520.bench:Nodes searched  : 10674277
+### Bluefish-FD-022520.bench:Nodes/second    : 1624205
+### Honey-FD-dev-022520.bench:Nodes searched  : 9013074
+### Honey-FD-dev-022520.bench:Nodes/second    : 1641127
+### Honey-dev-022520.bench:Nodes searched  : 4440840
+### Honey-dev-022520.bench:Nodes/second    : 1672632
+### Stockfish-022520.bench:Nodes searched  : 4697493
+### Stockfish-022520.bench:Nodes/second    : 1656379
+### Stockfish-FD-022520.bench:Nodes searched  : 13609372
+### Stockfish-FD-022520.bench:Nodes/second    : 1600725
+### Weakfish-022520.bench:Nodes searched  : 7689664
+### Weakfish-022520.bench:Nodes/second    : 2409797
 ### ======================================================
-
-
-DATE=$(shell date +"%m%d%y")
-DATE2=$(shell date +"%m%d")
-
-### Fortress Detection code that will help in positions such as this:
-### 3r4/3r4/2p1k3/p1pbPp1p/Pp1p1PpP/1P1P2R1/2P4R/2K1Q3 w - - 0 6, bm Rxg4
-### Fortress Detection code by Joe Ellis:
-### https://github.com/jhellis3/Stockfish/tree/game_cycle
-###	FORTRESS_DETECT = yes
-
-### HONEY=yes
-
-### Diamond evaluation based on Crystal by Joe Ellis
 ### https://github.com/jhellis3/Stockfish/tree/crystal
 ###	NOIR = yes
 
