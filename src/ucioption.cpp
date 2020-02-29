@@ -80,15 +80,15 @@ void init(OptionsMap& o) {
     constexpr int MaxHashMB = Is64Bit ? 131072 : 2048;
     o["Debug Log File"]           << Option("", on_logger);
 #ifdef Add_Features
-    o["Use_Book_1"] 	          << Option(false);
-    o["Book_File_1"] 	          << Option("", on_book_file1);
-    o["Best_Move_1"] 	          << Option(false, on_best_book_move1);
+    o["Use_Book_1"] 	            << Option(false);
+    o["Book_File_1"] 	            << Option("", on_book_file1);
+    o["Best_Move_1"] 	            << Option(false, on_best_book_move1);
     o["Book_Depth_1"] 	          << Option(127, 1, 127, on_book_depth1);
-    o["Use_Book_2"] 	          << Option(false);
-    o["Book_File_2"] 	          << Option("", on_book_file2);
-    o["Best_Move_2"] 	          << Option(false, on_best_book_move2);
+    o["Use_Book_2"] 	            << Option(false);
+    o["Book_File_2"] 	            << Option("", on_book_file2);
+    o["Best_Move_2"] 	            << Option(false, on_best_book_move2);
     o["Book_Depth_2"] 	          << Option(127, 1, 127, on_book_depth2);
-    o["Use_Book_3"] 	          << Option(false);
+    o["Use_Book_3"] 	            << Option(false);
     o["Book_File_3"]              << Option("", on_book_file3);
     o["Best_Move_3"]              << Option(true, on_best_book_move3);
     o["Book_Depth_3"]             << Option(127, 1, 127, on_book_depth3);
@@ -117,7 +117,9 @@ void init(OptionsMap& o) {
     o["Move Overhead"]            << Option(30, 0, 5000);
     o["Minimum Thinking Time"]    << Option(20, 0, 5000);
     o["Threads"]                  << Option(1, 1, 512, on_threads);
-    o["Hash"]                     << Option(16, 1, MaxHashMB, on_hash_size);
+    o["t"]                        << Option(1, 1, 512, on_threads);
+    o["Hash"]                     << Option(256, 1, MaxHashMB, on_hash_size);
+    o["h"]                        << Option(256, 1, MaxHashMB, on_hash_size);
     o["Ponder"]                   << Option(false);
 #ifdef Add_Features
     o["Adaptive_Play"]            << Option(false); //Adaptive Play change - now simple on/off check box
