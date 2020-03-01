@@ -130,11 +130,25 @@ void set(istringstream& is) {
     if (Options.count(name)) {
         Options[name] = value;
         sync_cout << "Confirmation: "<< name << " set to " << value << sync_endl;
-
+    }
+    else if (name == "t")  {
+      Threads.set(stoi(value));
+      sync_cout << "Confirmation: "<< "Threads" << " set to " << value << sync_endl;
+    }
+    else if (name == "h")  {
+      TT.resize(stoi(value));
+      sync_cout << "Confirmation: "<< "Hash" << " set to " << value << sync_endl;
+    }
+    else if (name == "z")
+    {
+      Tablebases::init(value);
+      sync_cout << "Confirmation: "<< "SyzygyPath" << " set to " << value << sync_endl;
     }
     else
-        sync_cout << "No such option: " << name << sync_endl;
+      sync_cout << "No such option: " << name << sync_endl;
+
 }
+
 #endif
   // go() is called when engine receives the "go" UCI command. The function sets
   // the thinking time and other parameters from the input string, then starts

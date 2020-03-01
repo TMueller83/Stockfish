@@ -24,35 +24,6 @@
 ### Section 1. General Configuration
 ### ==========================================================================
 
-### Note: 4 new bench positions were added on 10/17/2019.
-###       Bluefish and Honey benchmarks were modified on 11/19/2019
-###
-### Based on commits through 02/26/2020:
-### ======================================================
-### Black-Diamond-022620.exe.bench:Nodes searched  : 8817112
-### Black-Diamond-022620.exe.bench:Nodes/second    : 2105327
-### Bluefish-022620.exe.bench:Nodes searched  : 5173469
-### Bluefish-022620.exe.bench:Nodes/second    : 2136914
-### Bluefish-FD-022620.exe.bench:Nodes searched  : 11272892
-### Bluefish-FD-022620.exe.bench:Nodes/second    : 2250078
-### Blue-Honey-dev-022620.exe.bench:Nodes searched  : 4953875
-### Blue-Honey-dev-022620.exe.bench:Nodes/second    : 2165155
-### Blue-Honey-FD-dev-022620.exe.bench:Nodes searched  : 10870822
-### Blue-Honey-FD-dev-022620.exe.bench:Nodes/second    : 2212664
-### Honey-dev-022620.exe.bench:Nodes searched  : 4766947
-### Honey-dev-022620.exe.bench:Nodes/second    : 2147273
-### Honey-FD-dev-022620.exe.bench:Nodes searched  : 11605216
-### Honey-FD-dev-022620.exe.bench:Nodes/second    : 2247766
-### Stockfish-022620.exe.bench:Nodes searched  : 4697493
-### Stockfish-022620.exe.bench:Nodes/second    : 2140087
-### Stockfish-FD-022620.exe.bench:Nodes searched  : 13609372
-### Stockfish-FD-022620.exe.bench:Nodes/second    : 2080307
-### Weakfish-022620.exe.bench:Nodes searched  : 7689664
-### Weakfish-022620.exe.bench:Nodes/second    : 3136078
-### ======================================================
-
-
-
 DATE=$(shell date +"%m%d%y")
 DATE2=$(shell date +"%m%d")
 
@@ -78,8 +49,6 @@ DATE2=$(shell date +"%m%d")
 ### Release versions , enter yes and release version below foor releases
 RELEASEVER = no
 RELVERSION =
-### Large Pages
-RELVERLP =
 
 ### TEST versions, enter yes and labels below to build named test exe's
 TEST = no
@@ -519,7 +488,8 @@ endif
 
 ### 3.6a tr -AMD -LargePages
 ifeq ($(threadripper),yes)
-	CXXFLAGS += --param l2-cache-size=512 -l3-cache-size=16384
+	CXXFLAGS += --param l1-cache-line-size=2048 -l2-cache-size=16384 -l3-cache-size=131072
+	### since we do not use native with a Threadripper to avoid bmi2
 	ifeq ($(largepages),yes)
 		CXXFLAGS += -DLargePages
 	endif
@@ -782,3 +752,63 @@ icc-profile-use:
 	-@$(CXX) $(DEPENDFLAGS) -MM $(OBJS:.o=.cpp) > $@ 2> /dev/null
 
 -include .depend
+
+### Note: 4 new bench positions were added on 10/17/2019.
+###       Bluefish and Honey benchmarks were modified on 11/19/2019
+###
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+####end

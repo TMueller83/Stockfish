@@ -70,9 +70,7 @@ namespace {
 /// Version number. If Version is left empty, then compile date in the format
 /// DD-MM-YY and show in engine_info.
 
-#if defined (LargePages) && defined (ReleaseVer)
-const string Version = "";
-#elif (defined Add_Features && ReleaseVer)
+#if (defined Add_Features && ReleaseVer)
 const string Version = "";
 #else
 const string Version = "";

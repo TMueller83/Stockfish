@@ -24,37 +24,6 @@
 ### Section 1. General Configuration
 ### ==========================================================================
 
-### Note: 4 new bench positions were added on 10/17/2019.
-###       Bluefish and Honey benchmarks were modified on 11/19/2019
-###
-### Based on commits through 02/29/2020:
-### ======================================================
-### Black-Diamond-022920.exe.bench:Nodes searched  : 8734439
-### Black-Diamond-022920.exe.bench:Nodes/second    : 2540558
-### Bluefish-022920.exe.bench:Nodes searched  : 4956705
-### Bluefish-022920.exe.bench:Nodes/second    : 2493312
-### Bluefish-FD-022920.exe.bench:Nodes searched  : 12164653
-### Bluefish-FD-022920.exe.bench:Nodes/second    : 2645064
-### Blue-Honey-dev-022920.exe.bench:Nodes searched  : 5097642
-### Blue-Honey-dev-022920.exe.bench:Nodes/second    : 2551372
-### Blue-Honey-FD-dev-022920.exe.bench:Nodes searched  : 10547395
-### Blue-Honey-FD-dev-022920.exe.bench:Nodes/second    : 2619819
-### Honey-dev-022920.exe.bench:Nodes searched  : 4987146
-### Honey-dev-022920.exe.bench:Nodes/second    : 2506103
-### Honey-FD-dev-022920.exe.bench:Nodes searched  : 10749677
-### Honey-FD-dev-022920.exe.bench:Nodes/second    : 2599680
-### Stockfish-022820.exe.bench:Nodes searched  : 4923286
-### Stockfish-022820.exe.bench:Nodes/second    : 1442087
-### Stockfish-022920.exe.bench:Nodes searched  : 4923286
-### Stockfish-022920.exe.bench:Nodes/second    : 2558880
-### Stockfish-FD-022920.exe.bench:Nodes searched  : 9915958
-### Stockfish-FD-022920.exe.bench:Nodes/second    : 2604664
-### Weakfish-022920.exe.bench:Nodes searched  : 7654842
-### Weakfish-022920.exe.bench:Nodes/second    : 3657354
-### ======================================================
-
-
-
 DATE=$(shell date +"%m%d%y")
 DATE2=$(shell date +"%m%d")
 
@@ -80,8 +49,6 @@ DATE2=$(shell date +"%m%d")
 ### Release versions , enter yes and release version below foor releases
 RELEASEVER = no
 RELVERSION =
-### Large Pages
-RELVERLP =
 
 ### TEST versions, enter yes and labels below to build named test exe's
 TEST = no
@@ -521,7 +488,8 @@ endif
 
 ### 3.6a tr -AMD -LargePages
 ifeq ($(threadripper),yes)
-	CXXFLAGS += --param l2-cache-size=512 -l3-cache-size=16384
+	CXXFLAGS += --param l1-cache-line-size=2048 -l2-cache-size=16384 -l3-cache-size=131072
+	### since we do not use native with a Threadripper to avoid bmi2
 	ifeq ($(largepages),yes)
 		CXXFLAGS += -DLargePages
 	endif
@@ -784,3 +752,31 @@ icc-profile-use:
 	-@$(CXX) $(DEPENDFLAGS) -MM $(OBJS:.o=.cpp) > $@ 2> /dev/null
 
 -include .depend
+
+### Note: 4 new bench positions were added on 10/17/2019.
+###       Bluefish and Honey benchmarks were modified on 11/19/2019
+###
+
+### Based on commits through 03/01/2020:
+### ======================================================
+### Black-Diamond-030120.exe.bench:Nodes searched  : 8734439
+### Black-Diamond-030120.exe.bench:Nodes/second    : 2472944
+### Bluefish-030120.exe.bench:Nodes searched  : 4956705
+### Bluefish-030120.exe.bench:Nodes/second    : 2459903
+### Bluefish-FD-030120.exe.bench:Nodes searched  : 12164653
+### Bluefish-FD-030120.exe.bench:Nodes/second    : 2588774
+### Blue-Honey-dev-030120.exe.bench:Nodes searched  : 5097642
+### Blue-Honey-dev-030120.exe.bench:Nodes/second    : 2485442
+### Blue-Honey-FD-dev-030120.exe.bench:Nodes searched  : 10547395
+### Blue-Honey-FD-dev-030120.exe.bench:Nodes/second    : 2582613
+### Honey-dev-030120.exe.bench:Nodes searched  : 4987146
+### Honey-dev-030120.exe.bench:Nodes/second    : 2499822
+### Honey-FD-dev-030120.exe.bench:Nodes searched  : 10749677
+### Honey-FD-dev-030120.exe.bench:Nodes/second    : 2581574
+### Stockfish-030120.exe.bench:Nodes searched  : 4923286
+### Stockfish-030120.exe.bench:Nodes/second    : 2546966
+### Stockfish-FD-030120.exe.bench:Nodes searched  : 9915958
+### Stockfish-FD-030120.exe.bench:Nodes/second    : 2538647
+### Weakfish-030120.exe.bench:Nodes searched  : 7654842
+### Weakfish-030120.exe.bench:Nodes/second    : 3490580
+### ======================================================
