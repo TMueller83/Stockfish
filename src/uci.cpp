@@ -144,6 +144,11 @@ void set(istringstream& is) {
       Tablebases::init(value);
       sync_cout << "Confirmation: "<< "SyzygyPath" << " set to " << value << sync_endl;
     }
+    else if (name == "mv")
+    {
+      Options["MultiPV"] = {value};
+      sync_cout << "Confirmation: "<< "MultiPV" << " set to " << value << sync_endl;
+    }
     else
       sync_cout << "No such option: " << name << sync_endl;
 
@@ -187,7 +192,10 @@ void set(istringstream& is) {
         else if (token == "d")         is >> limits.depth;
         else if (token == "i")         limits.infinite = 1;
         else if (token == "m")         is >> limits.mate;
-        else if (token == "mt")        is >> limits.movetime;
+        else if (token == "mt")   {
+          is >> limits.movetime;
+          limits.movetime *= 1000;
+        }
 #endif
 
     Threads.start_thinking(pos, states, limits, ponderMode);
