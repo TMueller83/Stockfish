@@ -186,6 +186,8 @@ void set(istringstream& is) {
 #ifdef Add_Features
         else if (token == "d")         is >> limits.depth;
         else if (token == "i")         limits.infinite = 1;
+        else if (token == "m")         is >> limits.mate;
+        else if (token == "mt")        is >> limits.movetime;
 #endif
 
     Threads.start_thinking(pos, states, limits, ponderMode);

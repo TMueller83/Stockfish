@@ -251,7 +251,7 @@ KnightValueMg = 781*NVM,   KnightValueEg = 854*NVE,
 BishopValueMg = 825*BVM,   BishopValueEg = 915*BVE,
 RookValueMg   = 1276*RVM,  RookValueEg   = 1380*RVE,
 QueenValueMg  = 2538*QVM,  QueenValueEg  = 2682*QVE,
-
+Tempo = 28,
 #ifdef Noir
 VALUE_TB_WIN    = PawnValueEg,
 #endif
@@ -272,7 +272,12 @@ enum Piece {
   PIECE_NB = 16
 };
 
-extern Value PieceValue[PHASE_NB][PIECE_NB];
+constexpr Value PieceValue[PHASE_NB][PIECE_NB] = {
+  { VALUE_ZERO, PawnValueMg, KnightValueMg, BishopValueMg, RookValueMg, QueenValueMg, VALUE_ZERO, VALUE_ZERO,
+    VALUE_ZERO, PawnValueMg, KnightValueMg, BishopValueMg, RookValueMg, QueenValueMg, VALUE_ZERO, VALUE_ZERO },
+  { VALUE_ZERO, PawnValueEg, KnightValueEg, BishopValueEg, RookValueEg, QueenValueEg, VALUE_ZERO, VALUE_ZERO,
+    VALUE_ZERO, PawnValueEg, KnightValueEg, BishopValueEg, RookValueEg, QueenValueEg, VALUE_ZERO, VALUE_ZERO }
+};
 
 typedef int Depth;
 
