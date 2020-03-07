@@ -384,7 +384,7 @@ skipLevels:
              //sync_cout << "Nodes To Search: " << NodesToSearch << sync_endl;//for debug
              Limits.nodes = NodesToSearch;
              Limits.nodes *= Time.optimum()/1000;
-             Limits.nodes = clamp(Limits.nodes, (int64_t) 48,Limits.nodes);
+             Limits.nodes = Utility::clamp(Limits.nodes, (int64_t) 48,Limits.nodes);
              //int sleepValue = Time.optimum() * double(1 - Limits.nodes/benchKnps);
              //sync_cout << "Sleep time: " << sleepValue << sync_endl;//for debug
              //sync_cout << "Limit Nodes: " <<  Limits.nodes << sync_endl;//for debug
@@ -584,7 +584,7 @@ void Thread::search() {
   // for match (TC 60+0.6) results spanning a wide range of k values.
 
   double floatLevel = Options["UCI_LimitStrength"] ?
-                        clamp(std::pow((Options["UCI_Elo"] - 1346.6) / 71.7, 1 / 0.806), 0.0, 40.0) :
+                      Utility::clamp(std::pow((Options["UCI_Elo"] - 1346.6) / 71.7, 1 / 0.806), 0.0, 40.0) :
                         double(Options["Skill Level"]);
   int intLevel = int(floatLevel) +
                  ((floatLevel - int(floatLevel)) * 1024 > rng.rand<unsigned>() % 1024  ? 1 : 0);
@@ -796,7 +796,7 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
 #else
           double fallingEval = (354 + 10 * (mainThread->previousScore - bestValue)) / 692.0;
 #endif
-          fallingEval = clamp(fallingEval, 0.5, 1.5);
+          fallingEval = Utility::clamp(fallingEval, 0.5, 1.5);
 
           // If the bestMove is stable over several iterations, reduce time accordingly
           timeReduction = lastBestMoveDepth + 9 < completedDepth ? 1.94 : 0.91;
@@ -1852,7 +1852,7 @@ moves_loop: // When in check, search starts from here
           r -= rr;
 #endif
 
-          Depth d = clamp(newDepth - r, 1, newDepth);
+          Depth d = Utility::clamp(newDepth - r, 1, newDepth);
 
           value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, d, true);
 

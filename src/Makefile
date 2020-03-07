@@ -760,23 +760,23 @@ icc-profile-use:
 ### Based on commits through 03/07/2020:
 ### ======================================================
 ### Black-Diamond-030720.exe.bench:Nodes searched  : 8890699
-### Black-Diamond-030720.exe.bench:Nodes/second    : 2532962
+### Black-Diamond-030720.exe.bench:Nodes/second    : 2481356
 ### Bluefish-030720.exe.bench:Nodes searched  : 5326544
-### Bluefish-030720.exe.bench:Nodes/second    : 2538867
+### Bluefish-030720.exe.bench:Nodes/second    : 2472861
 ### Bluefish-FD-030720.exe.bench:Nodes searched  : 11416129
-### Bluefish-FD-030720.exe.bench:Nodes/second    : 2406435
+### Bluefish-FD-030720.exe.bench:Nodes/second    : 2596345
 ### Blue-Honey-dev-030720.exe.bench:Nodes searched  : 4986116
-### Blue-Honey-dev-030720.exe.bench:Nodes/second    : 2469596
+### Blue-Honey-dev-030720.exe.bench:Nodes/second    : 2461064
 ### Blue-Honey-FD-dev-030720.exe.bench:Nodes searched  : 10613850
-### Blue-Honey-FD-dev-030720.exe.bench:Nodes/second    : 2629794
+### Blue-Honey-FD-dev-030720.exe.bench:Nodes/second    : 2641575
 ### Honey-dev-030720.exe.bench:Nodes searched  : 4987146
-### Honey-dev-030720.exe.bench:Nodes/second    : 2520033
+### Honey-dev-030720.exe.bench:Nodes/second    : 2531546
 ### Honey-FD-dev-030720.exe.bench:Nodes searched  : 10817064
-### Honey-FD-dev-030720.exe.bench:Nodes/second    : 2565108
+### Honey-FD-dev-030720.exe.bench:Nodes/second    : 2559646
 ### Stockfish-030720.exe.bench:Nodes searched  : 5123316
-### Stockfish-030720.exe.bench:Nodes/second    : 2615271
+### Stockfish-030720.exe.bench:Nodes/second    : 2590149
 ### Stockfish-FD-030720.exe.bench:Nodes searched  : 10874869
-### Stockfish-FD-030720.exe.bench:Nodes/second    : 2574542
+### Stockfish-FD-030720.exe.bench:Nodes/second    : 2658892
 ### Weakfish-030720.exe.bench:Nodes searched  : 7654842
-### Weakfish-030720.exe.bench:Nodes/second    : 3264324
+### Weakfish-030720.exe.bench:Nodes/second    : 3627887
 ### ======================================================
