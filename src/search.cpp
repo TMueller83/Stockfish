@@ -255,7 +255,7 @@ void MainThread::search() {
   }
 #ifdef Add_Features
     PRNG rng(now());
-    int shallowBlue_adjust = 35; //to roughly anchor 1712 rating to CCRL Shallow BLue 2.0 rating of 1712
+    int shallow_adjust = 35; //to roughly anchor 1712 rating to CCRL Shallow  2.0 rating of 1712
 	/* Reset on 11/14/2019:
   500 game(s) loaded
   Rank Name                    Rating   Δ     +    -     #     Σ    Σ%     W    L    D   W%    =%   OppR
@@ -372,11 +372,11 @@ skipLevels:
          {  //note varietry strength is capped around ~2150-2200 due to its robustness
              benchKnps = 1000 * (Options["Bench_KNPS"]);
              int random = (rand() % 20 - 10);
-             uci_elo = uci_elo + random + shallowBlue_adjust;
+             uci_elo = uci_elo + random + shallow_adjust;
              //sync_cout << "Elo " << uci_elo << sync_endl;// for debug
              int ccrlELo = uci_elo;
              if (fide)
-                 uci_elo = (((uci_elo * 10) / 7) - 1200);  //shallowBlue adj was only required to get CCRL rating correct
+                 uci_elo = (((uci_elo * 10) / 7) - 1200);  //shallow adj was only required to get CCRL rating correct
              uci_elo += 200; //  to offset Elo loss with variety
              uci_elo = std::min(uci_elo, 3200);
 
@@ -390,7 +390,7 @@ skipLevels:
              //sync_cout << "Limit Nodes: " <<  Limits.nodes << sync_endl;//for debug
              if (uci_sleep)
                  std::this_thread::sleep_for (std::chrono::milliseconds(Time.optimum()) * double(1 - Limits.nodes/benchKnps));
-             uci_elo =  ccrlELo - shallowBlue_adjust;
+             uci_elo =  ccrlELo - shallow_adjust;
          }
 #endif
       for (Thread* th : Threads)
@@ -1334,7 +1334,7 @@ namespace {
         &&  eval >= ss->staticEval
         &&  ss->staticEval >= beta - 32 * depth - 30 * improving + 120 * ttPv + 292
         && !excludedMove
-#if defined (Sullivan) || (Bluefish)  //authored by Jörg Oster originally, in corchess by Ivan Ilvec
+#if defined (Sullivan) || (Blau)  //authored by Jörg Oster originally, in corchess by Ivan Ilvec
         && thisThread->selDepth + 3 > thisThread->rootDepth
 #endif
         &&  pos.non_pawn_material(us)
