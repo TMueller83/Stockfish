@@ -716,8 +716,11 @@ Ret do_probe_table(const Position& pos, T* entry, WDLScore wdl, ProbeState* resu
         leadPawnsCnt = size;
 
         std::swap(squares[0], *std::max_element(squares, squares + leadPawnsCnt, pawns_comp));
-
+#ifndef Stockfish
         tbFile = map_to_queenside(file_of(squares[0]));
+#else
+        tbFile = edge_distance(file_of(squares[0]));
+#endif
     }
 
     // DTZ tables are one-sided, i.e. they store positions only for white to

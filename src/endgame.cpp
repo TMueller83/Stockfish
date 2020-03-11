@@ -28,7 +28,19 @@
 using std::string;
 
 namespace {
+#ifdef Stockfish
+  // Used to drive the king towards the edge of the board
+  // in KX vs K and KQ vs KR endgames.
+  inline int push_to_edge(Square s) {
+      int rd = edge_distance(rank_of(s)), fd = edge_distance(file_of(s));
+      return 90 - (7 * fd * fd / 2 + 7 * rd * rd / 2);
+  }
 
+  // Used to drive the king towards A1H8 corners in KBN vs K endgames.
+  inline int push_to_corner(Square s) {
+      return abs(7 - rank_of(s) - file_of(s));
+  }
+#else
   // Table used to drive the king towards the edge of the board
   // in KX vs K and KQ vs KR endgames.
   constexpr int PushToEdges[SQUARE_NB] = {
@@ -41,20 +53,19 @@ namespace {
      90, 70, 60, 50, 50, 60, 70,  90,
     100, 90, 80, 70, 70, 80, 90, 100
   };
-
   // Table used to drive the king towards a corner square of the
   // right color in KBN vs K endgames.
   constexpr int PushToCorners[SQUARE_NB] = {
-     6400, 6080, 5760, 5440, 5120, 4800, 4480, 4160,
-     6080, 5760, 5440, 5120, 4800, 4480, 4160, 4480,
-     5760, 5440, 4960, 4480, 4480, 4000, 4480, 4800,
-     5440, 5120, 4480, 3840, 3520, 4480, 4800, 5120,
-     5120, 4800, 4480, 3520, 3840, 4480, 5120, 5440,
-     4800, 4480, 4000, 4480, 4480, 4960, 5440, 5760,
-     4480, 4160, 4480, 4800, 5120, 5440, 5760, 6080,
-     4160, 4480, 4800, 5120, 5440, 5760, 6080, 6400
+    6600, 6280, 5860, 5540, 5170, 4850, 4530, 4160,
+	  6280, 5760, 5490, 5120, 4800, 4280, 4160, 4530,
+	  5860, 5490, 4960, 4680, 4280, 4000, 4480, 4850,
+	  5540, 5120, 4680, 3840, 3520, 4480, 4800, 5170,
+	  5170, 4800, 4480, 3520, 3840, 4680, 5120, 5540,
+	  4850, 4480, 4000, 4280, 4680, 4960, 5490, 5860,
+	  4530, 4160, 4280, 4800, 5120, 5490, 5760, 6280,
+	  4160, 4530, 4850, 5170, 5540, 5860, 6280, 6600
   };
-
+#endif
   // Drive a piece close to or away from another piece
   inline int push_close(Square s1, Square s2) { return 140 - 20 * distance(s1, s2); }
   inline int push_away(Square s1, Square s2) { return 120 - push_close(s1, s2); }
@@ -127,7 +138,11 @@ Value Endgame<KXK>::operator()(const Position& pos) const {
 
   Value result =  pos.non_pawn_material(strongSide)
                 + pos.count<PAWN>(strongSide) * PawnValueEg
+#ifndef Stockfish
                 + PushToEdges[loserKSq]
+#else
+                + push_to_edge(loserKSq)
+#endif
                 + push_close(winnerKSq, loserKSq);
 
   if (   pos.count<QUEEN>(strongSide)
@@ -155,10 +170,15 @@ Value Endgame<KBNK>::operator()(const Position& pos) const {
 
   // If our bishop does not attack A1/H8, we flip the enemy king square
   // to drive to opposite corners (A8/H1).
-
+#ifndef Stockfish
   Value result =  VALUE_KNOWN_WIN
                 + push_close(winnerKSq, loserKSq)
                 + PushToCorners[opposite_colors(bishopSq, SQ_A1) ? ~loserKSq : loserKSq];
+#else
+   Value result =  (VALUE_KNOWN_WIN + 3520)
+                + push_close(winnerKSq, loserKSq)
+                + 420 * push_to_corner(opposite_colors(bishopSq, SQ_A1) ? ~(loserKSq) : loserKSq);
+#endif
 
   assert(abs(result) < VALUE_TB_WIN_IN_MAX_PLY);
   return strongSide == pos.side_to_move() ? result : -result;
@@ -240,8 +260,11 @@ Value Endgame<KRKB>::operator()(const Position& pos) const {
 
   assert(verify_material(pos, strongSide, RookValueMg, 0));
   assert(verify_material(pos, weakSide, BishopValueMg, 0));
-
+#ifndef Stockfish
   Value result = Value(PushToEdges[pos.square<KING>(weakSide)]);
+#else
+  Value result = Value(push_to_edge(pos.square<KING>(weakSide)));
+#endif
   return strongSide == pos.side_to_move() ? result : -result;
 }
 
@@ -256,7 +279,11 @@ Value Endgame<KRKN>::operator()(const Position& pos) const {
 
   Square bksq = pos.square<KING>(weakSide);
   Square bnsq = pos.square<KNIGHT>(weakSide);
+#ifndef Stockfish
   Value result = Value(PushToEdges[bksq] + push_away(bksq, bnsq));
+#else
+  Value result = Value(push_to_edge(bksq) + push_away(bksq, bnsq));
+#endif
   return strongSide == pos.side_to_move() ? result : -result;
 }
 
@@ -301,7 +328,11 @@ Value Endgame<KQKR>::operator()(const Position& pos) const {
 
   Value result =  QueenValueEg
                 - RookValueEg
+  #ifndef Stockfish
                 + PushToEdges[loserKSq]
+  #else
+                + push_to_edge(loserKSq)
+  #endif
                 + push_close(winnerKSq, loserKSq);
 
   return strongSide == pos.side_to_move() ? result : -result;
@@ -317,7 +348,11 @@ Value Endgame<KNNKP>::operator()(const Position& pos) const {
   assert(verify_material(pos, weakSide, VALUE_ZERO, 1));
 
   Value result =      PawnValueEg
+#ifndef Stockfish
                +  2 * PushToEdges[pos.square<KING>(weakSide)]
+#else
+               +  2 * push_to_edge(pos.square<KING>(weakSide))
+#endif
                - 10 * relative_rank(weakSide, pos.square<PAWN>(weakSide));
 
   return strongSide == pos.side_to_move() ? result : -result;

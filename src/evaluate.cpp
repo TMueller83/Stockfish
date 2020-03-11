@@ -721,8 +721,11 @@ constexpr Score MobilityBonus[][32] = {
         if (   !pos.pawn_passed(Us, s + Up)
             || (pos.pieces(PAWN) & (s + Up)))
             bonus = bonus / 2;
-
+#ifndef Stockfish
         score += bonus - PassedFile * map_to_queenside(file_of(s));
+#else
+        score += bonus - PassedFile * edge_distance(file_of(s));
+#endif
     }
 
     if (T)

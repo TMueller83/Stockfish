@@ -433,11 +433,11 @@ constexpr Square operator~(Square s) {
 constexpr Piece operator~(Piece pc) {
   return Piece(pc ^ 8); // Swap color of piece B_KNIGHT -> W_KNIGHT
 }
-
+#ifndef Stockfish
 inline File map_to_queenside(File f) {
   return std::min(f, File(FILE_H - f)); // Map files ABCDEFGH to files ABCDDCBA
 }
-
+#endif
 constexpr CastlingRights operator&(Color c, CastlingRights cr) {
   return CastlingRights((c == WHITE ? WHITE_CASTLING : BLACK_CASTLING) & cr);
 }
