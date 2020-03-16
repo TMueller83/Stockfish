@@ -383,7 +383,7 @@ string UCI::value(Value v) {
   constexpr float sf = 2.15; // scoring percentage factor
   constexpr float vf = 0.31492; // centipawn value factor
 #endif
-  if (abs(v) < VALUE_MATE - MAX_PLY)
+  if (abs(v) < VALUE_MATE_IN_MAX_PLY)
 #ifdef Add_Features
   // Score percentage evalaution output, similair to Lc0 output.
   // For use with GUIs that divide centipawn scores by 100, e.g, xBoard, Arena, Fritz, etc.
