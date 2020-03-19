@@ -139,15 +139,20 @@ void set(istringstream& is) {
       TT.resize(stoi(value));
       sync_cout << "Confirmation: "<< "Hash" << " set to " << value << sync_endl;
     }
-    else if (name == "z")
-    {
-      Tablebases::init(value);
-      sync_cout << "Confirmation: "<< "SyzygyPath" << " set to " << value << sync_endl;
-    }
     else if (name == "mv")
     {
       Options["MultiPV"] = {value};
       sync_cout << "Confirmation: "<< "MultiPV" << " set to " << value << sync_endl;
+    }
+    else if (name == "pro")
+    {
+      Options["Profound"] = {value};
+      sync_cout << "Confirmation: "<< "Profound" << " set to " << value << sync_endl;
+    }
+    else if (name == "z")
+    {
+      Tablebases::init(value);
+      sync_cout << "Confirmation: "<< "SyzygyPath" << " set to " << value << sync_endl;
     }
     else
       sync_cout << "No such option: " << name << sync_endl;

@@ -134,13 +134,16 @@ void init(OptionsMap& o) {
 #endif
 #if defined (Sullivan) || (Blau) || (Fortress)
     o["Defensive"]                << Option(true);
+    o["Profound"]                 << Option(5, 0, 10);
 #else
     o["Defensive"]                << Option(false);
+    o["Profound"]                 << Option(5, 0, 15);
 #endif
     o["Clear_Hash"]               << Option(on_clear_hash);
     o["Clean_Search"]             << Option(false);
 #ifdef Add_Features
     o["MultiPV"]                  << Option(1, 1, 256);
+
 #else
     o["MultiPV"]                  << Option(1, 1, 500);
 #endif

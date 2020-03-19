@@ -618,6 +618,17 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
 
   int searchAgainCounter = 0;
 
+#ifdef Add_Features
+  int profound = 0;
+  if (Options["Profound"]) {
+      profound = 750 * pow(2, int(Options["Profound"]));
+      sync_cout << "profound: " << profound <<sync_endl;
+    }
+  //sync_cout << "Contempt MG: " << dctcp  << sync_endl;// for debug
+
+#endif
+
+
   // Iterative deepening loop until requested to stop or the target depth is reached
   while (   ++rootDepth < MAX_PLY
          && !Threads.stop
@@ -639,6 +650,25 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
          searchAgainCounter++;
 
       // MultiPV loop. We perform a full root search for each PV line
+
+
+#ifdef Add_Features
+    profound_test = false;
+    if(Options["MultiPV"] == 1 && profound > 0){
+        if(Threads.nodes_searched() <= (uint64_t)profound && rootMoves.size() >= 8){
+            profound_test = true;
+            multiPV = 8;}
+
+    if(Threads.nodes_searched() <= (uint64_t)profound && rootMoves.size() < 8){
+
+            profound_test = true;
+            multiPV = rootMoves.size();}
+
+    if(Threads.nodes_searched() > (uint64_t)profound){
+            profound_test = false;
+            multiPV = Options["MultiPV"];}
+}
+#endif
       for (pvIdx = 0; pvIdx < multiPV && !Threads.stop; ++pvIdx)
       {
           if (pvIdx == pvLast)
@@ -1321,6 +1351,7 @@ namespace {
 #ifdef Fortress
         &&  !gameCycle
 #endif
+        && pos.this_thread()->profound_test != true
         &&  eval - futility_margin(depth, improving) >= beta
         &&  eval < VALUE_KNOWN_WIN) // Do not return unproven wins
         return eval;
@@ -1328,13 +1359,12 @@ namespace {
     // Step 9. Null move search with verification search (~39 Elo)
     if (   !PvNode
         && (ss-1)->currentMove != MOVE_NULL
-
 	      && (ss-1)->statScore < 23397
-	      &&  eval >= beta
+      	&&  eval >= beta
         &&  eval >= ss->staticEval
         &&  ss->staticEval >= beta - 32 * depth - 30 * improving + 120 * ttPv + 292
         && !excludedMove
-#if defined (Sullivan) || (Blau)  //authored by Jörg Oster originally, in corchess by Ivan Ilvec
+#if defined (Sullivan) || (Blau) || (Noir)  //authored by Jörg Oster originally, in corchess by Ivan Ilvec
         && thisThread->selDepth + 3 > thisThread->rootDepth
 #endif
         &&  pos.non_pawn_material(us)
@@ -1577,7 +1607,7 @@ moves_loop: // When in check, search starts from here
 				!captureOrPromotion
 				&& !givesCheck
 #if defined (Sullivan) || (Blau) || (Fortress) || (Noir)
-                && (!PvNode || !pos.advanced_pawn_push(move) || pos.non_pawn_material(~us) > BishopValueMg)
+        && (!PvNode || !pos.advanced_pawn_push(move) || pos.non_pawn_material(~us) > BishopValueMg )
 #endif
                 )
 			{
