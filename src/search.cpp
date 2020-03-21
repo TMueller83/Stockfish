@@ -621,7 +621,7 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
 #ifdef Add_Features
   int profound = 0;
   if (Options["Profound"]) {
-      profound = 750 * pow(2, int(Options["Profound"]));
+      profound = 2000 * pow(2, int(Options["Profound"]));
       sync_cout << "profound: " << profound <<sync_endl;
     }
   //sync_cout << "Contempt MG: " << dctcp  << sync_endl;// for debug
