@@ -51,9 +51,9 @@ RELEASEVER = no
 RELVERSION =
 
 ### TEST versions, enter yes and labels below to build named test exe's
-TEST = no
+TEST = yes
 TESTv1 = $(DATE2)
-TESTv2 =
+TESTv2 = P2600
 ifeq ($(TEST),yes)
 	CXXFLAGS += -DTest
 endif
@@ -99,7 +99,11 @@ ifeq ($(HONEY),yes)
 			endif
 		endif
 		ifeq ($(TEST),yes)
-			EXE = $(NAME)-$(TESTv1)-$(TESTv2)
+		  ifeq ($(COMP),mingw)
+			  EXE = $(NAME)-$(TESTv1)-$(TESTv2).exe
+			else
+			  EXE = $(NAME)-$(TESTv1)-$(TESTv2)
+      endif
 		endif
 	endif
 	ifeq ($(RELEASEVER),yes)
@@ -132,10 +136,19 @@ ifneq ($(HONEY),yes)
 	NAME=$(PRE)fish$(SUF)
 endif
 	ifeq ($(RELEASEVER),no)
-		ifeq ($(COMP),mingw)
-			EXE = $(NAME)-$(DATE).exe
-		else
-			EXE = $(NAME)-$(DATE)
+    ifeq ($(TEST),no)
+		  ifeq ($(COMP),mingw)
+			  EXE = $(NAME)-dev-$(DATE).exe
+		  else
+			  EXE = $(NAME)-dev-$(DATE)
+		   endif
+		endif
+		ifeq ($(TEST),yes)
+		  ifeq ($(COMP),mingw)
+			  EXE = $(NAME)-$(TESTv1)-$(TESTv2).exe
+			else
+			  EXE = $(NAME)-$(TESTv1)-$(TESTv2)
+      endif
 		endif
 	endif
 	ifeq ($(RELEASEVER),yes)
@@ -744,39 +757,46 @@ icc-profile-make:
 	EXTRACXXFLAGS='-prof-gen=srcpos -prof_dir ./profdir' \
 	all
 
-icc-profile-use:
-	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
-	EXTRACXXFLAGS='-prof_use -prof_dir ./profdir' \
-	all
-
-.depend:
-	-@$(CXX) $(DEPENDFLAGS) -MM $(OBJS:.o=.cpp) > $@ 2> /dev/null
-
--include .depend
-
-### Note: 4 new bench positions were added on 10/17/2019.
-###       Bluefish and Honey benchmarks were modified on 11/19/2019
-###
 ### Based on commits through 03/21/2020:
 ### ======================================================
-### Black-Diamond-032120.exe.bench:Nodes searched  : 13486119
-### Black-Diamond-032120.exe.bench:Nodes/second    : 2584042
-### Bluefish-032120.exe.bench:Nodes searched  : 9053472
-### Bluefish-032120.exe.bench:Nodes/second    : 2712244
-### Bluefish-FD-032120.exe.bench:Nodes searched  : 15610078
-### Bluefish-FD-032120.exe.bench:Nodes/second    : 2762356
-### Blue-Honey-dev-032120.exe.bench:Nodes searched  : 9095946
-### Blue-Honey-dev-032120.exe.bench:Nodes/second    : 2666650
-### Blue-Honey-FD-dev-032120.exe.bench:Nodes searched  : 15249808
-### Blue-Honey-FD-dev-032120.exe.bench:Nodes/second    : 2746228
-### Honey-dev-032120.exe.bench:Nodes searched  : 8696167
-### Honey-dev-032120.exe.bench:Nodes/second    : 2683174
-### Honey-FD-dev-032120.exe.bench:Nodes searched  : 13748471
-### Honey-FD-dev-032120.exe.bench:Nodes/second    : 2696307
-### Stockfish-032120.exe.bench:Nodes searched  : 8829386
-### Stockfish-032120.exe.bench:Nodes/second    : 2747164
-### Stockfish-FD-032120.exe.bench:Nodes searched  : 60427907
-### Stockfish-FD-032120.exe.bench:Nodes/second    : 2069023
-### Weakfish-032120.exe.bench:Nodes searched  : 10497704
-### Weakfish-032120.exe.bench:Nodes/second    : 3979417
+### Black-Diamond-0321-P2600.exe.bench:Nodes searched  : 15077127
+### Black-Diamond-0321-P2600.exe.bench:Nodes/second    : 2571133
+### Black-Diamond-0321-P6400.exe.bench:Nodes searched  : 14814186
+### Black-Diamond-0321-P6400.exe.bench:Nodes/second    : 2688112
+### Bluefish-0321-P2600.exe.bench:Nodes searched  : 10886805
+### Bluefish-0321-P2600.exe.bench:Nodes/second    : 2667680
+### Bluefish-0321-P6400.exe.bench:Nodes searched  : 10702838
+### Bluefish-0321-P6400.exe.bench:Nodes/second    : 2738699
+### Bluefish-FD-0321-P2600.exe.bench:Nodes searched  : 15049822
+### Bluefish-FD-0321-P2600.exe.bench:Nodes/second    : 2683155
+### Bluefish-FD-0321-P6400.exe.bench:Nodes searched  : 17869492
+### Bluefish-FD-0321-P6400.exe.bench:Nodes/second    : 2783409
+### Blue-Honey-0321-P2600.exe.bench:Nodes searched  : 9979472
+### Blue-Honey-0321-P2600.exe.bench:Nodes/second    : 2645671
+### Blue-Honey-0321-P6400.exe.bench:Nodes searched  : 10670564
+### Blue-Honey-0321-P6400.exe.bench:Nodes/second    : 2722082
+### Blue-Honey-FD-0321-P2600.exe.bench:Nodes searched  : 15966080
+### Blue-Honey-FD-0321-P2600.exe.bench:Nodes/second    : 2624273
+### Blue-Honey-FD-0321-P6400.exe.bench:Nodes searched  : 16026209
+### Blue-Honey-FD-0321-P6400.exe.bench:Nodes/second    : 2763615
+### Honey-0321-P2600.exe.bench:Nodes searched  : 8915679
+### Honey-0321-P2600.exe.bench:Nodes/second    : 2600839
+### Honey-0321-P6400.exe.bench:Nodes searched  : 10281043
+### Honey-0321-P6400.exe.bench:Nodes/second    : 2714108
+### Honey-FD-0321-P2600.exe.bench:Nodes searched  : 14509603
+### Honey-FD-0321-P2600.exe.bench:Nodes/second    : 2672118
+### Honey-FD-0321-P6400.exe.bench:Nodes searched  : 16228786
+### Honey-FD-0321-P6400.exe.bench:Nodes/second    : 2757184
+### Stockfish-0321-P2600.exe.bench:Nodes searched  : 10201034
+### Stockfish-0321-P2600.exe.bench:Nodes/second    : 2676734
+### Stockfish-0321-P6400.exe.bench:Nodes searched  : 10965781
+### Stockfish-0321-P6400.exe.bench:Nodes/second    : 2777553
+### Stockfish-FD-0321-P2600.exe.bench:Nodes searched  : 26117260
+### Stockfish-FD-0321-P2600.exe.bench:Nodes/second    : 2284574
+### Stockfish-FD-0321-P6400.exe.bench:Nodes searched  : 18555302
+### Stockfish-FD-0321-P6400.exe.bench:Nodes/second    : 2694641
+### Weakfish-0321-P2600.exe.bench:Nodes searched  : 11447200
+### Weakfish-0321-P2600.exe.bench:Nodes/second    : 3832340
+### Weakfish-0321-P6400.exe.bench:Nodes searched  : 12840779
+### Weakfish-0321-P6400.exe.bench:Nodes/second    : 4122240
 ### ======================================================
