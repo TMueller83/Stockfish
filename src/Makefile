@@ -284,6 +284,15 @@ ifeq ($(ARCH),armv7)
 	prefetch = yes
 endif
 
+ifeq ($(ARCH),armv7-a)
+	arch = any
+endif
+
+ifeq ($(ARCH),armv8-a)
+	arch = any
+	bits = 64
+endif
+
 ifeq ($(ARCH),ppc-32)
 	arch = ppc
 endif
@@ -386,6 +395,28 @@ ifeq ($(COMP),clang)
 	endif
 endif
 
+### Using NDK pass the path to the NDK using NDK=/path_to_ndk when invoking the makefile
+ifeq ($(COMP),ndk)
+	comp=clang
+	ifeq ($(KERNEL),Linux)
+		HOST=linux-x86_64
+	endif
+	ifeq ($(KERNEL),Darwin)
+		HOST=darwin-x86_64
+	endif
+	CXX=$(NDK)/toolchains/llvm/prebuilt/$(HOST)/bin/clang++
+
+	ifeq ($(ARCH),armv7-a)
+		CXXFLAGS += -target armv7a-linux-androideabi21
+	endif
+	ifeq ($(ARCH),armv8-a)
+		CXXFLAGS += -target aarch64-linux-android21
+	endif
+
+	CXXFLAGS += -pedantic -Wextra -Wshadow
+	LDFLAGS += -static-libstdc++
+endif
+
 ifeq ($(comp),icc)
 	profile_make = icc-profile-make
 	profile_use = icc-profile-use
@@ -419,10 +450,12 @@ endif
 ifneq ($(comp),mingw)
 	# On Android Bionic's C library comes with its own pthread implementation bundled in
 	ifneq ($(OS),Android)
+	ifneq ($(COMP),ndk)
 		# Haiku has pthreads in its libroot, so only link it in on other platforms
 		ifneq ($(KERNEL),Haiku)
 			LDFLAGS += -lpthread
 		endif
+	endif
 	endif
 endif
 
@@ -543,9 +576,28 @@ ifeq ($(OS), Android)
 	CXXFLAGS += -fPIE
 	LDFLAGS += -fPIE -pie
 endif
+ifeq ($(ARCH), $(filter $(ARCH), armv7-a armv8-a))
+	CXXFLAGS += -fPIE
+	LDFLAGS += -fPIE -pie
+endif
 ### 3.10 madvise + transparent huge pages
 ifeq ($(KERNEL),Linux)
-	CXXFLAGS += -DUSE_MADVISE_HUGEPAGE
+	ifneq ($(ARCH), $(filter $(ARCH), armv7-a armv8-a))
+		CXXFLAGS += -DUSE_MADVISE_HUGEPAGE
+	endif
+endif
+
+### strip executable
+ifeq ($(COMP), ndk)
+	ifeq ($(ARCH),armv7-a)
+		SUB_DIR=arm-linux-androideabi
+	endif
+	ifeq ($(ARCH),armv8-a)
+		SUB_DIR=aarch64-linux-android
+	endif
+	STRIP=$(NDK)/toolchains/llvm/prebuilt/$(HOST)/$(SUB_DIR)/bin/strip
+else
+	STRIP=strip
 endif
 ### ==========================================================================
 ### Section 4. Public targets
@@ -597,6 +649,7 @@ help:
 	@echo "Advanced examples, for experienced users: "
 	@echo ""
 	@echo "make build ARCH=x86-64 COMP=clang"
+	@echo "make build ARCH=armv8-a COMP=ndk NDK=~/android-ndk-r21"
 	@echo "make profile-build ARCH=x86-64-bmi2 COMP=gcc COMPCXX=g++-4.8"
 	@echo ""
 
@@ -612,7 +665,7 @@ $(directory):
 
 build: config-sanity
 	@$(MAKE) ARCH=$(ARCH) COMP=$(COMP) all
-	@strip $(EXE)
+	@$(STRIP) $(EXE)
 #	@cp $(EXE) /Users/michaelbyrne/cluster.mfb
 #	@$(EXE) bench >/dev/null
 #	@wait
@@ -646,7 +699,7 @@ profile-build: config-sanity objclean profileclean
 	@echo ""
 
 strip:
-	strip $(EXE)
+	$(STRIP) $(EXE)
 
 install:
 	-mkdir -p -m 755 $(BINDIR)
