@@ -22,6 +22,9 @@
 #include <algorithm>
 
 #include "types.h"
+#ifdef Stockfish
+#include "bitboard.h"
+#endif
 
 namespace PSQT {
 
@@ -142,10 +145,14 @@ void init() {
 
       for (Square s = SQ_A1; s <= SQ_H8; ++s)
       {
+#ifndef Stockfish
           File f = map_to_queenside(file_of(s));
+#else
+          File f = edge_distance(file_of(s));
+#endif
           psq[ pc][ s] = score + (type_of(pc) == PAWN ? PBonus[rank_of(s)][file_of(s)]
                                                       : Bonus[pc][rank_of(s)][f]);
-          psq[~pc][flip_rank(s)] = -psq[pc][s];
+          psq[~pc][~s] = -psq[pc][s];
       }
   }
 }

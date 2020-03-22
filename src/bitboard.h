@@ -271,8 +271,10 @@ template<typename T1 = Square> inline int distance(Square x, Square y);
 template<> inline int distance<File>(Square x, Square y) { return std::abs(file_of(x) - file_of(y)); }
 template<> inline int distance<Rank>(Square x, Square y) { return std::abs(rank_of(x) - rank_of(y)); }
 template<> inline int distance<Square>(Square x, Square y) { return SquareDistance[x][y]; }
-
-
+#ifdef Stockfish
+inline File edge_distance(File f) { return std::min(f, File(FILE_H - f)); }
+inline Rank edge_distance(Rank r) { return std::min(r, Rank(RANK_8 - r)); }
+#endif
 /// attacks_bb() returns a bitboard representing all the squares attacked by a
 /// piece of type Pt (bishop or rook) placed on 's'.
 
@@ -394,14 +396,17 @@ inline Square msb(Bitboard b) {
 /// pop_lsb() finds and clears the least significant bit in a non-zero bitboard
 
 inline Square pop_lsb(Bitboard* b) {
+  assert(*b);
   const Square s = lsb(*b);
   *b &= *b - 1;
   return s;
 }
 
 
-/// frontmost_sq() returns the most advanced square for the given color
+/// frontmost_sq() returns the most advanced square for the given color,
+/// requires a non-zero bitboard.
 inline Square frontmost_sq(Color c, Bitboard b) {
+  assert(b);
   return c == WHITE ? msb(b) : lsb(b);
 }
 

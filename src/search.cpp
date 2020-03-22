@@ -1581,14 +1581,14 @@ moves_loop: // When in check, search starts from here
 #endif
                 )
 			{
-				// Reduced depth of the next LMR search
-				int lmrDepth = std::max(newDepth - reduction(improving, depth, moveCount), 0);
+        // Reduced depth of the next LMR search
+        int lmrDepth = std::max(newDepth - reduction(improving, depth, moveCount), 0);
 
-				// Countermoves based pruning (~20 Elo)
-				if (   lmrDepth < 4 + ((ss-1)->statScore > 0 || (ss-1)->moveCount == 1)
-					&& (*contHist[0])[movedPiece][to_sq(move)] < CounterMovePruneThreshold
-					&& (*contHist[1])[movedPiece][to_sq(move)] < CounterMovePruneThreshold)
-					continue;
+        // Countermoves based pruning (~20 Elo)
+        if (   lmrDepth < 4 + ((ss-1)->statScore > 0 || (ss-1)->moveCount == 1)
+            && (*contHist[0])[movedPiece][to_sq(move)] < CounterMovePruneThreshold
+            && (*contHist[1])[movedPiece][to_sq(move)] < CounterMovePruneThreshold)
+            continue;
 
 				// Futility pruning: parent node (~2 Elo)
 #if defined (Fortress) || (Noir)
@@ -1596,22 +1596,20 @@ moves_loop: // When in check, search starts from here
 #else
                 if (   lmrDepth < 6
 #endif
-                    && !inCheck
-                    && ss->staticEval + 235 + 172 * lmrDepth <= alpha
-                    &&  thisThread->mainHistory[us][from_to(move)]
-                    + (*contHist[0])[movedPiece][to_sq(move)]
-                    + (*contHist[1])[movedPiece][to_sq(move)]
-                    + (*contHist[3])[movedPiece][to_sq(move)] < 25000)
+                   && !inCheck
+                   && ss->staticEval + 235 + 172 * lmrDepth <= alpha
+                   &&  (*contHist[0])[movedPiece][to_sq(move)]
+                     + (*contHist[1])[movedPiece][to_sq(move)]
+                     + (*contHist[3])[movedPiece][to_sq(move)] < 27400)
+                   continue;
 
-									 continue;
-
-								 // Prune moves with negative SEE (~20 Elo)
-								 if (!pos.see_ge(move, Value(-(32 - std::min(lmrDepth, 18)) * lmrDepth * lmrDepth)))
-									 continue;
-							 }
-							 else if (!pos.see_ge(move, Value(-194) * depth)) // (~25 Elo)
+							// Prune moves with negative SEE (~20 Elo)
+							if (!pos.see_ge(move, Value(-(32 - std::min(lmrDepth, 18)) * lmrDepth * lmrDepth)))
 								 continue;
-						 }
+					}
+					else if (!pos.see_ge(move, Value(-194) * depth)) // (~25 Elo)
+						  continue;
+		}
 
 
       // Step 14. Extensions (~74 Elo)
@@ -1826,13 +1824,6 @@ moves_loop: // When in check, search starts from here
                              + (*contHist[3])[movedPiece][to_sq(move)]
                              - 4926;
 
-              // Reset statScore to zero if negative and most stats shows >= 0
-              if (    ss->statScore < 0
-                  && (*contHist[0])[movedPiece][to_sq(move)] >= 0
-                  && (*contHist[1])[movedPiece][to_sq(move)] >= 0
-                  && thisThread->mainHistory[us][from_to(move)] >= 0)
-                  ss->statScore = 0;
-
               // Decrease/increase reduction by comparing opponent's stat score (~10 Elo)
               if (ss->statScore >= -102 && (ss-1)->statScore < -114)
                   r--;
@@ -1856,10 +1847,16 @@ moves_loop: // When in check, search starts from here
 
           value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, d, true);
 
-          doFullDepthSearch = (value > alpha && d != newDepth), didLMR = true;
+          doFullDepthSearch = value > alpha && d != newDepth;
+
+          didLMR = true;
       }
       else
-          doFullDepthSearch = !PvNode || moveCount > 1, didLMR = false;
+      {
+          doFullDepthSearch = !PvNode || moveCount > 1;
+
+          didLMR = false;
+      }
 
       // Step 17. Full depth search when LMR is skipped or fails high
       if (doFullDepthSearch)
