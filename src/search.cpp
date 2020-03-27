@@ -51,9 +51,13 @@ namespace Search {
   LimitsType Limits;
   bool adaptive;
   bool ctempt;
-  int defensive;
-  int dct;
+  bool profound=false;
+
   int benchKnps;
+  int dct;
+  int defensive;
+  int profound_v;
+  int dpl_factor;
 }
 
 namespace Tablebases {
@@ -323,7 +327,7 @@ void MainThread::search() {
          {
              uci_elo = (Options["UCI_Elo"]);
              limitStrength = true;
-			 jekyll=true; //on with uci_elo, variety gets turned off with adaptive
+             jekyll=true; //on with uci_elo, variety gets turned off with adaptive
              goto skipLevels;
          }
          if (Options["Engine_Level"] == "None")
@@ -393,6 +397,12 @@ skipLevels:
              uci_elo =  ccrlELo - shallow_adjust;
          }
 #endif
+          profound = (Options["Profound"]);
+          if (profound)
+              profound_v = 16 * (std::max(Time.optimum(),Limits.movetime) - 20);
+          if (Options["Deep_Pro_Analysis"])
+              profound_v = 14400000;
+          std::cerr << "\nprofound value: " << profound_v << "\n" << sync_endl; //debug
       for (Thread* th : Threads)
       {
           th->bestMoveChanges = 0;
@@ -618,16 +628,6 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
 
   int searchAgainCounter = 0;
 
-#ifdef Add_Features
-  int profound = 0;
-  if (Options["Profound"]) {
-      profound = 2000 * pow(2, int(Options["Profound"]));
-      sync_cout << "profound: " << profound <<sync_endl;
-    }
-  //sync_cout << "Contempt MG: " << dctcp  << sync_endl;// for debug
-
-#endif
-
 
   // Iterative deepening loop until requested to stop or the target depth is reached
   while (   ++rootDepth < MAX_PLY
@@ -652,23 +652,26 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
       // MultiPV loop. We perform a full root search for each PV line
 
 
-#ifdef Add_Features
-    profound_test = false;
-    if(Options["MultiPV"] == 1 && profound > 0){
-        if(Threads.nodes_searched() <= (uint64_t)profound && rootMoves.size() >= 8){
+
+
+  profound_test = false;
+  if (profound){
+    if(Options["MultiPV"] == 1 && profound_v > 0){
+        if(Threads.nodes_searched() <= (uint64_t)profound_v && rootMoves.size() >= 8){
             profound_test = true;
             multiPV = 8;}
 
-    if(Threads.nodes_searched() <= (uint64_t)profound && rootMoves.size() < 8){
+    if(Threads.nodes_searched() <= (uint64_t)profound_v && rootMoves.size() < 8){
 
             profound_test = true;
             multiPV = rootMoves.size();}
 
-    if(Threads.nodes_searched() > (uint64_t)profound){
+    if(Threads.nodes_searched() > (uint64_t)profound_v){
             profound_test = false;
             multiPV = Options["MultiPV"];}
+          }
 }
-#endif
+
       for (pvIdx = 0; pvIdx < multiPV && !Threads.stop; ++pvIdx)
       {
           if (pvIdx == pvLast)
@@ -910,7 +913,7 @@ namespace {
 #ifndef Noir
     // Check if we have an upcoming move which draws by repetition, or
     // if the opponent had an alternative move earlier to this position.
-#if defined (Sullivan) || (Blau) || (Fortress) || (Noir)
+#if defined (Sullivan) || (Blau) || (Noir)
     if (   pos.rule50_count() >= 5
 #else
     if (   pos.rule50_count() >= 3
@@ -1683,9 +1686,10 @@ moves_loop: // When in check, search starts from here
 #else
           Value singularBeta = ttValue - (((ttPv && !PvNode) + 4) * depth) / 2;
 #endif
-          Depth halfDepth = depth / 2;
+
+          Depth singularDepth = (depth - 1 + 3 * (ttPv && !PvNode)) / 2;
           ss->excludedMove = move;
-          value = search<NonPV>(pos, ss, singularBeta - 1, singularBeta, halfDepth, cutNode);
+          value = search<NonPV>(pos, ss, singularBeta - 1, singularBeta, singularDepth, cutNode);
           ss->excludedMove = MOVE_NONE;
           if (value < singularBeta)
           {
@@ -1826,7 +1830,11 @@ moves_loop: // When in check, search starts from here
 
           // Decrease reduction if ttMove has been singularly extended (~3 Elo)
           if (singularLMR)
+#ifdef Stockfish
+              r -= 1 + (ttPv && !PvNode);
+#else
               r -= 2;
+#endif
 #if defined (Fortress) || (Noir)
           if (!PvNode && !captureOrPromotion)
 #else

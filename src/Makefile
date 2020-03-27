@@ -53,7 +53,7 @@ RELVERSION =
 ### TEST versions, enter yes and labels below to build named test exe's
 TEST = yes
 TESTv1 = $(DATE2)
-TESTv2 = P2600
+TESTv2 = PROF_16
 ifeq ($(TEST),yes)
 	CXXFLAGS += -DTest
 endif
@@ -757,46 +757,26 @@ icc-profile-make:
 	EXTRACXXFLAGS='-prof-gen=srcpos -prof_dir ./profdir' \
 	all
 
-### Based on commits through 03/21/2020:
+### Based on commits through 03/25/2020:
 ### ======================================================
-### Black-Diamond-0321-P2600.exe.bench:Nodes searched  : 15077127
-### Black-Diamond-0321-P2600.exe.bench:Nodes/second    : 2571133
-### Black-Diamond-0321-P6400.exe.bench:Nodes searched  : 14814186
-### Black-Diamond-0321-P6400.exe.bench:Nodes/second    : 2688112
-### Bluefish-0321-P2600.exe.bench:Nodes searched  : 10886805
-### Bluefish-0321-P2600.exe.bench:Nodes/second    : 2667680
-### Bluefish-0321-P6400.exe.bench:Nodes searched  : 10702838
-### Bluefish-0321-P6400.exe.bench:Nodes/second    : 2738699
-### Bluefish-FD-0321-P2600.exe.bench:Nodes searched  : 15049822
-### Bluefish-FD-0321-P2600.exe.bench:Nodes/second    : 2683155
-### Bluefish-FD-0321-P6400.exe.bench:Nodes searched  : 17869492
-### Bluefish-FD-0321-P6400.exe.bench:Nodes/second    : 2783409
-### Blue-Honey-0321-P2600.exe.bench:Nodes searched  : 9979472
-### Blue-Honey-0321-P2600.exe.bench:Nodes/second    : 2645671
-### Blue-Honey-0321-P6400.exe.bench:Nodes searched  : 10670564
-### Blue-Honey-0321-P6400.exe.bench:Nodes/second    : 2722082
-### Blue-Honey-FD-0321-P2600.exe.bench:Nodes searched  : 15966080
-### Blue-Honey-FD-0321-P2600.exe.bench:Nodes/second    : 2624273
-### Blue-Honey-FD-0321-P6400.exe.bench:Nodes searched  : 16026209
-### Blue-Honey-FD-0321-P6400.exe.bench:Nodes/second    : 2763615
-### Honey-0321-P2600.exe.bench:Nodes searched  : 8915679
-### Honey-0321-P2600.exe.bench:Nodes/second    : 2600839
-### Honey-0321-P6400.exe.bench:Nodes searched  : 10281043
-### Honey-0321-P6400.exe.bench:Nodes/second    : 2714108
-### Honey-FD-0321-P2600.exe.bench:Nodes searched  : 14509603
-### Honey-FD-0321-P2600.exe.bench:Nodes/second    : 2672118
-### Honey-FD-0321-P6400.exe.bench:Nodes searched  : 16228786
-### Honey-FD-0321-P6400.exe.bench:Nodes/second    : 2757184
-### Stockfish-0321-P2600.exe.bench:Nodes searched  : 10201034
-### Stockfish-0321-P2600.exe.bench:Nodes/second    : 2676734
-### Stockfish-0321-P6400.exe.bench:Nodes searched  : 10965781
-### Stockfish-0321-P6400.exe.bench:Nodes/second    : 2777553
-### Stockfish-FD-0321-P2600.exe.bench:Nodes searched  : 26117260
-### Stockfish-FD-0321-P2600.exe.bench:Nodes/second    : 2284574
-### Stockfish-FD-0321-P6400.exe.bench:Nodes searched  : 18555302
-### Stockfish-FD-0321-P6400.exe.bench:Nodes/second    : 2694641
-### Weakfish-0321-P2600.exe.bench:Nodes searched  : 11447200
-### Weakfish-0321-P2600.exe.bench:Nodes/second    : 3832340
-### Weakfish-0321-P6400.exe.bench:Nodes searched  : 12840779
-### Weakfish-0321-P6400.exe.bench:Nodes/second    : 4122240
+### Black-Diamond-0325-NO_PROF.exe.bench:Nodes searched  : 9383030
+### Black-Diamond-0325-NO_PROF.exe.bench:Nodes/second    : 2443497
+### Bluefish-0325-NO_PROF.exe.bench:Nodes searched  : 5549786
+### Bluefish-0325-NO_PROF.exe.bench:Nodes/second    : 2498778
+### Bluefish-FD-0325-NO_PROF.exe.bench:Nodes searched  : 11437233
+### Bluefish-FD-0325-NO_PROF.exe.bench:Nodes/second    : 2594065
+### Blue-Honey-0325-NO_PROF.exe.bench:Nodes searched  : 5241183
+### Blue-Honey-0325-NO_PROF.exe.bench:Nodes/second    : 2494613
+### Blue-Honey-FD-0325-NO_PROF.exe.bench:Nodes searched  : 11496900
+### Blue-Honey-FD-0325-NO_PROF.exe.bench:Nodes/second    : 2611744
+### Honey-0325-NO_PROF.exe.bench:Nodes searched  : 4264122
+### Honey-0325-NO_PROF.exe.bench:Nodes/second    : 2463386
+### Honey-FD-0325-NO_PROF.exe.bench:Nodes searched  : 10964253
+### Honey-FD-0325-NO_PROF.exe.bench:Nodes/second    : 2631841
+### Stockfish-0325-NO_PROF.exe.bench:Nodes searched  : 5398277
+### Stockfish-0325-NO_PROF.exe.bench:Nodes/second    : 2537976
+### Stockfish-FD-0325-NO_PROF.exe.bench:Nodes searched  : 17050652
+### Stockfish-FD-0325-NO_PROF.exe.bench:Nodes/second    : 2327098
+### Weakfish-0325-NO_PROF.exe.bench:Nodes searched  : 7387659
+### Weakfish-0325-NO_PROF.exe.bench:Nodes/second    : 3544941
 ### ======================================================

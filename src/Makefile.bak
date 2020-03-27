@@ -51,9 +51,9 @@ RELEASEVER = no
 RELVERSION =
 
 ### TEST versions, enter yes and labels below to build named test exe's
-TEST = no
+TEST = yes
 TESTv1 = $(DATE2)
-TESTv2 =
+TESTv2 = PROF_16
 ifeq ($(TEST),yes)
 	CXXFLAGS += -DTest
 endif
@@ -99,7 +99,11 @@ ifeq ($(HONEY),yes)
 			endif
 		endif
 		ifeq ($(TEST),yes)
-			EXE = $(NAME)-$(TESTv1)-$(TESTv2)
+		  ifeq ($(COMP),mingw)
+			  EXE = $(NAME)-$(TESTv1)-$(TESTv2).exe
+			else
+			  EXE = $(NAME)-$(TESTv1)-$(TESTv2)
+      endif
 		endif
 	endif
 	ifeq ($(RELEASEVER),yes)
@@ -132,10 +136,19 @@ ifneq ($(HONEY),yes)
 	NAME=$(PRE)fish$(SUF)
 endif
 	ifeq ($(RELEASEVER),no)
-		ifeq ($(COMP),mingw)
-			EXE = $(NAME)-$(DATE).exe
-		else
-			EXE = $(NAME)-$(DATE)
+    ifeq ($(TEST),no)
+		  ifeq ($(COMP),mingw)
+			  EXE = $(NAME)-dev-$(DATE).exe
+		  else
+			  EXE = $(NAME)-dev-$(DATE)
+		   endif
+		endif
+		ifeq ($(TEST),yes)
+		  ifeq ($(COMP),mingw)
+			  EXE = $(NAME)-$(TESTv1)-$(TESTv2).exe
+			else
+			  EXE = $(NAME)-$(TESTv1)-$(TESTv2)
+      endif
 		endif
 	endif
 	ifeq ($(RELEASEVER),yes)
@@ -744,39 +757,26 @@ icc-profile-make:
 	EXTRACXXFLAGS='-prof-gen=srcpos -prof_dir ./profdir' \
 	all
 
-icc-profile-use:
-	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
-	EXTRACXXFLAGS='-prof_use -prof_dir ./profdir' \
-	all
-
-.depend:
-	-@$(CXX) $(DEPENDFLAGS) -MM $(OBJS:.o=.cpp) > $@ 2> /dev/null
-
--include .depend
-
-### Note: 4 new bench positions were added on 10/17/2019.
-###       Bluefish and Honey benchmarks were modified on 11/19/2019
-###
-### Based on commits through 03/18/2020:
+### Based on commits through 03/25/2020:
 ### ======================================================
-### Black-Diamond-031820.exe.bench:Nodes searched  : 10690982
-### Black-Diamond-031820.exe.bench:Nodes/second    : 2488010
-### Bluefish-031820.exe.bench:Nodes searched  : 6964577
-### Bluefish-031820.exe.bench:Nodes/second    : 2482030
-### Bluefish-FD-031820.exe.bench:Nodes searched  : 13455741
-### Bluefish-FD-031820.exe.bench:Nodes/second    : 2607196
-### Blue-Honey-dev-031820.exe.bench:Nodes searched  : 6902696
-### Blue-Honey-dev-031820.exe.bench:Nodes/second    : 2467010
-### Blue-Honey-FD-dev-031820.exe.bench:Nodes searched  : 12361476
-### Blue-Honey-FD-dev-031820.exe.bench:Nodes/second    : 2684359
-### Honey-dev-031820.exe.bench:Nodes searched  : 6183426
-### Honey-dev-031820.exe.bench:Nodes/second    : 2547765
-### Honey-FD-dev-031820.exe.bench:Nodes searched  : 11877478
-### Honey-FD-dev-031820.exe.bench:Nodes/second    : 2573668
-### Stockfish-031820.exe.bench:Nodes searched  : 6902796
-### Stockfish-031820.exe.bench:Nodes/second    : 2684868
-### Stockfish-FD-031820.exe.bench:Nodes searched  : 13775895
-### Stockfish-FD-031820.exe.bench:Nodes/second    : 2560575
-### Weakfish-031820.exe.bench:Nodes searched  : 9252499
-### Weakfish-031820.exe.bench:Nodes/second    : 3576536
+### Black-Diamond-0325-NO_PROF.exe.bench:Nodes searched  : 9383030
+### Black-Diamond-0325-NO_PROF.exe.bench:Nodes/second    : 2443497
+### Bluefish-0325-NO_PROF.exe.bench:Nodes searched  : 5549786
+### Bluefish-0325-NO_PROF.exe.bench:Nodes/second    : 2498778
+### Bluefish-FD-0325-NO_PROF.exe.bench:Nodes searched  : 11437233
+### Bluefish-FD-0325-NO_PROF.exe.bench:Nodes/second    : 2594065
+### Blue-Honey-0325-NO_PROF.exe.bench:Nodes searched  : 5241183
+### Blue-Honey-0325-NO_PROF.exe.bench:Nodes/second    : 2494613
+### Blue-Honey-FD-0325-NO_PROF.exe.bench:Nodes searched  : 11496900
+### Blue-Honey-FD-0325-NO_PROF.exe.bench:Nodes/second    : 2611744
+### Honey-0325-NO_PROF.exe.bench:Nodes searched  : 4264122
+### Honey-0325-NO_PROF.exe.bench:Nodes/second    : 2463386
+### Honey-FD-0325-NO_PROF.exe.bench:Nodes searched  : 10964253
+### Honey-FD-0325-NO_PROF.exe.bench:Nodes/second    : 2631841
+### Stockfish-0325-NO_PROF.exe.bench:Nodes searched  : 5398277
+### Stockfish-0325-NO_PROF.exe.bench:Nodes/second    : 2537976
+### Stockfish-FD-0325-NO_PROF.exe.bench:Nodes searched  : 17050652
+### Stockfish-FD-0325-NO_PROF.exe.bench:Nodes/second    : 2327098
+### Weakfish-0325-NO_PROF.exe.bench:Nodes searched  : 7387659
+### Weakfish-0325-NO_PROF.exe.bench:Nodes/second    : 3544941
 ### ======================================================

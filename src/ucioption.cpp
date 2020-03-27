@@ -132,13 +132,16 @@ void init(OptionsMap& o) {
 #ifdef Weakfish
     o["WeakFish"]                 << Option(true);
 #endif
-#if defined (Sullivan) || (Blau) || (Fortress)
+#if defined (Sullivan) || (Blau)
     o["Defensive"]                << Option(true);
-    o["Profound"]                 << Option(5, 0, 10);
+    o["Profound"]                 << Option(true);
+
 #else
     o["Defensive"]                << Option(false);
-    o["Profound"]                 << Option(5, 0, 15);
+    o["Profound"]                 << Option(true);
+
 #endif
+    o["Deep_Pro_Analysis"]        << Option(false);
     o["Clear_Hash"]               << Option(on_clear_hash);
     o["Clean_Search"]             << Option(false);
 #ifdef Add_Features

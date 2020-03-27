@@ -131,6 +131,11 @@ void set(istringstream& is) {
         Options[name] = value;
         sync_cout << "Confirmation: "<< name << " set to " << value << sync_endl;
     }
+    else if (name == "dpa")
+    {
+      Options["Deep_Pro_Analysis"] = {value};
+      sync_cout << "Confirmation: "<< "Deep_Pro_Analysis" << " set to " << value << sync_endl;
+    }
     else if (name == "t")  {
       Threads.set(stoi(value));
       sync_cout << "Confirmation: "<< "Threads" << " set to " << value << sync_endl;
