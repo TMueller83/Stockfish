@@ -757,26 +757,26 @@ icc-profile-make:
 	EXTRACXXFLAGS='-prof-gen=srcpos -prof_dir ./profdir' \
 	all
 
-### Based on commits through 03/25/2020:
+### Based on commits through 03/26/2020:
 ### ======================================================
-### Black-Diamond-0325-NO_PROF.exe.bench:Nodes searched  : 9383030
-### Black-Diamond-0325-NO_PROF.exe.bench:Nodes/second    : 2443497
-### Bluefish-0325-NO_PROF.exe.bench:Nodes searched  : 5549786
-### Bluefish-0325-NO_PROF.exe.bench:Nodes/second    : 2498778
-### Bluefish-FD-0325-NO_PROF.exe.bench:Nodes searched  : 11437233
-### Bluefish-FD-0325-NO_PROF.exe.bench:Nodes/second    : 2594065
-### Blue-Honey-0325-NO_PROF.exe.bench:Nodes searched  : 5241183
-### Blue-Honey-0325-NO_PROF.exe.bench:Nodes/second    : 2494613
-### Blue-Honey-FD-0325-NO_PROF.exe.bench:Nodes searched  : 11496900
-### Blue-Honey-FD-0325-NO_PROF.exe.bench:Nodes/second    : 2611744
-### Honey-0325-NO_PROF.exe.bench:Nodes searched  : 4264122
-### Honey-0325-NO_PROF.exe.bench:Nodes/second    : 2463386
-### Honey-FD-0325-NO_PROF.exe.bench:Nodes searched  : 10964253
-### Honey-FD-0325-NO_PROF.exe.bench:Nodes/second    : 2631841
-### Stockfish-0325-NO_PROF.exe.bench:Nodes searched  : 5398277
-### Stockfish-0325-NO_PROF.exe.bench:Nodes/second    : 2537976
-### Stockfish-FD-0325-NO_PROF.exe.bench:Nodes searched  : 17050652
-### Stockfish-FD-0325-NO_PROF.exe.bench:Nodes/second    : 2327098
-### Weakfish-0325-NO_PROF.exe.bench:Nodes searched  : 7387659
-### Weakfish-0325-NO_PROF.exe.bench:Nodes/second    : 3544941
+### Black-Diamond-0326-PROF_16.exe.bench:Nodes searched  : 10495349
+### Black-Diamond-0326-PROF_16.exe.bench:Nodes/second    : 2455052
+### Bluefish-0326-PROF_16.exe.bench:Nodes searched  : 5530718
+### Bluefish-0326-PROF_16.exe.bench:Nodes/second    : 2565268
+### Bluefish-FD-0326-PROF_16.exe.bench:Nodes searched  : 12639206
+### Bluefish-FD-0326-PROF_16.exe.bench:Nodes/second    : 2648063
+### Blue-Honey-0326-PROF_16.exe.bench:Nodes searched  : 5240649
+### Blue-Honey-0326-PROF_16.exe.bench:Nodes/second    : 2609884
+### Blue-Honey-FD-0326-PROF_16.exe.bench:Nodes searched  : 10142406
+### Blue-Honey-FD-0326-PROF_16.exe.bench:Nodes/second    : 2656470
+### Honey-0326-PROF_16.exe.bench:Nodes searched  : 4548939
+### Honey-0326-PROF_16.exe.bench:Nodes/second    : 2593465
+### Honey-FD-0326-PROF_16.exe.bench:Nodes searched  : 9489124
+### Honey-FD-0326-PROF_16.exe.bench:Nodes/second    : 2672239
+### Stockfish-0326-PROF_16.exe.bench:Nodes searched  : 5030855
+### Stockfish-0326-PROF_16.exe.bench:Nodes/second    : 2573327
+### Stockfish-FD-0326-PROF_16.exe.bench:Nodes searched  : 12960354
+### Stockfish-FD-0326-PROF_16.exe.bench:Nodes/second    : 2636361
+### Weakfish-0326-PROF_16.exe.bench:Nodes searched  : 8182426
+### Weakfish-0326-PROF_16.exe.bench:Nodes/second    : 3704131
 ### ======================================================
