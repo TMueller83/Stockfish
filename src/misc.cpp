@@ -71,7 +71,7 @@ namespace {
 /// DD-MM-YY and show in engine_info.
 
 #if (defined Add_Features && ReleaseVer)
-const string Version = "";
+const string Version = "XI-r1 ";
 #else
 const string Version = "";
 #endif

@@ -138,7 +138,7 @@ void init(OptionsMap& o) {
 
 #else
     o["Defensive"]                << Option(false);
-    o["Profound"]                 << Option(true);
+    o["Profound"]                 << Option(false);
 
 #endif
     o["Deep_Pro_Analysis"]        << Option(false);

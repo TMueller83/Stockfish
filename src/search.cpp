@@ -397,12 +397,14 @@ skipLevels:
              uci_elo =  ccrlELo - shallow_adjust;
          }
 #endif
+      if (!tactical)    {
           profound = (Options["Profound"]);
-          if (profound)
+          if ((profound) && (!tactical))
               profound_v = 16 * (std::max(Time.optimum(),Limits.movetime) - 20);
           if (Options["Deep_Pro_Analysis"])
               profound_v = 14400000;
           std::cerr << "\nprofound value: " << profound_v << "\n" << sync_endl; //debug
+        }
       for (Thread* th : Threads)
       {
           th->bestMoveChanges = 0;
@@ -602,7 +604,9 @@ void Thread::search() {
 	Skill skill(intLevel);
 
 #ifdef Add_Features
-    if (tactical) multiPV = pow(2, tactical);
+    if (tactical) {
+      multiPV = pow(2, tactical);
+      profound = false;}
 #endif
 
   // When playing with strength handicap enable MultiPV search that we will
@@ -655,7 +659,7 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
 
 
   profound_test = false;
-  if (profound){
+  if ((profound) && (!tactical)){
     if(Options["MultiPV"] == 1 && profound_v > 0){
         if(Threads.nodes_searched() <= (uint64_t)profound_v && rootMoves.size() >= 8){
             profound_test = true;

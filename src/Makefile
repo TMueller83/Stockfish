@@ -47,13 +47,13 @@ DATE2=$(shell date +"%m%d")
 ### WEAKFISH = yes
 
 ### Release versions , enter yes and release version below foor releases
-RELEASEVER = no
-RELVERSION =
+RELEASEVER = yes
+RELVERSION = XI-r1
 
 ### TEST versions, enter yes and labels below to build named test exe's
-TEST = yes
+TEST = no
 TESTv1 = $(DATE2)
-TESTv2 = PROF_16
+TESTv2 = NO_PROF
 ifeq ($(TEST),yes)
 	CXXFLAGS += -DTest
 endif
@@ -109,9 +109,9 @@ ifeq ($(HONEY),yes)
 	ifeq ($(RELEASEVER),yes)
         CXXFLAGS += -DReleaseVer
 		ifeq ($(COMP),mingw)
-			EXE = $(NAME)-$(RELVERSION)$(RELVERLP).exe
+			EXE = $(NAME)-$(RELVERSION).exe
 		else
-			EXE = $(NAME)-$(RELVERSION)$(RELVERLP)
+			EXE = $(NAME)-$(RELVERSION)
 		endif
 	endif
 endif
@@ -154,7 +154,7 @@ endif
 	ifeq ($(RELEASEVER),yes)
 		CXXFLAGS += -DReleaseVer
 		ifeq ($(COMP),mingw)
-			EXE = $(NAME)-$(RELVERSION)$(RELVERLP).exe
+			EXE = $(NAME)-$(RELVERSION).exe
 		else
 		EXE = $(NAME)-$(RELVERSION)
 		endif
@@ -757,26 +757,26 @@ icc-profile-make:
 	EXTRACXXFLAGS='-prof-gen=srcpos -prof_dir ./profdir' \
 	all
 
-### Based on commits through 03/26/2020:
+### Based on commits through 03/28/2020:
 ### ======================================================
-### Black-Diamond-0326-PROF_16.exe.bench:Nodes searched  : 10495349
-### Black-Diamond-0326-PROF_16.exe.bench:Nodes/second    : 2455052
-### Bluefish-0326-PROF_16.exe.bench:Nodes searched  : 5530718
-### Bluefish-0326-PROF_16.exe.bench:Nodes/second    : 2565268
-### Bluefish-FD-0326-PROF_16.exe.bench:Nodes searched  : 12639206
-### Bluefish-FD-0326-PROF_16.exe.bench:Nodes/second    : 2648063
-### Blue-Honey-0326-PROF_16.exe.bench:Nodes searched  : 5240649
-### Blue-Honey-0326-PROF_16.exe.bench:Nodes/second    : 2609884
-### Blue-Honey-FD-0326-PROF_16.exe.bench:Nodes searched  : 10142406
-### Blue-Honey-FD-0326-PROF_16.exe.bench:Nodes/second    : 2656470
-### Honey-0326-PROF_16.exe.bench:Nodes searched  : 4548939
-### Honey-0326-PROF_16.exe.bench:Nodes/second    : 2593465
-### Honey-FD-0326-PROF_16.exe.bench:Nodes searched  : 9489124
-### Honey-FD-0326-PROF_16.exe.bench:Nodes/second    : 2672239
-### Stockfish-0326-PROF_16.exe.bench:Nodes searched  : 5030855
-### Stockfish-0326-PROF_16.exe.bench:Nodes/second    : 2573327
-### Stockfish-FD-0326-PROF_16.exe.bench:Nodes searched  : 12960354
-### Stockfish-FD-0326-PROF_16.exe.bench:Nodes/second    : 2636361
-### Weakfish-0326-PROF_16.exe.bench:Nodes searched  : 8182426
-### Weakfish-0326-PROF_16.exe.bench:Nodes/second    : 3704131
+### Black-Diamond-XI-r1.exe.bench:Nodes searched  : 10495349
+### Black-Diamond-XI-r1.exe.bench:Nodes/second    : 2418283
+### Bluefish-FD-XI-r1.exe.bench:Nodes searched  : 12639206
+### Bluefish-FD-XI-r1.exe.bench:Nodes/second    : 2603338
+### Bluefish-XI-r1.exe.bench:Nodes searched  : 5530718
+### Bluefish-XI-r1.exe.bench:Nodes/second    : 2559332
+### Blue-Honey-FD-XI-r1.exe.bench:Nodes searched  : 10142406
+### Blue-Honey-FD-XI-r1.exe.bench:Nodes/second    : 2635075
+### Blue-Honey-XI-r1.exe.bench:Nodes searched  : 5240649
+### Blue-Honey-XI-r1.exe.bench:Nodes/second    : 2570205
+### Honey-FD-XI-r1.exe.bench:Nodes searched  : 9489124
+### Honey-FD-XI-r1.exe.bench:Nodes/second    : 2645420
+### Honey-XI-r1.exe.bench:Nodes searched  : 4548939
+### Honey-XI-r1.exe.bench:Nodes/second    : 2587564
+### Stockfish-FD-XI-r1.exe.bench:Nodes searched  : 12960354
+### Stockfish-FD-XI-r1.exe.bench:Nodes/second    : 2650921
+### Stockfish-XI-r1.exe.bench:Nodes searched  : 5030855
+### Stockfish-XI-r1.exe.bench:Nodes/second    : 2555030
+### Weakfish-XI-r1.exe.bench:Nodes searched  : 8182426
+### Weakfish-XI-r1.exe.bench:Nodes/second    : 3631791
 ### ======================================================
