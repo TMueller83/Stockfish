@@ -697,7 +697,7 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
 #if defined (Sullivan) || (Blau) || (Fortress) || (Noir)
               delta = Value(20 + abs(previousScore) / 64);
 #else
-              delta = Value(21 + abs(previousScore) / 256);
+              delta = Value(21);
 #endif
               alpha = std::max(previousScore - delta,-VALUE_INFINITE);
               beta  = std::min(previousScore + delta, VALUE_INFINITE);

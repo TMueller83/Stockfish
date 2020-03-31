@@ -109,9 +109,9 @@ ifeq ($(HONEY),yes)
 	ifeq ($(RELEASEVER),yes)
         CXXFLAGS += -DReleaseVer
 		ifeq ($(COMP),mingw)
-			EXE = $(NAME)-$(RELVERSION)$(RELVERLP).exe
+			EXE = $(NAME)-$(RELVERSION).exe
 		else
-			EXE = $(NAME)-$(RELVERSION)$(RELVERLP)
+			EXE = $(NAME)-$(RELVERSION)
 		endif
 	endif
 endif
@@ -154,7 +154,7 @@ endif
 	ifeq ($(RELEASEVER),yes)
 		CXXFLAGS += -DReleaseVer
 		ifeq ($(COMP),mingw)
-			EXE = $(NAME)-$(RELVERSION)$(RELVERLP).exe
+			EXE = $(NAME)-$(RELVERSION).exe
 		else
 		EXE = $(NAME)-$(RELVERSION)
 		endif
@@ -760,23 +760,23 @@ icc-profile-make:
 ### Based on commits through 03/28/2020:
 ### ======================================================
 ### Black-Diamond-XI-r1.exe.bench:Nodes searched  : 10495349
-### Black-Diamond-XI-r1.exe.bench:Nodes/second    : 2432294
+### Black-Diamond-XI-r1.exe.bench:Nodes/second    : 2418283
 ### Bluefish-FD-XI-r1.exe.bench:Nodes searched  : 12639206
-### Bluefish-FD-XI-r1.exe.bench:Nodes/second    : 2609249
+### Bluefish-FD-XI-r1.exe.bench:Nodes/second    : 2603338
 ### Bluefish-XI-r1.exe.bench:Nodes searched  : 5530718
-### Bluefish-XI-r1.exe.bench:Nodes/second    : 2540522
+### Bluefish-XI-r1.exe.bench:Nodes/second    : 2559332
 ### Blue-Honey-FD-XI-r1.exe.bench:Nodes searched  : 10142406
-### Blue-Honey-FD-XI-r1.exe.bench:Nodes/second    : 2626885
+### Blue-Honey-FD-XI-r1.exe.bench:Nodes/second    : 2635075
 ### Blue-Honey-XI-r1.exe.bench:Nodes searched  : 5240649
-### Blue-Honey-XI-r1.exe.bench:Nodes/second    : 2542770
+### Blue-Honey-XI-r1.exe.bench:Nodes/second    : 2570205
 ### Honey-FD-XI-r1.exe.bench:Nodes searched  : 9489124
-### Honey-FD-XI-r1.exe.bench:Nodes/second    : 2658017
+### Honey-FD-XI-r1.exe.bench:Nodes/second    : 2645420
 ### Honey-XI-r1.exe.bench:Nodes searched  : 4548939
-### Honey-XI-r1.exe.bench:Nodes/second    : 2580226
+### Honey-XI-r1.exe.bench:Nodes/second    : 2587564
 ### Stockfish-FD-XI-r1.exe.bench:Nodes searched  : 12960354
-### Stockfish-FD-XI-r1.exe.bench:Nodes/second    : 2618253
+### Stockfish-FD-XI-r1.exe.bench:Nodes/second    : 2650921
 ### Stockfish-XI-r1.exe.bench:Nodes searched  : 5030855
-### Stockfish-XI-r1.exe.bench:Nodes/second    : 2548558
+### Stockfish-XI-r1.exe.bench:Nodes/second    : 2555030
 ### Weakfish-XI-r1.exe.bench:Nodes searched  : 8182426
-### Weakfish-XI-r1.exe.bench:Nodes/second    : 3584067
+### Weakfish-XI-r1.exe.bench:Nodes/second    : 3631791
 ### ======================================================
