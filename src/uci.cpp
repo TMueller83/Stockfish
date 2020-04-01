@@ -172,7 +172,7 @@ void set(istringstream& is) {
       sync_cout << "  setoption name 'option name'  value 'value'"  << sync_endl;
       sync_cout << "  is replaced  by:"  << sync_endl;
       sync_cout << "  set (or 's'), 'option name' or 'option shortcut' 'value'\n"  << sync_endl;
-      sync_cout << " Note: set (or 's'), with or without 'option' entered displays the shortcuts\n"  << sync_endl;
+      sync_cout << " Note: set (or 's'), without an 'option' entered displays the shortcuts\n"  << sync_endl;
       sync_cout << "  'd' is the shortcut for 'depth'"  << sync_endl;
       sync_cout << "  'dpa' is the shortcut for 'Deep_Pro_Analysis'"  << sync_endl;
       sync_cout << "  'g' is the shortcut for 'go'"  << sync_endl;
