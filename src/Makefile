@@ -757,26 +757,26 @@ icc-profile-make:
 	EXTRACXXFLAGS='-prof-gen=srcpos -prof_dir ./profdir' \
 	all
 
-### Based on commits through 03/30/2020:
+### Based on commits through 04/01/2020:
 ### ======================================================
 ### Black-Diamond-XI-r1.exe.bench:Nodes searched  : 9950748
-### Black-Diamond-XI-r1.exe.bench:Nodes/second    : 2479628
+### Black-Diamond-XI-r1.exe.bench:Nodes/second    : 2586625
 ### Bluefish-FD-XI-r1.exe.bench:Nodes searched  : 11350189
-### Bluefish-FD-XI-r1.exe.bench:Nodes/second    : 2569078
+### Bluefish-FD-XI-r1.exe.bench:Nodes/second    : 2703069
 ### Bluefish-XI-r1.exe.bench:Nodes searched  : 5195370
-### Bluefish-XI-r1.exe.bench:Nodes/second    : 2488204
+### Bluefish-XI-r1.exe.bench:Nodes/second    : 2551753
 ### Blue-Honey-FD-XI-r1.exe.bench:Nodes searched  : 11383628
-### Blue-Honey-FD-XI-r1.exe.bench:Nodes/second    : 2568508
+### Blue-Honey-FD-XI-r1.exe.bench:Nodes/second    : 2667204
 ### Blue-Honey-XI-r1.exe.bench:Nodes searched  : 4529848
-### Blue-Honey-XI-r1.exe.bench:Nodes/second    : 2404377
+### Blue-Honey-XI-r1.exe.bench:Nodes/second    : 2497159
 ### Honey-FD-XI-r1.exe.bench:Nodes searched  : 10156988
-### Honey-FD-XI-r1.exe.bench:Nodes/second    : 2571389
+### Honey-FD-XI-r1.exe.bench:Nodes/second    : 2676413
 ### Honey-XI-r1.exe.bench:Nodes searched  : 4654422
-### Honey-XI-r1.exe.bench:Nodes/second    : 2522721
+### Honey-XI-r1.exe.bench:Nodes/second    : 2594438
 ### Stockfish-FD-XI-r1.exe.bench:Nodes searched  : 12113979
-### Stockfish-FD-XI-r1.exe.bench:Nodes/second    : 2505476
+### Stockfish-FD-XI-r1.exe.bench:Nodes/second    : 2581286
 ### Stockfish-XI-r1.exe.bench:Nodes searched  : 5138771
-### Stockfish-XI-r1.exe.bench:Nodes/second    : 2530167
+### Stockfish-XI-r1.exe.bench:Nodes/second    : 2621821
 ### Weakfish-XI-r1.exe.bench:Nodes searched  : 8624980
-### Weakfish-XI-r1.exe.bench:Nodes/second    : 3449992
+### Weakfish-XI-r1.exe.bench:Nodes/second    : 3633100
 ### ======================================================
