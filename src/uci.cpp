@@ -181,7 +181,7 @@ void set(istringstream& is) {
 #ifdef Add_Features
         if (token == "searchmoves" || token == "sm")
 #else
-        if (token == "searchmoves")
+        if (token == "searchmoves")  // Needs to be the last command on the line
 #endif
             while (is >> token)
                 limits.searchmoves.push_back(UCI::to_move(pos, token));

@@ -135,7 +135,9 @@ void init(OptionsMap& o) {
 #if defined (Sullivan) || (Blau)
     o["Defensive"]                << Option(true);
     o["Profound"]                 << Option(true);
-
+#elif defined (Noir)
+    o["Defensive"]                << Option(false);
+    o["Profound"]                 << Option(true);
 #else
     o["Defensive"]                << Option(false);
     o["Profound"]                 << Option(false);
