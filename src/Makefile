@@ -47,13 +47,13 @@ DATE2=$(shell date +"%m%d")
 ### WEAKFISH = yes
 
 ### Release versions , enter yes and release version below foor releases
-RELEASEVER = no
-RELVERSION =
+RELEASEVER = yes
+RELVERSION = XI-r1
 
 ### TEST versions, enter yes and labels below to build named test exe's
 TEST = no
 TESTv1 = $(DATE2)
-TESTv2 =
+TESTv2 = NO_PROF
 ifeq ($(TEST),yes)
 	CXXFLAGS += -DTest
 endif
@@ -99,15 +99,19 @@ ifeq ($(HONEY),yes)
 			endif
 		endif
 		ifeq ($(TEST),yes)
-			EXE = $(NAME)-$(TESTv1)-$(TESTv2)
+		  ifeq ($(COMP),mingw)
+			  EXE = $(NAME)-$(TESTv1)-$(TESTv2).exe
+			else
+			  EXE = $(NAME)-$(TESTv1)-$(TESTv2)
+      endif
 		endif
 	endif
 	ifeq ($(RELEASEVER),yes)
         CXXFLAGS += -DReleaseVer
 		ifeq ($(COMP),mingw)
-			EXE = $(NAME)-$(RELVERSION)$(RELVERLP).exe
+			EXE = $(NAME)-$(RELVERSION).exe
 		else
-			EXE = $(NAME)-$(RELVERSION)$(RELVERLP)
+			EXE = $(NAME)-$(RELVERSION)
 		endif
 	endif
 endif
@@ -132,16 +136,25 @@ ifneq ($(HONEY),yes)
 	NAME=$(PRE)fish$(SUF)
 endif
 	ifeq ($(RELEASEVER),no)
-		ifeq ($(COMP),mingw)
-			EXE = $(NAME)-$(DATE).exe
-		else
-			EXE = $(NAME)-$(DATE)
+    ifeq ($(TEST),no)
+		  ifeq ($(COMP),mingw)
+			  EXE = $(NAME)-dev-$(DATE).exe
+		  else
+			  EXE = $(NAME)-dev-$(DATE)
+		   endif
+		endif
+		ifeq ($(TEST),yes)
+		  ifeq ($(COMP),mingw)
+			  EXE = $(NAME)-$(TESTv1)-$(TESTv2).exe
+			else
+			  EXE = $(NAME)-$(TESTv1)-$(TESTv2)
+      endif
 		endif
 	endif
 	ifeq ($(RELEASEVER),yes)
 		CXXFLAGS += -DReleaseVer
 		ifeq ($(COMP),mingw)
-			EXE = $(NAME)-$(RELVERSION)$(RELVERLP).exe
+			EXE = $(NAME)-$(RELVERSION).exe
 		else
 		EXE = $(NAME)-$(RELVERSION)
 		endif
@@ -797,39 +810,26 @@ icc-profile-make:
 	EXTRACXXFLAGS='-prof-gen=srcpos -prof_dir ./profdir' \
 	all
 
-icc-profile-use:
-	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
-	EXTRACXXFLAGS='-prof_use -prof_dir ./profdir' \
-	all
-
-.depend:
-	-@$(CXX) $(DEPENDFLAGS) -MM $(OBJS:.o=.cpp) > $@ 2> /dev/null
-
--include .depend
-
-### Note: 4 new bench positions were added on 10/17/2019.
-###       Bluefish and Honey benchmarks were modified on 11/19/2019
-###
-### Based on commits through 03/14/2020:
+### Based on commits through 04/01/2020:
 ### ======================================================
-### Black-Diamond-031420.exe.bench:Nodes searched  : 10769433
-### Black-Diamond-031420.exe.bench:Nodes/second    : 2559884
-### Bluefish-031420.exe.bench:Nodes searched  : 5178449
-### Bluefish-031420.exe.bench:Nodes/second    : 2559786
-### Bluefish-FD-031420.exe.bench:Nodes searched  : 12398505
-### Bluefish-FD-031420.exe.bench:Nodes/second    : 2671515
-### Blue-Honey-dev-031420.exe.bench:Nodes searched  : 5248219
-### Blue-Honey-dev-031420.exe.bench:Nodes/second    : 2635971
-### Blue-Honey-FD-dev-031420.exe.bench:Nodes searched  : 11161292
-### Blue-Honey-FD-dev-031420.exe.bench:Nodes/second    : 2598066
-### Honey-dev-031420.exe.bench:Nodes searched  : 4043578
-### Honey-dev-031420.exe.bench:Nodes/second    : 2514662
-### Honey-FD-dev-031420.exe.bench:Nodes searched  : 9457862
-### Honey-FD-dev-031420.exe.bench:Nodes/second    : 2728754
-### Stockfish-031420.exe.bench:Nodes searched  : 4839496
-### Stockfish-031420.exe.bench:Nodes/second    : 2592124
-### Stockfish-FD-031420.exe.bench:Nodes searched  : 17779467
-### Stockfish-FD-031420.exe.bench:Nodes/second    : 2418975
-### Weakfish-031420.exe.bench:Nodes searched  : 7935356
-### Weakfish-031420.exe.bench:Nodes/second    : 3684009
+### Black-Diamond-XI-r1.exe.bench:Nodes searched  : 9950748
+### Black-Diamond-XI-r1.exe.bench:Nodes/second    : 2586625
+### Bluefish-FD-XI-r1.exe.bench:Nodes searched  : 11350189
+### Bluefish-FD-XI-r1.exe.bench:Nodes/second    : 2703069
+### Bluefish-XI-r1.exe.bench:Nodes searched  : 5195370
+### Bluefish-XI-r1.exe.bench:Nodes/second    : 2551753
+### Blue-Honey-FD-XI-r1.exe.bench:Nodes searched  : 11383628
+### Blue-Honey-FD-XI-r1.exe.bench:Nodes/second    : 2667204
+### Blue-Honey-XI-r1.exe.bench:Nodes searched  : 4529848
+### Blue-Honey-XI-r1.exe.bench:Nodes/second    : 2497159
+### Honey-FD-XI-r1.exe.bench:Nodes searched  : 10156988
+### Honey-FD-XI-r1.exe.bench:Nodes/second    : 2676413
+### Honey-XI-r1.exe.bench:Nodes searched  : 4654422
+### Honey-XI-r1.exe.bench:Nodes/second    : 2594438
+### Stockfish-FD-XI-r1.exe.bench:Nodes searched  : 12113979
+### Stockfish-FD-XI-r1.exe.bench:Nodes/second    : 2581286
+### Stockfish-XI-r1.exe.bench:Nodes searched  : 5138771
+### Stockfish-XI-r1.exe.bench:Nodes/second    : 2621821
+### Weakfish-XI-r1.exe.bench:Nodes searched  : 8624980
+### Weakfish-XI-r1.exe.bench:Nodes/second    : 3633100
 ### ======================================================

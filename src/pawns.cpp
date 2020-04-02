@@ -78,7 +78,7 @@ namespace {
   template<Color Us>
   Score evaluate(const Position& pos, Pawns::Entry* e) {
 
-    constexpr Color     Them = (Us == WHITE ? BLACK : WHITE);
+    constexpr Color     Them = ~Us;
     constexpr Direction Up   = pawn_push(Us);
 #ifdef Sullivan
     Bitboard neighbours, stoppers, support, phalanx;
@@ -162,6 +162,8 @@ namespace {
 #endif
                     && (shift<Up>(support) & ~(theirPawns | doubleAttackThem)));
 
+        passed &= !(forward_file_bb(Us, s) & ourPawns);
+
         // Passed pawns will be properly scored later in evaluation when we have
         // full attack info.
         if (passed)
@@ -228,7 +230,7 @@ Entry* probe(const Position& pos) {
 template<Color Us>
 Score Entry::evaluate_shelter(const Position& pos, Square ksq) {
 
-  constexpr Color Them = (Us == WHITE ? BLACK : WHITE);
+  constexpr Color Them = ~Us;
 
   Bitboard b = pos.pieces(PAWN) & ~forward_ranks_bb(Them, ksq);
   Bitboard ourPawns = b & pos.pieces(Us);

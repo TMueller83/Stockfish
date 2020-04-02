@@ -51,9 +51,13 @@ namespace Search {
   LimitsType Limits;
   bool adaptive;
   bool ctempt;
-  int defensive;
-  int dct;
+  bool profound=false;
+
   int benchKnps;
+  int dct;
+  int defensive;
+  int profound_v;
+  int dpl_factor;
 }
 
 namespace Tablebases {
@@ -323,7 +327,7 @@ void MainThread::search() {
          {
              uci_elo = (Options["UCI_Elo"]);
              limitStrength = true;
-			 jekyll=true; //on with uci_elo, variety gets turned off with adaptive
+             jekyll=true; //on with uci_elo, variety gets turned off with adaptive
              goto skipLevels;
          }
          if (Options["Engine_Level"] == "None")
@@ -393,6 +397,14 @@ skipLevels:
              uci_elo =  ccrlELo - shallow_adjust;
          }
 #endif
+      if (!tactical)    {
+          profound = (Options["Profound"]);
+          if ((profound) && (!tactical))
+              profound_v = 16 * (std::max(Time.optimum(),Limits.movetime) - 20);
+          if (Options["Deep_Pro_Analysis"])
+              profound_v = 14400000;
+          std::cerr << "\nprofound value: " << profound_v << "\n" << sync_endl; //debug
+        }
       for (Thread* th : Threads)
       {
           th->bestMoveChanges = 0;
@@ -460,7 +472,7 @@ skipLevels:
 
           if (bestThread->rootMoves[0].score >= VALUE_TB_WIN_IN_MAX_PLY)
           {
-              // Make sure we pick the shortest mate
+              // Make sure we pick the shortest mate / TB conversion
               if (th->rootMoves[0].score > bestThread->rootMoves[0].score)
                   bestThread = th;
           }
@@ -592,7 +604,9 @@ void Thread::search() {
 	Skill skill(intLevel);
 
 #ifdef Add_Features
-    if (tactical) multiPV = pow(2, tactical);
+    if (tactical) {
+      multiPV = pow(2, tactical);
+      profound = false;}
 #endif
 
   // When playing with strength handicap enable MultiPV search that we will
@@ -618,6 +632,7 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
 
   int searchAgainCounter = 0;
 
+
   // Iterative deepening loop until requested to stop or the target depth is reached
   while (   ++rootDepth < MAX_PLY
          && !Threads.stop
@@ -639,6 +654,28 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
          searchAgainCounter++;
 
       // MultiPV loop. We perform a full root search for each PV line
+
+
+
+
+  profound_test = false;
+  if ((profound) && (!tactical)){
+    if(Options["MultiPV"] == 1 && profound_v > 0){
+        if(Threads.nodes_searched() <= (uint64_t)profound_v && rootMoves.size() >= 8){
+            profound_test = true;
+            multiPV = 8;}
+
+    if(Threads.nodes_searched() <= (uint64_t)profound_v && rootMoves.size() < 8){
+
+            profound_test = true;
+            multiPV = rootMoves.size();}
+
+    if(Threads.nodes_searched() > (uint64_t)profound_v){
+            profound_test = false;
+            multiPV = Options["MultiPV"];}
+          }
+}
+
       for (pvIdx = 0; pvIdx < multiPV && !Threads.stop; ++pvIdx)
       {
           if (pvIdx == pvLast)
@@ -660,7 +697,7 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
 #if defined (Sullivan) || (Blau) || (Fortress) || (Noir)
               delta = Value(20 + abs(previousScore) / 64);
 #else
-              delta = Value(21 + abs(previousScore) / 256);
+              delta = Value(21);
 #endif
               alpha = std::max(previousScore - delta,-VALUE_INFINITE);
               beta  = std::min(previousScore + delta, VALUE_INFINITE);
@@ -880,7 +917,7 @@ namespace {
 #ifndef Noir
     // Check if we have an upcoming move which draws by repetition, or
     // if the opponent had an alternative move earlier to this position.
-#if defined (Sullivan) || (Blau) || (Fortress) || (Noir)
+#if defined (Sullivan) || (Blau) || (Noir)
     if (   pos.rule50_count() >= 5
 #else
     if (   pos.rule50_count() >= 3
@@ -1321,6 +1358,7 @@ namespace {
 #ifdef Fortress
         &&  !gameCycle
 #endif
+        && pos.this_thread()->profound_test != true
         &&  eval - futility_margin(depth, improving) >= beta
         &&  eval < VALUE_KNOWN_WIN) // Do not return unproven wins
         return eval;
@@ -1328,13 +1366,12 @@ namespace {
     // Step 9. Null move search with verification search (~39 Elo)
     if (   !PvNode
         && (ss-1)->currentMove != MOVE_NULL
-
 	      && (ss-1)->statScore < 23397
-	      &&  eval >= beta
+      	&&  eval >= beta
         &&  eval >= ss->staticEval
         &&  ss->staticEval >= beta - 32 * depth - 30 * improving + 120 * ttPv + 292
         && !excludedMove
-#if defined (Sullivan) || (Blau)  //authored by Jörg Oster originally, in corchess by Ivan Ilvec
+#if defined (Sullivan) || (Blau) || (Noir)  //authored by Jörg Oster originally, in corchess by Ivan Ilvec
         && thisThread->selDepth + 3 > thisThread->rootDepth
 #endif
         &&  pos.non_pawn_material(us)
@@ -1356,7 +1393,7 @@ namespace {
 
         if (nullValue >= beta)
         {
-            // Do not return unproven mate scores
+            // Do not return unproven mate or TB scores
             if (nullValue >= VALUE_TB_WIN_IN_MAX_PLY)
                 nullValue = beta;
 #ifdef Noir
@@ -1487,6 +1524,7 @@ moves_loop: // When in check, search starts from here
     value = bestValue;
     singularLMR = moveCountPruning = false;
     ttCapture = ttMove && pos.capture_or_promotion(ttMove);
+    bool formerPv = ttPv && !PvNode;
 
     // Mark this node as being searched
     ThreadHolding th(thisThread, posKey, ss->ply);
@@ -1577,7 +1615,7 @@ moves_loop: // When in check, search starts from here
 				!captureOrPromotion
 				&& !givesCheck
 #if defined (Sullivan) || (Blau) || (Fortress) || (Noir)
-                && (!PvNode || !pos.advanced_pawn_push(move) || pos.non_pawn_material(~us) > BishopValueMg)
+        && (!PvNode || !pos.advanced_pawn_push(move) || pos.non_pawn_material(~us) > BishopValueMg )
 #endif
                 )
 			{
@@ -1651,11 +1689,12 @@ moves_loop: // When in check, search starts from here
 #if defined (Fortress) || (Noir)
           Value singularBeta = std::max(ttValue - 2 * depth, mated_in(ss->ply));
 #else
-          Value singularBeta = ttValue - (((ttPv && !PvNode) + 4) * depth) / 2;
+          Value singularBeta = ttValue - ((formerPv + 4) * depth) / 2;
 #endif
-          Depth halfDepth = depth / 2;
+
+          Depth singularDepth = (depth - 1 + 3 * formerPv) / 2;
           ss->excludedMove = move;
-          value = search<NonPV>(pos, ss, singularBeta - 1, singularBeta, halfDepth, cutNode);
+          value = search<NonPV>(pos, ss, singularBeta - 1, singularBeta, singularDepth, cutNode);
           ss->excludedMove = MOVE_NONE;
           if (value < singularBeta)
           {
@@ -1790,13 +1829,17 @@ moves_loop: // When in check, search starts from here
           if (ttPv)
               r -= 2;
 
+          if (moveCountPruning && !formerPv)
+              r++;
+
           // Decrease reduction if opponent's move count is high (~5 Elo)
           if ((ss-1)->moveCount > 14)
               r--;
 
           // Decrease reduction if ttMove has been singularly extended (~3 Elo)
           if (singularLMR)
-              r -= 2;
+              r -= 1 + formerPv;
+
 #if defined (Fortress) || (Noir)
           if (!PvNode && !captureOrPromotion)
 #else
@@ -1830,8 +1873,8 @@ moves_loop: // When in check, search starts from here
               else if ((ss-1)->statScore >= -116 && ss->statScore < -154)
                   r++;
 
-              // Decrease/increase reduction for moves with a good/bad history (~26 Elo)
-              r -= ss->statScore / 16384;
+              // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
+              r -= ss->statScore / 16434;
           }
 
           // Increase reduction for captures/promotions if late move and at low depth

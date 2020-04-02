@@ -131,6 +131,11 @@ void set(istringstream& is) {
         Options[name] = value;
         sync_cout << "Confirmation: "<< name << " set to " << value << sync_endl;
     }
+    else if (name == "dpa")
+    {
+      Options["Deep_Pro_Analysis"] = {value};
+      sync_cout << "Confirmation: "<< "Deep_Pro_Analysis" << " set to " << value << sync_endl;
+    }
     else if (name == "t")  {
       Threads.set(stoi(value));
       sync_cout << "Confirmation: "<< "Threads" << " set to " << value << sync_endl;
@@ -139,15 +144,56 @@ void set(istringstream& is) {
       TT.resize(stoi(value));
       sync_cout << "Confirmation: "<< "Hash" << " set to " << value << sync_endl;
     }
+#ifdef LargePages
+    else if (name == "lp")  {
+      Options["Large Pages"] = {value};
+      sync_cout << "Confirmation: "<< "Large Pages" << " set to " << value << sync_endl;
+    }
+#endif
+    else if (name == "mv")
+    {
+      Options["MultiPV"] = {value};
+      sync_cout << "Confirmation: "<< "MultiPV" << " set to " << value << sync_endl;
+    }
+    else if (name == "pro")
+    {
+      Options["Profound"] = {value};
+      sync_cout << "Confirmation: "<< "Profound" << " set to " << value << sync_endl;
+    }
     else if (name == "z")
     {
       Tablebases::init(value);
       sync_cout << "Confirmation: "<< "SyzygyPath" << " set to " << value << sync_endl;
     }
-    else if (name == "mv")
+    else if (name == "" || name == "option" )
     {
-      Options["MultiPV"] = {value};
-      sync_cout << "Confirmation: "<< "MultiPV" << " set to " << value << sync_endl;
+      sync_cout << ""  << sync_endl;
+      sync_cout << " Shortcut Commands:\n"  << sync_endl;
+      sync_cout << "  setoption name 'option name'  value 'value'"  << sync_endl;
+      sync_cout << "  is replaced  by:"  << sync_endl;
+      sync_cout << "  set (or 's'), 'option name' or 'option shortcut' 'value'\n"  << sync_endl;
+      sync_cout << " Note: set (or 's'), without an 'option' entered displays the shortcuts\n"  << sync_endl;
+      sync_cout << "  'd' is the shortcut for 'depth'"  << sync_endl;
+      sync_cout << "  'dpa' is the shortcut for 'Deep_Pro_Analysis'"  << sync_endl;
+      sync_cout << "  'g' is the shortcut for 'go'"  << sync_endl;
+      sync_cout << "  'i' is the shortcut for 'infinite'"  << sync_endl;
+      sync_cout << "  'lp' is the shortcut for 'Large Pages'"  << sync_endl;
+      sync_cout << "  'm' is the shortcut for 'Mate'"  << sync_endl;
+      sync_cout << "  'mv' is the shortcut for 'MultiPV'"  << sync_endl;
+      sync_cout << "  'mt' is the shortcut for 'Movetime'->\n " << sync_endl;
+      sync_cout << " Note: 'mt' is in seconds, while" << sync_endl;
+      sync_cout << "       'Movetime' is in milliseconds\n"  << sync_endl;
+      sync_cout << "  'p f' is the shortcut for 'position fen'"  << sync_endl;
+      sync_cout << "  'pro' is the shortcut for 'Profound'"  << sync_endl;
+      sync_cout << "  'sm' is the shortcut for 'SearchMoves'\n" << sync_endl;
+      sync_cout << " Note: 'sm' or 'SearchMoves' MUST be the" << sync_endl;
+      sync_cout << "        last option on the command line!\n"  << sync_endl;
+      sync_cout << "  't' is the shortcut for 'Threads'"  << sync_endl;
+      sync_cout << "  'q' is the shortcut for 'quit'"  << sync_endl;
+      sync_cout << "  'z' is the shortcut for 'SyzygyPath'"  << sync_endl;
+      sync_cout << "  '?' is the shortcut for 'stop'\n"  << sync_endl;
+
+
     }
     else
       sync_cout << "No such option: " << name << sync_endl;
@@ -169,9 +215,9 @@ void set(istringstream& is) {
 
     while (is >> token)
 #ifdef Add_Features
-        if (token == "searchmoves" || token == "sm")
+        if (token == "searchmoves" || token == "sm")  // Needs to be the last command on the line
 #else
-        if (token == "searchmoves")
+        if (token == "searchmoves")  // Needs to be the last command on the line
 #endif
             while (is >> token)
                 limits.searchmoves.push_back(UCI::to_move(pos, token));
